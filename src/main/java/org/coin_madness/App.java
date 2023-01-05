@@ -1,4 +1,4 @@
-package org.openjfx;
+package org.coin_madness;
 
 import javafx.application.Application;
 import javafx.application.Platform;
@@ -7,11 +7,12 @@ import javafx.scene.Scene;
 import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
+import org.jspace.FormalField;
 import org.jspace.QueueSpace;
-import org.jspace.SequentialSpace;
 import org.jspace.Space;
+
+import java.util.Arrays;
 
 
 /**
@@ -57,8 +58,13 @@ public class App extends Application {
 
     }
 
-    public static void main(String[] args) {
-        launch();
-    }
+public static void main(String[] args) throws InterruptedException {
+//        launch();
+    ConnectionManager c1 = new ConnectionManager();
+    c1.host();
+
+    String str = (String) ( c1.lobby.get(new FormalField(String.class))[0]);
+    System.out.println(str);
+}
 
 }
