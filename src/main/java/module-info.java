@@ -1,5 +1,5 @@
 module org.openjfx {
     requires javafx.controls;
     requires common;
-    exports org.openjfx;
+    exports org.coin_madness;
 }
