@@ -1,70 +1,57 @@
 package org.coin_madness;
 
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
+import javafx.scene.layout.StackPane;
 import javafx.stage.Stage;
-import org.jspace.FormalField;
-import org.jspace.QueueSpace;
-import org.jspace.Space;
-
-import java.util.Arrays;
+import org.coin_madness.helpers.ConnectionManager;
+import org.coin_madness.screens.LobbyScreen;
+import org.coin_madness.screens.MainScreen;
 
 
 /**
  * JavaFX App
  */
 public class App extends Application {
-
+    StackPane root;
     @Override
     public void start(Stage stage) {
-        Space space = new QueueSpace();
+        ConnectionManager connectionManager = new ConnectionManager();
+        root = new StackPane();
 
-        var javaVersion = SystemInfo.javaVersion();
-        var javafxVersion = SystemInfo.javafxVersion();
+        var scene = new Scene(root, 640, 480);
 
-        var label = new Label("Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".");
-        Group stackPane = new Group(label);
-        var scene = new Scene(stackPane, 640, 480);
+        MainScreen mainScreen = new MainScreen(connectionManager);
+        mainScreen.setOnEnterLobby(() -> {
+            LobbyScreen lobbyScreen = new LobbyScreen(connectionManager);
 
-        var image = new Image("tmp.png");
-        ImageView imageView = new ImageView(image);
-        imageView.setX(10);
-        stackPane.getChildren().add(imageView);
+            changeView(lobbyScreen);
+
+            lobbyScreen.setOnGameStart(() -> {
+                System.out.println("Go to the game!");
+            });
+        });
+
+
+        root.getChildren().add(mainScreen);
 
         stage.setScene(scene);
         stage.show();
-
-        new Thread(() -> {
-            double x = 0;
-            while( true) {
-                try {
-                    double finalX = x;
-                    Platform.runLater(() -> {
-                        System.out.println(finalX);
-                        imageView.setX(finalX);
-                    });
-                    x += 0.1;
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
     }
 
-public static void main(String[] args) throws InterruptedException {
-//        launch();
-    ConnectionManager c1 = new ConnectionManager();
-    c1.host();
+    private void changeView(Node view) {
+        root.getChildren().clear();
+        root.getChildren().add(view);
+    }
 
-    String str = (String) ( c1.lobby.get(new FormalField(String.class))[0]);
-    System.out.println(str);
-}
+    public static void main(String[] args) throws InterruptedException {
+        launch();
+//        ConnectionManager c1 = new ConnectionManager();
+//        c1.host();
+//
+//        String str = (String) ( c1.lobby.get(new FormalField(String.class))[0]);
+//        System.out.println(str);
+    }
 
 }
