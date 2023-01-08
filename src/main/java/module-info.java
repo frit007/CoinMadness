@@ -5,4 +5,6 @@ module org.openjfx {
     exports org.coin_madness.screens;
     exports org.coin_madness.helpers;
     exports org.coin_madness.model;
+    exports org.coin_madness.components;
+    exports org.coin_madness.controller;
 }
