@@ -1,8 +1,9 @@
-package org.openjfx;
+package org.coin_madness;
 
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
+import org.coin_madness.model.Player;
 
 public class GameController {
 

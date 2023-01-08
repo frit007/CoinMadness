@@ -1,4 +1,4 @@
-package org.openjfx;
+package org.coin_madness;
 
 public class Field {
 

@@ -1,4 +1,4 @@
-package org.openjfx;
+package org.coin_madness;
 
 import javafx.scene.image.Image;
 import javafx.scene.paint.ImagePattern;

@@ -1,4 +1,4 @@
-package org.openjfx;
+package org.coin_madness;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;

@@ -1,7 +1,8 @@
-package org.openjfx;
+package org.coin_madness;
 
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
+import org.coin_madness.model.Field;
 
 public class MazeFieldView extends StackPane {
 

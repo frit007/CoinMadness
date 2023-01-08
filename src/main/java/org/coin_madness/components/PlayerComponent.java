@@ -1,4 +1,4 @@
-package org.openjfx;
+package org.coin_madness;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -6,6 +6,7 @@ import javafx.animation.TranslateTransition;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import org.coin_madness.model.Player;
 
 public class PlayerView extends Rectangle {
 
