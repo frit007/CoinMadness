@@ -159,7 +159,9 @@ public class LobbyScreen extends GridPane {
     private void waitForGameStart() {
         screenThreads.startHandledThread(() -> {
             connectionManager.getLobby().query(new ActualField(LobbyMessage.GAME_STARTED));
-            onGameStart.handle();
+            Platform.runLater(() -> {
+                onGameStart.handle();
+            });
         });
     }
 

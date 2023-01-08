@@ -32,22 +32,26 @@ public class App extends Application {
     public static final Color BACKGROUND = Color.WHITE;
     private static final int SCENE_WIDTH = 640;
     private static final int SCENE_HEIGHT = 640;
+    ImageLibrary graphics = new ImageLibrary();
+    Stage stage;
+    Scene scene;
+    Field[][] map;
 
     @Override
     public void start(Stage stage) throws IOException {
+        this.stage = stage;
         ConnectionManager connectionManager = new ConnectionManager();
-        ImageLibrary graphics = new ImageLibrary();
         MazeLoader loader = new MazeLoader();
-        Field[][] map = loader.load("src/main/resources/map.csv", ",");
-        Player player = new Player(0, 0, 0);
+        map = loader.load("src/main/resources/map.csv", ",");
 
         root = new StackPane();
         root.setBackground(new Background(new BackgroundFill(BACKGROUND, CornerRadii.EMPTY, Insets.EMPTY)));
-        Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
+        scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
 
         showStartScreen(null);
 
         stage.setScene(scene);
+        stage.setTitle("CoinMadness");
         stage.show();
     }
     ConnectionManager connectionManager;
@@ -63,6 +67,8 @@ public class App extends Application {
             changeView(lobbyScreen);
 
             lobbyScreen.setOnGameStart(() -> {
+                // TODO - maybe, move to some kind of GameBuilder
+                Player player = new Player(0, 0, 0);
                 Group gameView = new GameScreen(stage, scene, player, map, graphics);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
@@ -74,8 +80,6 @@ public class App extends Application {
 
 
         changeView(mainScreen);
-        stage.setScene(scene);
-        stage.setTitle("CoinMadness");
     }
 
     private void changeView(Node view) {
