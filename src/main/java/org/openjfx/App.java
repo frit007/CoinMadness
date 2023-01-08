@@ -1,60 +1,40 @@
 package org.openjfx;
 
 import javafx.application.Application;
-import javafx.application.Platform;
+import javafx.geometry.Insets;
 import javafx.scene.Group;
 import javafx.scene.Scene;
-import javafx.scene.control.Label;
-import javafx.scene.image.Image;
-import javafx.scene.image.ImageView;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
-import org.jspace.QueueSpace;
-import org.jspace.SequentialSpace;
-import org.jspace.Space;
-
+import java.io.IOException;
 
 /**
  * JavaFX App
  */
 public class App extends Application {
 
+    public static final Color BACKGROUND = Color.BLACK;
+    private static final int SCENE_WIDTH = 640;
+    private static final int SCENE_HEIGHT = 640;
+
     @Override
-    public void start(Stage stage) {
-        Space space = new QueueSpace();
+    public void start(Stage stage) throws IOException {
+        ImageLibrary graphics = new ImageLibrary();
+        MazeLoader loader = new MazeLoader();
+        Field[][] map = loader.load("src/main/resources/map.csv", ",");
+        Player player = new Player(0, 0, 0);
 
-        var javaVersion = SystemInfo.javaVersion();
-        var javafxVersion = SystemInfo.javafxVersion();
-
-        var label = new Label("Hello, JavaFX " + javafxVersion + ", running on Java " + javaVersion + ".");
-        Group stackPane = new Group(label);
-        var scene = new Scene(stackPane, 640, 480);
-
-        var image = new Image("tmp.png");
-        ImageView imageView = new ImageView(image);
-        imageView.setX(10);
-        stackPane.getChildren().add(imageView);
+        StackPane root = new StackPane();
+        root.setBackground(new Background(new BackgroundFill(BACKGROUND, CornerRadii.EMPTY, Insets.EMPTY)));
+        Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
+        Group gameView = new GameView(stage, scene, player, map, graphics);
+        gameView.setFocusTraversable(true);
+        root.getChildren().add(gameView);
 
         stage.setScene(scene);
+        stage.setTitle("CoinMadness");
         stage.show();
-
-        new Thread(() -> {
-            double x = 0;
-            while( true) {
-                try {
-                    double finalX = x;
-                    Platform.runLater(() -> {
-                        System.out.println(finalX);
-                        imageView.setX(finalX);
-                    });
-                    x += 0.1;
-                    Thread.sleep(10);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        }).start();
-
     }
 
     public static void main(String[] args) {
