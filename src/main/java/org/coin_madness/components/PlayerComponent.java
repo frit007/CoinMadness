@@ -1,4 +1,4 @@
-package org.coin_madness;
+package org.coin_madness.components;
 
 import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
@@ -6,9 +6,10 @@ import javafx.animation.TranslateTransition;
 import javafx.scene.paint.ImagePattern;
 import javafx.scene.shape.Rectangle;
 import javafx.util.Duration;
+import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Player;
 
-public class PlayerView extends Rectangle {
+public class PlayerComponent extends Rectangle {
 
     private Player player;
     private static final int WALK_ANIM_DURATION = 200;
@@ -16,7 +17,7 @@ public class PlayerView extends Rectangle {
     private Timeline timeline;
     private int keyCount = 1;
 
-    public PlayerView(Player player, ImageLibrary graphics, double tileSize) {
+    public PlayerComponent(Player player, ImageLibrary graphics, double tileSize) {
         this.player = player;
         setSideLength(tileSize);
         setFill(graphics.idleRight);

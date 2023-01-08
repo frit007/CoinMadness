@@ -1,26 +1,49 @@
 package org.coin_madness;
 
 import javafx.application.Application;
+import javafx.geometry.Insets;
+import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.coin_madness.helpers.ConnectionManager;
+import org.coin_madness.helpers.ImageLibrary;
+import org.coin_madness.model.Field;
+import org.coin_madness.model.MazeLoader;
+import org.coin_madness.model.Player;
+import org.coin_madness.screens.GameScreen;
 import org.coin_madness.screens.LobbyScreen;
 import org.coin_madness.screens.MainScreen;
+
+import java.io.IOException;
 
 
 /**
  * JavaFX App
  */
 public class App extends Application {
-    StackPane root;
-    @Override
-    public void start(Stage stage) {
-        ConnectionManager connectionManager = new ConnectionManager();
-        root = new StackPane();
 
-        var scene = new Scene(root, 640, 480);
+    private StackPane root;
+    public static final Color BACKGROUND = Color.WHITE;
+    private static final int SCENE_WIDTH = 640;
+    private static final int SCENE_HEIGHT = 640;
+
+    @Override
+    public void start(Stage stage) throws IOException {
+        ConnectionManager connectionManager = new ConnectionManager();
+        ImageLibrary graphics = new ImageLibrary();
+        MazeLoader loader = new MazeLoader();
+        Field[][] map = loader.load("src/main/resources/map.csv", ",");
+        Player player = new Player(0, 0, 0);
+
+        root = new StackPane();
+        root.setBackground(new Background(new BackgroundFill(BACKGROUND, CornerRadii.EMPTY, Insets.EMPTY)));
+        Scene scene = new Scene(root, SCENE_WIDTH, SCENE_HEIGHT);
 
         MainScreen mainScreen = new MainScreen(connectionManager);
         mainScreen.setOnEnterLobby(() -> {
@@ -29,14 +52,15 @@ public class App extends Application {
             changeView(lobbyScreen);
 
             lobbyScreen.setOnGameStart(() -> {
-                System.out.println("Go to the game!");
+                Group gameView = new GameScreen(stage, scene, player, map, graphics);
+                gameView.setFocusTraversable(true);
+                changeView(gameView);
             });
         });
 
-
         root.getChildren().add(mainScreen);
-
         stage.setScene(scene);
+        stage.setTitle("CoinMadness");
         stage.show();
     }
 

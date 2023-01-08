@@ -1,4 +1,4 @@
-package org.coin_madness;
+package org.coin_madness.screens;
 
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -8,22 +8,28 @@ import javafx.scene.control.ScrollPane;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
+import org.coin_madness.components.MazeFieldComponent;
+import org.coin_madness.components.PlayerComponent;
+import org.coin_madness.controller.GameController;
+import org.coin_madness.helpers.ImageLibrary;
+import org.coin_madness.model.Field;
+import org.coin_madness.model.Player;
 
 import java.util.ArrayList;
 
-public class GameView extends Group {
+public class GameScreen extends Group {
 
     public static final Color BACKGROUND = Color.GRAY;
     private ScrollPane scrollPane;
     private GridPane mapView;
     private double tileSize;
-    ArrayList<MazeFieldView> views = new ArrayList<>();
+    ArrayList<MazeFieldComponent> views = new ArrayList<>();
     private GameController gameController;
 
-    public GameView(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics) {
+    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics) {
 
-        PlayerView playerView = new PlayerView(player, graphics, tileSize);
-        gameController = new GameController(player, playerView, tileSize, scene, graphics);
+        PlayerComponent playerComponent = new PlayerComponent(player, graphics, tileSize);
+        gameController = new GameController(player, playerComponent, tileSize, scene, graphics);
 
         mapView = new GridPane();
         mapView.setAlignment(Pos.CENTER);
@@ -31,7 +37,7 @@ public class GameView extends Group {
         mapView.setBackground(new Background(new BackgroundFill(BACKGROUND, CornerRadii.EMPTY, Insets.EMPTY)));
         for (Field[] row : map) {
             for (Field field : row) {
-                MazeFieldView fieldView = new MazeFieldView(field, graphics);
+                MazeFieldComponent fieldView = new MazeFieldComponent(field, graphics);
                 fieldView.setSideLength(tileSize);
                 fieldView.updateView();
                 views.add(fieldView);
@@ -48,28 +54,29 @@ public class GameView extends Group {
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         getChildren().add(scrollPane);
-        getChildren().add(playerView);
+        getChildren().add(playerComponent);
 
         stage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            resize(scene.getHeight(), map.length, player, playerView);
+            resize(scene.getHeight(), map.length, player, playerComponent);
             stage.setWidth((tileSize + 1) * map[0].length);
         });
 
     }
 
-    private void resize(Double sceneHeight, int mazeRows, Player player, PlayerView playerView) {
+    private void resize(Double sceneHeight, int mazeRows, Player player, PlayerComponent playerComponent) {
         tileSize = Math.floor(sceneHeight / mazeRows);
-        for (MazeFieldView view : views) {
+        for (MazeFieldComponent view : views) {
             view.setSideLength(tileSize);
         }
-        playerView.setSideLength(tileSize);
+        playerComponent.setSideLength(tileSize);
         gameController.setTileSize(tileSize);
 
-        double origin = tileSize / 2 - playerView.getWidth() / 2;
+        //TODO: fix issues with incorrect tileSize slowly misplacing the player
+        double origin = tileSize / 2 - playerComponent.getWidth() / 2;
         double cellWidth = mapView.getCellBounds(0,0).getWidth();
         double cellHeight = mapView.getCellBounds(0,0).getHeight();
-        playerView.setX(origin + player.getX() * cellWidth);
-        playerView.setY(origin + player.getY() * cellHeight);
+        playerComponent.setX(origin + player.getX() * cellWidth);
+        playerComponent.setY(origin + player.getY() * cellHeight);
     }
 
 }

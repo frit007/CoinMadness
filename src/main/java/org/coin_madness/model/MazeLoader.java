@@ -1,6 +1,4 @@
-package org.coin_madness;
-
-import org.coin_madness.model.Field;
+package org.coin_madness.model;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;

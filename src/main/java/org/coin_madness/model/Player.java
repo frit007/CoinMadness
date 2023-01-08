@@ -1,4 +1,4 @@
-package org.coin_madness;
+package org.coin_madness.model;
 
 public class Player {
 

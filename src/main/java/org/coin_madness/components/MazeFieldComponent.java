@@ -1,16 +1,17 @@
-package org.coin_madness;
+package org.coin_madness.components;
 
 import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
+import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Field;
 
-public class MazeFieldView extends StackPane {
+public class MazeFieldComponent extends StackPane {
 
     private ImageLibrary graphics;
     private Field field;
     private Rectangle background;
 
-    public MazeFieldView(Field field, ImageLibrary graphics) {
+    public MazeFieldComponent(Field field, ImageLibrary graphics) {
         this.graphics = graphics;
         this.field = field;
         this.background = new Rectangle();
