@@ -18,22 +18,22 @@ public class MainScreen extends GridPane {
     private ConnectionManager connectionManager;
     private Action onEnterLobby;
 
-    public MainScreen(ConnectionManager connectionManager) {
+    public MainScreen(ConnectionManager connectionManager, String errorMessage) {
         this.connectionManager = connectionManager;
-        init();
+        init(errorMessage);
     }
     public void setOnEnterLobby(Action onEnterLobby) {
         this.onEnterLobby = onEnterLobby;
     }
 
-    public void init() {
+    public void init(String errorMessage) {
         //Title
         Text title = new Text("Coin Madness");
         title.setFill(Color.BLACK);
         title.setStyle("-fx-font: 24 arial;");
 
 
-        Text error = new Text();
+        Text error = new Text(errorMessage);
         error.setFill(Color.RED);
         error.setStyle("-fx-font: 12 arial;");
 
@@ -46,19 +46,20 @@ public class MainScreen extends GridPane {
         setAlignment(Pos.CENTER);
 
         TextField ip = new TextField();
+        ip.setText("127.0.0.1");
         ip.setPromptText("ip address");
         ip.setMinWidth(300);
         Button hostButton = new Button("Host");
         hostButton.setOnMouseClicked(mouse -> {
             connectionManager.host();
-            onEnterLobby.Action();
+            onEnterLobby.handle();
         });
 
         Button joinButton = new Button("Join");
         joinButton.setOnMouseClicked(mouse -> {
             try {
                 connectionManager.join(ip.getText());
-                onEnterLobby.Action();
+                onEnterLobby.handle();
             } catch (IOException e) {
                 e.printStackTrace();
                 error.setText("Unable to connect. Is the ip correct?");

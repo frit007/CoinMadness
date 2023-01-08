@@ -17,12 +17,22 @@ public class App extends Application {
     StackPane root;
     @Override
     public void start(Stage stage) {
-        ConnectionManager connectionManager = new ConnectionManager();
         root = new StackPane();
 
         var scene = new Scene(root, 640, 480);
 
-        MainScreen mainScreen = new MainScreen(connectionManager);
+        showStartScreen(null);
+
+        stage.setScene(scene);
+        stage.show();
+    }
+    ConnectionManager connectionManager;
+    private void showStartScreen(String errorMessage) {
+        if(connectionManager != null) {
+            connectionManager.stop();
+        }
+        connectionManager = new ConnectionManager();
+        MainScreen mainScreen = new MainScreen(connectionManager, errorMessage);
         mainScreen.setOnEnterLobby(() -> {
             LobbyScreen lobbyScreen = new LobbyScreen(connectionManager);
 
@@ -31,13 +41,13 @@ public class App extends Application {
             lobbyScreen.setOnGameStart(() -> {
                 System.out.println("Go to the game!");
             });
+            lobbyScreen.setReturnToMainScreen(error -> {
+                showStartScreen(error);
+            });
         });
 
 
-        root.getChildren().add(mainScreen);
-
-        stage.setScene(scene);
-        stage.show();
+        changeView(mainScreen);
     }
 
     private void changeView(Node view) {
