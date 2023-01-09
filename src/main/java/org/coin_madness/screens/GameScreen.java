@@ -55,6 +55,7 @@ public class GameScreen extends Group {
 
         getChildren().add(scrollPane);
         getChildren().add(playerComponent);
+        resize(scene.getHeight(), map.length, player, playerComponent);
 
         stage.heightProperty().addListener((obs, oldVal, newVal) -> {
             resize(scene.getHeight(), map.length, player, playerComponent);
