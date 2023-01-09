@@ -16,7 +16,10 @@ public class ScopedThreads {
         this.onError = onError;
     }
 
-    public void startThread(Runnable runnable) {
+    public synchronized void startThread(Runnable runnable) {
+        if(hasBeenCleared) {
+            return;
+        }
         Thread thread = new Thread(runnable);
         threads.add(thread);
         thread.start();
@@ -35,7 +38,7 @@ public class ScopedThreads {
         });
     }
 
-    public void cleanup() {
+    public synchronized void cleanup() {
         for (Thread thread: threads) {
             thread.interrupt();
         }
