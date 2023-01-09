@@ -66,10 +66,12 @@ public class App extends Application {
 
             changeView(lobbyScreen);
 
-            lobbyScreen.setOnGameStart((id) -> {
+            lobbyScreen.setOnGameStart(() -> {
                 // TODO - maybe, move to some kind of GameBuilder
-                Player player = new Player(id, Integer.parseInt(id.substring(6)), 0);
-                Group gameView = new GameScreen(stage, scene, player, map, graphics);
+                connectionManager.joinGameSpaces();
+                int id = Integer.parseInt(connectionManager.getClientId().substring(6));
+                Player player = new Player(id, id,0);
+                Group gameView = new GameScreen(stage, scene, player, map, graphics, connectionManager);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
             });

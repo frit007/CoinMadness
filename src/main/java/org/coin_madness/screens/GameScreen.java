@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import org.coin_madness.components.MazeFieldComponent;
 import org.coin_madness.components.PlayerComponent;
 import org.coin_madness.controller.GameController;
+import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Field;
 import org.coin_madness.model.Player;
@@ -26,10 +27,10 @@ public class GameScreen extends Group {
     ArrayList<MazeFieldComponent> views = new ArrayList<>();
     private GameController gameController;
 
-    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics) {
+    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
 
         PlayerComponent playerComponent = new PlayerComponent(player, graphics, tileSize);
-        gameController = new GameController(player, playerComponent, tileSize, scene, graphics);
+        gameController = new GameController(player, playerComponent, tileSize, scene, graphics, connectionManager, this);
 
         mapView = new GridPane();
         mapView.setAlignment(Pos.CENTER);

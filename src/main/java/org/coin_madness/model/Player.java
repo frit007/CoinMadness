@@ -2,18 +2,18 @@ package org.coin_madness.model;
 
 public class Player {
 
-    private String id;
+    private int id;
     private int x;
     private int y;
     private float movementSpeed = 3;
 
-    public Player(String id, int x, int y) {
+    public Player(int id, int x, int y) {
         this.id = id;
         this.x = x;
         this.y = y;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 

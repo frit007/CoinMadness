@@ -16,9 +16,12 @@ public class PlayerComponent extends Rectangle {
     private TranslateTransition translateTransition;
     private Timeline timeline;
     private int keyCount = 1;
+    private double tileSize;
+    private ImageLibrary graphics;
 
     public PlayerComponent(Player player, ImageLibrary graphics, double tileSize) {
         this.player = player;
+        this.graphics = graphics;
         setTileSize(tileSize);
         setFill(graphics.idleRight);
 
@@ -35,6 +38,7 @@ public class PlayerComponent extends Rectangle {
         setHeight(tileSize);
         setX(player.getX() * tileSize);
         setY(player.getY() * tileSize);
+        this.tileSize = tileSize;
     }
 
     public void walkAnim(double moveByX, double moveByY, ImagePattern[] playerAnim, Runnable callback) {
@@ -63,6 +67,20 @@ public class PlayerComponent extends Rectangle {
 
         timeline.playFromStart();
         translateTransition.playFromStart();
+    }
+
+    public void moveTo(int x, int y) {
+
+        // TODO use the proper animations
+        int xDiff = x - player.getX();
+        int yDiff = y - player.getY();
+        player.setX(x);
+        player.setY(y);
+
+        if (xDiff == 0 && yDiff == 0) return;
+
+        walkAnim(xDiff*tileSize, yDiff*tileSize, graphics.playerDownAnim, () -> {});
+
     }
 
 }

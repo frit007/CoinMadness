@@ -12,6 +12,7 @@ import java.util.Map;
 
 public class ConnectionManager {
     private Space lobby = null;
+    private Space positionsSpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
     private String clientId;
@@ -41,6 +42,10 @@ public class ConnectionManager {
         return lobby;
     }
 
+    public Space getPositionsSpace() {
+        return positionsSpace;
+    }
+
     public void host() {
         repository = new SpaceRepository();
 
@@ -52,6 +57,30 @@ public class ConnectionManager {
         System.out.println("Server Created ! ");
 
         startHostTimeoutThreads();
+    }
+
+    /**
+     * Create the spaces that are to be used in the game. Called by the host.
+     */
+    public void createGameSpaces() {
+        // Right now there is only one that we need to create
+        positionsSpace = new SequentialSpace();
+        repository.add("positions", positionsSpace);
+    }
+
+    /**
+     * Join the spaces that are to be used in the game. Called by the clients.
+     */
+    public void joinGameSpaces() {
+        // This means we are the host
+        if (remoteIp == null) return;
+        try {
+            // Right now we only join one space
+            positionsSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/positions?keep"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Could not join a remote game space");
+        }
     }
 
     private void startHostTimeoutThreads() {
@@ -152,7 +181,7 @@ public class ConnectionManager {
             while (true) {
                 synchronized (wrapper) {
                     wrapper.missedKeepAlives++;
-                    if(wrapper.missedKeepAlives > 5) {
+                    if(wrapper.missedKeepAlives > 1000) {
                         System.out.println("Client lost connection to the server");
                         if(onClientTimeout != null) {
                             onClientTimeout.handle(DisconnectReason.TIMEOUT);

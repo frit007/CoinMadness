@@ -84,6 +84,7 @@ public class LobbyServer {
 
             // if everybody is ready start the game
             if(everyBodyReady) {
+                connectionManager.createGameSpaces();
                 connectionManager.getLobby().put(LobbyMessage.GAME_STARTED);
             }
 

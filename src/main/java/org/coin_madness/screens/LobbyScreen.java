@@ -31,7 +31,7 @@ import java.util.function.Consumer;
 
 public class LobbyScreen extends GridPane {
 
-    private Consumer<String> onGameStart;
+    private Runnable onGameStart;
     private Action1<String> returnToMainScreen;
 
     private boolean isReady = false;
@@ -128,7 +128,7 @@ public class LobbyScreen extends GridPane {
         });
     }
 
-    public void setOnGameStart(Consumer<String> onGameStart) {
+    public void setOnGameStart(Runnable onGameStart) {
         this.onGameStart = onGameStart;
     }
     public void setReturnToMainScreen(Action1<String> returnToMainScreen) {
@@ -163,8 +163,8 @@ public class LobbyScreen extends GridPane {
     }
 
     private void waitForGameStart() {
-        lobbyClient.waitForGameStart((id) -> {
-            onGameStart.accept(id);
+        lobbyClient.waitForGameStart(() -> {
+            onGameStart.run();
         });
     }
 

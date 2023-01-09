@@ -48,11 +48,11 @@ public class LobbyClient {
         }
     }
 
-    public void waitForGameStart(Consumer<String> onGameStart) {
+    public void waitForGameStart(Runnable onGameStart) {
         lobbyThreads.startHandledThread(() -> {
             connectionManager.getLobby().query(new ActualField(LobbyMessage.GAME_STARTED));
             Platform.runLater(() -> {
-                onGameStart.accept(clientId);
+                onGameStart.run();
             });
         });
     }
