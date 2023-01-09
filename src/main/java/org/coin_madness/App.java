@@ -66,9 +66,9 @@ public class App extends Application {
 
             changeView(lobbyScreen);
 
-            lobbyScreen.setOnGameStart(() -> {
+            lobbyScreen.setOnGameStart((id) -> {
                 // TODO - maybe, move to some kind of GameBuilder
-                Player player = new Player(0, 0, 0);
+                Player player = new Player(id, Integer.parseInt(id.substring(6)), 0);
                 Group gameView = new GameScreen(stage, scene, player, map, graphics);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);

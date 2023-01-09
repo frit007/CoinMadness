@@ -26,10 +26,12 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
 
 public class LobbyScreen extends GridPane {
 
-    private Action onGameStart;
+    private Consumer<String> onGameStart;
     private Action1<String> returnToMainScreen;
 
     private boolean isReady = false;
@@ -126,7 +128,7 @@ public class LobbyScreen extends GridPane {
         });
     }
 
-    public void setOnGameStart(Action onGameStart) {
+    public void setOnGameStart(Consumer<String> onGameStart) {
         this.onGameStart = onGameStart;
     }
     public void setReturnToMainScreen(Action1<String> returnToMainScreen) {
@@ -161,8 +163,8 @@ public class LobbyScreen extends GridPane {
     }
 
     private void waitForGameStart() {
-        lobbyClient.waitForGameStart(() -> {
-            onGameStart.handle();
+        lobbyClient.waitForGameStart((id) -> {
+            onGameStart.accept(id);
         });
     }
 

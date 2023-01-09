@@ -69,15 +69,17 @@ public class GameScreen extends Group {
         for (MazeFieldComponent view : views) {
             view.setSideLength(tileSize);
         }
-        playerComponent.setSideLength(tileSize);
+        playerComponent.setTileSize(tileSize);
         gameController.setTileSize(tileSize);
 
-        //TODO: fix issues with incorrect tileSize slowly misplacing the player
-        double origin = tileSize / 2 - playerComponent.getWidth() / 2;
-        double cellWidth = mapView.getCellBounds(0,0).getWidth();
-        double cellHeight = mapView.getCellBounds(0,0).getHeight();
-        playerComponent.setX(origin + player.getX() * cellWidth);
-        playerComponent.setY(origin + player.getY() * cellHeight);
+        // TODO I just removed this because I'm not sure what the point is (I moved some of the functionality into playerComponent)
+        /*
+            double origin = tileSize / 2 - playerComponent.getWidth() / 2;
+            double cellWidth = mapView.getCellBounds(0,0).getWidth();
+            double cellHeight = mapView.getCellBounds(0,0).getHeight();
+            playerComponent.setX(origin + player.getX() * cellWidth);
+            playerComponent.setY(origin + player.getY() * cellHeight);
+        */
     }
 
 }

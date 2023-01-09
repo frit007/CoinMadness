@@ -19,17 +19,22 @@ public class PlayerComponent extends Rectangle {
 
     public PlayerComponent(Player player, ImageLibrary graphics, double tileSize) {
         this.player = player;
-        setSideLength(tileSize);
+        setTileSize(tileSize);
         setFill(graphics.idleRight);
+
+        setX(player.getX() * tileSize);
+        setY(player.getY() * tileSize);
 
         timeline = new Timeline();
         timeline.setCycleCount(Timeline.INDEFINITE);
         translateTransition = new TranslateTransition();
     }
 
-    public void setSideLength(double sideLength) {
-        setWidth(sideLength);
-        setHeight(sideLength);
+    public void setTileSize(double tileSize) {
+        setWidth(tileSize);
+        setHeight(tileSize);
+        setX(player.getX() * tileSize);
+        setY(player.getY() * tileSize);
     }
 
     public void walkAnim(double moveByX, double moveByY, ImagePattern[] playerAnim, Runnable callback) {
@@ -48,6 +53,7 @@ public class PlayerComponent extends Rectangle {
             timeline.stop();
             setFill(playerAnim[0]);
             keyCount = 1;
+            // TODO there might be a race condition here if the tile size is set at the same time
             setY(getY() + getTranslateY());
             setX(getX() + getTranslateX());
             setTranslateX(0);
