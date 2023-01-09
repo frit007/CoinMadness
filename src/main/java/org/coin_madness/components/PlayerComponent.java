@@ -32,7 +32,7 @@ public class PlayerComponent extends Rectangle {
         setHeight(sideLength);
     }
 
-    public void walkAnim(double moveByX, double moveByY, ImagePattern[] playerAnim, Runnable movement) {
+    public void walkAnim(double moveByX, double moveByY, ImagePattern[] playerAnim, Runnable callback) {
         timeline.getKeyFrames().clear();
 
         timeline.getKeyFrames().add(new KeyFrame(Duration.millis(WALK_ANIM_DURATION / player.getMovementSpeed()), actionEvent -> {
@@ -48,7 +48,11 @@ public class PlayerComponent extends Rectangle {
             timeline.stop();
             setFill(playerAnim[0]);
             keyCount = 1;
-            movement.run();
+            setY(getY() + getTranslateY());
+            setX(getX() + getTranslateX());
+            setTranslateX(0);
+            setTranslateY(0);
+            callback.run();
         });
 
         timeline.playFromStart();

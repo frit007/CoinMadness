@@ -14,44 +14,32 @@ public class GameController {
 
     public GameController(Player player, PlayerComponent playerComponent, double tileSize, Scene scene, ImageLibrary graphics) {
 
+        this.tileSize = tileSize;
+
         playerControl =  keyEvent -> {
+            scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
+            Runnable reAddEventFilter = () -> {
+                scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
+            };
             switch (keyEvent.getCode()) {
                 case UP:
-                    scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
                     player.setY(player.getY() - 1);
-                    playerComponent.walkAnim(0, -this.tileSize, graphics.playerUpAnim, () -> {
-                        playerComponent.setY(playerComponent.getY() + playerComponent.getTranslateY());
-                        playerComponent.setTranslateY(0);
-                        scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
-                    });
+                    playerComponent.walkAnim(0, -this.tileSize, graphics.playerUpAnim, reAddEventFilter);
                     break;
                 case DOWN:
-                    scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
                     player.setY(player.getY() + 1);
-                    playerComponent.walkAnim(0, this.tileSize, graphics.playerDownAnim, () -> {
-                        playerComponent.setY(playerComponent.getY() + playerComponent.getTranslateY());
-                        playerComponent.setTranslateY(0);
-                        scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
-                    });
+                    playerComponent.walkAnim(0, this.tileSize, graphics.playerDownAnim, reAddEventFilter);
                     break;
                 case LEFT:
-                    scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
                     player.setX(player.getX() - 1);
-                    playerComponent.walkAnim(-this.tileSize,0, graphics.playerLeftAnim, () -> {
-                        playerComponent.setX(playerComponent.getX() + playerComponent.getTranslateX());
-                        playerComponent.setTranslateX(0);
-                        scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
-                    });
+                    playerComponent.walkAnim(-this.tileSize,0, graphics.playerLeftAnim, reAddEventFilter);
                     break;
                 case RIGHT:
-                    scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
                     player.setX(player.getX() + 1);
-                    playerComponent.walkAnim(this.tileSize,0, graphics.playerRightAnim, () -> {
-                        playerComponent.setX(playerComponent.getX() + playerComponent.getTranslateX());
-                        playerComponent.setTranslateX(0);
-                        scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
-                    });
+                    playerComponent.walkAnim(this.tileSize,0, graphics.playerRightAnim, reAddEventFilter);
                     break;
+                default:
+                    scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
             }
         };
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
