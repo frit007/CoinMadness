@@ -14,6 +14,8 @@ public class GameController {
 
     public GameController(Player player, PlayerComponent playerComponent, double tileSize, Scene scene, ImageLibrary graphics) {
 
+        this.tileSize = tileSize;
+
         playerControl =  keyEvent -> {
             scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
             Runnable reAddEventFilter = () -> {
