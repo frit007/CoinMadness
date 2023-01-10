@@ -4,9 +4,11 @@ import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
+import javafx.scene.paint.ImagePattern;
 import org.coin_madness.components.PlayerComponent;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
+import org.coin_madness.model.Field;
 import org.coin_madness.model.Player;
 import org.coin_madness.screens.GameScreen;
 import org.jspace.ActualField;
@@ -43,34 +45,51 @@ public class GameController {
         networkedPlayers = new HashMap<>();
 
         playerControl =  keyEvent -> {
-            scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
+
             Runnable reAddEventFilter = () -> {
                 scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
             };
             boolean moved = true;
+
+            int deltaX = 0;
+            int deltaY = 0;
+            ImagePattern[] animation = new ImagePattern[0];
+
             switch (keyEvent.getCode()) {
                 case UP:
-                    player.setY(player.getY() - 1);
-                    playerComponent.walkAnim(0, -this.tileSize, graphics.playerUpAnim, reAddEventFilter);
+                    deltaY = - 1;
+                    animation = graphics.playerUpAnim;
                     break;
                 case DOWN:
-                    player.setY(player.getY() + 1);
-                    playerComponent.walkAnim(0, this.tileSize, graphics.playerDownAnim, reAddEventFilter);
+                    deltaY = 1;
+                    animation = graphics.playerDownAnim;
                     break;
                 case LEFT:
-                    player.setX(player.getX() - 1);
-                    playerComponent.walkAnim(-this.tileSize,0, graphics.playerLeftAnim, reAddEventFilter);
+                    deltaX = -1;
+                    animation = graphics.playerLeftAnim;
                     break;
                 case RIGHT:
-                    player.setX(player.getX() + 1);
-                    playerComponent.walkAnim(this.tileSize,0, graphics.playerRightAnim, reAddEventFilter);
+                    deltaX = 1;
+                    animation = graphics.playerRightAnim;
                     break;
                 default:
-                    scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
                     moved = false;
             }
+            if (moved){
+                moved = canMoveto(player, deltaX, deltaY);
+            }
+            if (moved){
+                player.setX(player.getX() + deltaX);
+                player.setY(player.getY() + deltaY);
+                scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
+                playerComponent.walkAnim(deltaX*this.tileSize , deltaY*this.tileSize, animation , reAddEventFilter);
+            }
+
+
+
+
             try {
-                if (moved) {
+                if (moved) { // remove last pos --> replace with new pos
                     connectionManager.getPositionsSpace().getp(new ActualField(player.getId()), new FormalField(Integer.class), new FormalField(Integer.class));
                     connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
                 }
@@ -80,7 +99,9 @@ public class GameController {
         };
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
 
-        // TODO There is probably a better way to do a game loop like this
+
+
+        // TODO There is probably a better way to do a game loop like this      
         new AnimationTimer() {
             public void handle(long currentNanoTime) {
 
@@ -115,6 +136,19 @@ public class GameController {
             }
         }.start();
 
+    }
+
+    //Function for wall collision
+    public boolean canMoveto(Player ply, int deltaX, int deltaY ){
+        Field[][] fields = gameScreen.getMap();
+        int newPositionX  = ply.getX() + deltaX;
+        int newPositionY  = ply.getY() + deltaY;
+        //Checking for walls
+        if(fields[newPositionY][newPositionX].isWall()){
+            return false;
+        }else {
+            return true;
+        }
     }
 
     public void setTileSize(double tileSize) {

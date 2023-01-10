@@ -27,11 +27,13 @@ public class GameScreen extends Group {
     ArrayList<MazeFieldComponent> views = new ArrayList<>();
     private GameController gameController;
 
+    private Field[][] map;
     public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
 
         PlayerComponent playerComponent = new PlayerComponent(player, graphics, tileSize);
-        gameController = new GameController(player, playerComponent, tileSize, scene, graphics, connectionManager, this);
+        this.map = map;
 
+        gameController = new GameController(player, playerComponent, tileSize, scene, graphics, connectionManager, this);
         mapView = new GridPane();
         mapView.setAlignment(Pos.CENTER);
         mapView.setSnapToPixel(false);
@@ -64,6 +66,10 @@ public class GameScreen extends Group {
         });
 
     }
+    public Field[][] getMap(){
+        return this.map;
+    }
+
 
     private void resize(Double sceneHeight, int mazeRows, Player player, PlayerComponent playerComponent) {
         tileSize = Math.floor(sceneHeight / mazeRows);

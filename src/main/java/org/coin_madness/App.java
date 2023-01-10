@@ -55,6 +55,8 @@ public class App extends Application {
         stage.show();
     }
     ConnectionManager connectionManager;
+    //Dispay of the "main screen"
+    //Changing scenes
     private void showStartScreen(String errorMessage) {
         if(connectionManager != null) {
             connectionManager.stop();
