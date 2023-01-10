@@ -1,17 +1,28 @@
 package org.coin_madness.screens;
 
 import javafx.geometry.HPos;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.effect.DropShadow;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.layout.StackPane;
+import javafx.scene.layout.VBox;
 import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.Action;
 
 import java.io.IOException;
+
+import static java.lang.Long.MAX_VALUE;
 
 public class MainScreen extends GridPane {
 
@@ -28,34 +39,41 @@ public class MainScreen extends GridPane {
 
     public void init(String errorMessage) {
         //Title
-        Text title = new Text("Coin Madness");
-        title.setFill(Color.BLACK);
-        title.setStyle("-fx-font: 24 arial;");
+        Label title = new Label("Coin Madness");
+        title.setTextFill(Color.BLACK);
+        title.setStyle("-fx-font: 40px arial;");
+        title.setPadding(new Insets(20,60,20,60));
 
 
         Text error = new Text(errorMessage);
         error.setFill(Color.RED);
-        error.setStyle("-fx-font: 12 arial;");
+        error.setStyle("-fx-font: 12px arial;");
 
 
         //Setting the vertical and horizontal gaps between the columns
-        setVgap(5);
-        setHgap(5);
+        setVgap(6);
+        setHgap(6);
 
         //Setting the Grid alignment
         setAlignment(Pos.CENTER);
 
+        Label ipLabel = new Label("Remote ip:");
+        ipLabel.setFont(Font.font("Verdana", FontWeight.BOLD, 15));
+
         TextField ip = new TextField();
         ip.setText("127.0.0.1");
         ip.setPromptText("ip address");
+        ip.setFont(Font.font("Verdana", FontWeight.BOLD, 20));
         ip.setMinWidth(300);
-        Button hostButton = new Button("Host");
+
+        Button hostButton = createButton("Host");
+
         hostButton.setOnMouseClicked(mouse -> {
             connectionManager.host();
             onEnterLobby.handle();
         });
 
-        Button joinButton = new Button("Join");
+        Button joinButton = createButton("Join");
         joinButton.setOnMouseClicked(mouse -> {
             try {
                 connectionManager.join(ip.getText());
@@ -66,22 +84,29 @@ public class MainScreen extends GridPane {
             }
         });
 
-        HBox buttons = new HBox();
-        buttons.getChildren().addAll(joinButton, hostButton);
-        buttons.setAlignment(Pos.CENTER_RIGHT);
-        buttons.setSpacing(4);
 
         add(title, 0, 0, 5, 1);
         GridPane.setHalignment(title, HPos.CENTER);
-
-        add(ip, 0, 1, 5,1);
-        add(buttons, 4,2, 1, 1);
-        GridPane.setHalignment(buttons, HPos.RIGHT);
-
-        add(error, 1, 3, 3, 1);
+        add(error, 0, 1, 5, 1);
         GridPane.setHalignment(error, HPos.CENTER);
+        joinButton.prefWidthProperty().bind(ip.widthProperty());
+        hostButton.prefWidthProperty().bind(ip.widthProperty());
+
+        add(ipLabel,3,3);
+        add(ip, 3,4);
+        add(joinButton,3,5);
+        add(hostButton,1,5);
+
     }
 
+    private Button createButton(String text) {
+        Button button = new Button(text);
+        button.setPadding(new Insets(15,15,15,15));
+        button.setStyle("-fx-font-size: 20px;-fx-background-color: #4447fe; ");
+        button.setTextFill(Color.WHITE);
+
+        return button;
+    }
 
 
 

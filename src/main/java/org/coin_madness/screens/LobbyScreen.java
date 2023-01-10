@@ -111,10 +111,10 @@ public class LobbyScreen extends GridPane {
         GridPane.setHalignment(buttons, HPos.RIGHT);
 
         LobbyCommon lobbyCommon = new LobbyCommon(connectionManager);
-        lobbyServer = new LobbyServer(connectionManager, lobbyThreads, lobbyCommon);
         lobbyClient = new LobbyClient(connectionManager, lobbyThreads, lobbyCommon);
 
         if(connectionManager.isHost()) {
+            lobbyServer = new LobbyServer(connectionManager, lobbyThreads, lobbyCommon);
             lobbyServer.setup();
         }
         lobbyClient.join();
@@ -169,7 +169,6 @@ public class LobbyScreen extends GridPane {
 
     private void lobbyUpdateListener() {
         lobbyClient.waitForLobbyUpdate(lobbyUpdate -> {
-            System.out.println("Lobby updated!");
             status.setText(lobbyUpdate.readyPlayers + "/" + lobbyUpdate.connectedPlayers);
 
             if(connectionManager.isHost()) {
