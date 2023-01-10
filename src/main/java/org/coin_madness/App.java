@@ -67,7 +67,7 @@ public class App extends Application {
             lobbyScreen.setOnGameStart(() -> {
                 // TODO - maybe, move to some kind of GameBuilder
                 connectionManager.joinGameSpaces();
-                int id = Integer.parseInt(connectionManager.getClientId().substring(6));
+                int id = connectionManager.getClientId();
                 Player player = new Player(id, id,3);
                 BorderPane gameView = new GameScreen(stage, scene, player, map, graphics, connectionManager);
                 gameView.setFocusTraversable(true);
