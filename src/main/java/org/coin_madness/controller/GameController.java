@@ -76,7 +76,9 @@ public class GameController {
                     moved = false;
             }
             if (moved){
-                moved = canMoveto(player, deltaX, deltaY);
+                    // Constraints the movement further, checks of the moving to tile is a wall
+                            // arguments{ Field[][]         ,int    ,int   }
+                moved = player.canMoveto(gameScreen.getMap(), deltaX, deltaY);
             }
             if (moved){
                 player.setX(player.getX() + deltaX);
@@ -138,18 +140,6 @@ public class GameController {
 
     }
 
-    //Function for wall collision
-    public boolean canMoveto(Player ply, int deltaX, int deltaY ){
-        Field[][] fields = gameScreen.getMap();
-        int newPositionX  = ply.getX() + deltaX;
-        int newPositionY  = ply.getY() + deltaY;
-        //Checking for walls
-        if(fields[newPositionY][newPositionX].isWall()){
-            return false;
-        }else {
-            return true;
-        }
-    }
 
     public void setTileSize(double tileSize) {
         this.tileSize = tileSize;
