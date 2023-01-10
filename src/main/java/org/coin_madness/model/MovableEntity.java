@@ -2,9 +2,9 @@ package org.coin_madness.model;
 
 abstract class MovableEntity extends Entity {
 
-    String id;
+    int id;
 
-    public MovableEntity(String id, int x, int y) {
+    public MovableEntity(int id, int x, int y) {
         super(x, y);
         this.id = id;
     }

@@ -12,10 +12,12 @@ public class Player extends MovableEntity {
     }
 
     public void move(EntityMovement entityMovement, Field[][] map) {
+        if(entityMovement.getNewX() == x && entityMovement.getNewY() == y) {
+            return;
+        }
         if(this.entityMovement == null || this.entityMovement.getFinishMovementAt() < TimeHelper.getNowInMillis()) {
             this.entityMovement = entityMovement;
         }
-
         map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
         map[entityMovement.newX][entityMovement.newY].addEntity(this);
         x = entityMovement.newX;
@@ -56,15 +58,9 @@ public class Player extends MovableEntity {
 
 
         // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}
-    public boolean canMoveto(Field[][] fields, int deltaX, int deltaY ){
-        int newPositionX  = this.getX() + deltaX;
-        int newPositionY  = this.getY() + deltaY;
+    public boolean canMoveto(Field[][] fields, EntityMovement movement){
         //Checking for walls
-        if(fields[newPositionY][newPositionX].isWall()){
-            return false;
-        }else {
-            return true;
-        }
+        return !fields[movement.getNewX()][movement.getNewY()].isWall();
     }
 
 }

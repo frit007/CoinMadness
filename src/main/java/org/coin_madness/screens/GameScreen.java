@@ -35,7 +35,7 @@ public class GameScreen extends BorderPane {
     public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
 
         this.map = map;
-        new GameController(player, scene, map, connectionManager, this);
+        new GameController(player, scene, map, connectionManager);
         Group mazeView = new Group();
 
         HBox topBar = new HBox();
@@ -46,12 +46,11 @@ public class GameScreen extends BorderPane {
         mapView.setSnapToPixel(false);
         mapView.setBackground(new Background(new BackgroundFill(BACKGROUND, CornerRadii.EMPTY, Insets.EMPTY)));
 
-        String[] playerIds = {"0"};
         HashMap<Class, Drawer> drawerMap = new HashMap<>();
         drawerMap.put(Coin.class, new CoinDrawer(graphics));
         drawerMap.put(Chest.class, new ChestDrawer(graphics));
         drawerMap.put(Traphole.class, new TrapholeDrawer(graphics));
-        drawerMap.put(Player.class, new PlayerDrawer(playerIds, graphics, mazeView));
+        drawerMap.put(Player.class, new PlayerDrawer(graphics, mazeView));
 
         for (Field[] row : map) {
             for(Field field : row) {

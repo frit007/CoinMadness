@@ -2,7 +2,7 @@ package org.coin_madness.model;
 
 public class Enemy extends MovableEntity {
 
-    public Enemy(String id, int x, int y) {
+    public Enemy(int id, int x, int y) {
         super(id, x, y);
     }
 

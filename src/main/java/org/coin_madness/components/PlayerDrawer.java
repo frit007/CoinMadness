@@ -18,21 +18,23 @@ import org.coin_madness.model.Player;
 import java.util.HashMap;
 
 public class PlayerDrawer implements Drawer<Player> {
-    private String[] playerIds;
     private ImageLibrary graphics;
-    private HashMap<String, AnimationState> playerAnimations = new HashMap<>();
+    private HashMap<Integer, AnimationState> playerAnimations = new HashMap<>();
     Group container;
-    public PlayerDrawer(String[] playerIds, ImageLibrary graphics, Group container) {
+    public PlayerDrawer(ImageLibrary graphics, Group container) {
         this.graphics = graphics;
         this.container = container;
+    }
 
-        for (String id : playerIds) {
+    public AnimationState getAnimation(int id) {
+        if(!playerAnimations.containsKey(id)) {
             Timeline timeline = new Timeline();
-            TranslateTransition translateTransition = new TranslateTransition();
             timeline.setCycleCount(Animation.INDEFINITE);
-            AnimationState animationState = new AnimationState(timeline, translateTransition);
-            playerAnimations.put(id, animationState);
+            TranslateTransition translateTransition = new TranslateTransition();
+            ImageView imageView = new ImageView();
+            playerAnimations.put(id, new AnimationState(timeline, translateTransition, imageView));
         }
+        return playerAnimations.get(id);
     }
 
     @Override
@@ -43,7 +45,7 @@ public class PlayerDrawer implements Drawer<Player> {
             return;
         }
 
-        AnimationState animationState = playerAnimations.get(player.getId());
+        AnimationState animationState = getAnimation(player.getId());
 
         if(animationState.currentMovement != movement) {
             animationState.playAnim(findAnimation(movement), movement, view);
@@ -70,16 +72,15 @@ public class PlayerDrawer implements Drawer<Player> {
         private ImageView imageView;
         private static final int FRAMES = 4;
 
-        public AnimationState(Timeline timeline, TranslateTransition translateTransition) {
+        public AnimationState(Timeline timeline, TranslateTransition translateTransition, ImageView imageView) {
+            this.imageView = imageView;
             this.timeline = timeline;
             this.translateTransition = translateTransition;
+            imageView.setVisible(false);
+            container.getChildren().add(imageView);
         }
 
         public void playAnim(Image[] playerAnim, EntityMovement movement, ImageView view) {
-            if(imageView == null) {
-                imageView = new ImageView();
-                container.getChildren().add(imageView);
-            }
             timeline.getKeyFrames().clear();
             timeline.getKeyFrames().add(new KeyFrame(Duration.millis(movement.getDuration() / FRAMES), actionEvent -> {
                 imageView.setImage(playerAnim[keyCount]);

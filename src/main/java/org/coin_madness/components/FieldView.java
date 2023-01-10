@@ -52,6 +52,7 @@ public class FieldView extends StackPane {
                 } else {
                     drawerMap.get(entity.getClass()).draw(entity, movableEntityView);
                     hasMoveableEntity = true;
+                    System.out.println(field.getEntities().size());
                 }
             }
         }

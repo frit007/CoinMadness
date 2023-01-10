@@ -68,7 +68,7 @@ public class App extends Application {
                 // TODO - maybe, move to some kind of GameBuilder
                 connectionManager.joinGameSpaces();
                 int id = Integer.parseInt(connectionManager.getClientId().substring(6));
-                Player player = new Player(id, id,0);
+                Player player = new Player(id, id,3);
                 BorderPane gameView = new GameScreen(stage, scene, player, map, graphics, connectionManager);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
