@@ -17,11 +17,11 @@ public class Player extends MovableEntity {
         }
         if(this.entityMovement == null || this.entityMovement.getFinishMovementAt() < TimeHelper.getNowInMillis()) {
             this.entityMovement = entityMovement;
+            map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
+            map[entityMovement.newX][entityMovement.newY].addEntity(this);
+            x = entityMovement.newX;
+            y = entityMovement.newY;
         }
-        map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
-        map[entityMovement.newX][entityMovement.newY].addEntity(this);
-        x = entityMovement.newX;
-        y = entityMovement.newY;
     }
 
     public EntityMovement getEntityMovement() {

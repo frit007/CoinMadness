@@ -22,9 +22,9 @@ public class LobbyServer {
         this.lobbyCommon = lobbyCommon;
     }
 
-    private String createClientId() {
+    private int createClientId() {
         nextClientId++;
-        return "client" + nextClientId;
+        return nextClientId;
     }
 
     public void setup() {
@@ -40,7 +40,7 @@ public class LobbyServer {
         lobbyThreads.startHandledThread(() -> {
             while(true) {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
-                String clientId = createClientId();
+                int clientId = createClientId();
 
                 connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId);
                 connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId);
@@ -63,13 +63,13 @@ public class LobbyServer {
         try {
             boolean everyBodyReady = true;
             connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
-            List<String> clientIds = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(String.class))
+            List<Integer> clientIds = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class))
                     .stream()
-                    .map(x -> (String) x[1])
+                    .map(x -> (Integer) x[1])
                     .collect(Collectors.toList());
 
             // check if everybody is ready
-            for (String clientId: clientIds) {
+            for (Integer clientId: clientIds) {
                 if(connectionManager.getLobby().queryp(new ActualField(LobbyMessage.READY), new ActualField(clientId)) == null) {
                     everyBodyReady = false;
                 }
@@ -77,7 +77,7 @@ public class LobbyServer {
 
             // if everybody is ready mark them as no longer ready.
             if(everyBodyReady) {
-                for (String clientId: clientIds) {
+                for (Integer clientId: clientIds) {
                     connectionManager.getLobby().get(new ActualField(LobbyMessage.READY), new ActualField(clientId));
                 }
             }

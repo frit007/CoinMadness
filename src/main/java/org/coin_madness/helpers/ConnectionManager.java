@@ -15,15 +15,15 @@ public class ConnectionManager {
     private Space positionsSpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
-    private String clientId;
+    private int clientId;
     // Used by the server to be notified which client have disconnected
-    private Action2<String, DisconnectReason> onClientDisconnect;
+    private Action2<Integer, DisconnectReason> onClientDisconnect;
     // used by the client to be notified when it lost connection to the server
     private Action1<DisconnectReason> onClientTimeout;
 
     ScopedThreads connectionThreads = new ScopedThreads(() -> {});
 
-    public void setOnClientDisconnect(Action2<String, DisconnectReason> onClientDisconnect) {
+    public void setOnClientDisconnect(Action2<Integer, DisconnectReason> onClientDisconnect) {
         this.onClientDisconnect = onClientDisconnect;
     }
     public void setOnClientTimeout(Action1<DisconnectReason> onClientTimeout) {
@@ -34,7 +34,7 @@ public class ConnectionManager {
         return repository != null;
     }
 
-    public String getClientId() {
+    public int getClientId() {
         return clientId;
     }
 
@@ -87,12 +87,12 @@ public class ConnectionManager {
         // listen and send keep alive messages to clients
         connectionThreads.startHandledThread(() -> {
             // keep a history about for how long a client has failed to send keep alives
-            Map<String, Integer> timeoutHistory = new HashMap<>();
+            Map<Integer, Integer> timeoutHistory = new HashMap<>();
             while(true) {
                 // get all connected clients and increment their timeout counter
-                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(String.class));
+                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class));
                 for (Object[] connectedClient: connectedClients) {
-                    String connectedClientId = connectedClient[1].toString();
+                    Integer connectedClientId = (Integer) connectedClient[1];
                     if(timeoutHistory.containsKey(connectedClientId)) {
                         timeoutHistory.put(connectedClientId, timeoutHistory.get(connectedClientId) + 1);
                     } else {
@@ -101,9 +101,9 @@ public class ConnectionManager {
                 }
 
                 // Remove any client that has sent a keep alive from the timeout list
-                List<Object[]> keepAlives = lobby.getAll(new ActualField(GlobalMessage.CLIENT_TO_SERVER_KEEP_ALIVE), new FormalField(String.class));
+                List<Object[]> keepAlives = lobby.getAll(new ActualField(GlobalMessage.CLIENT_TO_SERVER_KEEP_ALIVE), new FormalField(Integer.class));
                 for (Object[] keepAlive: keepAlives) {
-                    String keepAliveClientId = keepAlive[1].toString();
+                    Integer keepAliveClientId = (Integer) keepAlive[1];
                     timeoutHistory.remove(keepAliveClientId);
                 }
 
@@ -121,9 +121,9 @@ public class ConnectionManager {
         // Send keep alives to clients, so they know they are still connected
         connectionThreads.startHandledThread(() -> {
             while (true) {
-                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(String.class));
+                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class));
                 for (Object[] connectedClient: connectedClients) {
-                    String connectedClientId = connectedClient[1].toString();
+                    Integer connectedClientId = (Integer) connectedClient[1];
                     lobby.put(GlobalMessage.SERVER_TO_CLIENT_KEEP_ALIVE, connectedClientId);
                 }
                 // inform the client that they are still connected to the server
@@ -134,13 +134,13 @@ public class ConnectionManager {
         // listen for voluntary disconnects
         connectionThreads.startHandledThread(() -> {
             while (true) {
-                String disconnectedClientId = lobby.get(new ActualField(GlobalMessage.DISCONNECT), new FormalField(String.class))[1].toString();
+                Integer disconnectedClientId = (Integer) lobby.get(new ActualField(GlobalMessage.DISCONNECT), new FormalField(Integer.class))[1];
                 disconnectClient(disconnectedClientId, DisconnectReason.DISCONNECT);
             }
         });
     }
 
-    private void disconnectClient(String disconnectedClient, DisconnectReason reason) {
+    private void disconnectClient(Integer disconnectedClient, DisconnectReason reason) {
         try {
             // remove the client from the list of clients
             lobby.getp(new ActualField(GlobalMessage.CLIENTS), new ActualField(disconnectedClient));
@@ -157,7 +157,7 @@ public class ConnectionManager {
         lobby = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + ip + ":9001/lobby?keep"));
     }
 
-    public void startClientTimeoutThread(String clientId) {
+    public void startClientTimeoutThread(Integer clientId) {
         this.clientId = clientId;
         // inform the server that we have not disconnected
         connectionThreads.startHandledThread(() -> {
