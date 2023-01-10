@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import org.coin_madness.components.MazeFieldComponent;
 import org.coin_madness.components.PlayerComponent;
 import org.coin_madness.controller.GameController;
+import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Field;
 import org.coin_madness.model.Player;
@@ -26,11 +27,13 @@ public class GameScreen extends Group {
     ArrayList<MazeFieldComponent> views = new ArrayList<>();
     private GameController gameController;
 
-    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics) {
+    private Field[][] map;
+    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
 
         PlayerComponent playerComponent = new PlayerComponent(player, graphics, tileSize);
-        gameController = new GameController(player, playerComponent, tileSize, scene, graphics);
+        this.map = map;
 
+        gameController = new GameController(player, playerComponent, tileSize, scene, graphics, connectionManager, this);
         mapView = new GridPane();
         mapView.setAlignment(Pos.CENTER);
         mapView.setSnapToPixel(false);
@@ -63,21 +66,27 @@ public class GameScreen extends Group {
         });
 
     }
+    public Field[][] getMap(){
+        return this.map;
+    }
+
 
     private void resize(Double sceneHeight, int mazeRows, Player player, PlayerComponent playerComponent) {
         tileSize = Math.floor(sceneHeight / mazeRows);
         for (MazeFieldComponent view : views) {
             view.setSideLength(tileSize);
         }
-        playerComponent.setSideLength(tileSize);
+        playerComponent.setTileSize(tileSize);
         gameController.setTileSize(tileSize);
 
-        //TODO: fix issues with incorrect tileSize slowly misplacing the player
-        double origin = tileSize / 2 - playerComponent.getWidth() / 2;
-        double cellWidth = mapView.getCellBounds(0,0).getWidth();
-        double cellHeight = mapView.getCellBounds(0,0).getHeight();
-        playerComponent.setX(origin + player.getX() * cellWidth);
-        playerComponent.setY(origin + player.getY() * cellHeight);
+        // TODO I just removed this because I'm not sure what the point is (I moved some of the functionality into playerComponent)
+        /*
+            double origin = tileSize / 2 - playerComponent.getWidth() / 2;
+            double cellWidth = mapView.getCellBounds(0,0).getWidth();
+            double cellHeight = mapView.getCellBounds(0,0).getHeight();
+            playerComponent.setX(origin + player.getX() * cellWidth);
+            playerComponent.setY(origin + player.getY() * cellHeight);
+        */
     }
 
 }

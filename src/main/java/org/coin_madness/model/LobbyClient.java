@@ -9,6 +9,9 @@ import org.coin_madness.messages.LobbyMessage;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
+import java.util.concurrent.Callable;
+import java.util.function.Consumer;
+
 public class LobbyClient {
     private ConnectionManager connectionManager;
     private String clientId;
@@ -48,7 +51,9 @@ public class LobbyClient {
     public void waitForGameStart(Runnable onGameStart) {
         lobbyThreads.startHandledThread(() -> {
             connectionManager.getLobby().query(new ActualField(LobbyMessage.GAME_STARTED));
-            Platform.runLater(onGameStart);
+            Platform.runLater(() -> {
+                onGameStart.run();
+            });
         });
     }
 

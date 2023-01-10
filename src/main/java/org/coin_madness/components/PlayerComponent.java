@@ -16,20 +16,29 @@ public class PlayerComponent extends Rectangle {
     private TranslateTransition translateTransition;
     private Timeline timeline;
     private int keyCount = 1;
+    private double tileSize;
+    private ImageLibrary graphics;
 
     public PlayerComponent(Player player, ImageLibrary graphics, double tileSize) {
         this.player = player;
-        setSideLength(tileSize);
+        this.graphics = graphics;
+        setTileSize(tileSize);
         setFill(graphics.idleRight);
+
+        setX(player.getX() * tileSize);
+        setY(player.getY() * tileSize);
 
         timeline = new Timeline();
         timeline.setCycleCount(Timeline.INDEFINITE);
         translateTransition = new TranslateTransition();
     }
 
-    public void setSideLength(double sideLength) {
-        setWidth(sideLength);
-        setHeight(sideLength);
+    public void setTileSize(double tileSize) {
+        setWidth(tileSize);
+        setHeight(tileSize);
+        setX(player.getX() * tileSize);
+        setY(player.getY() * tileSize);
+        this.tileSize = tileSize;
     }
 
     public void walkAnim(double moveByX, double moveByY, ImagePattern[] playerAnim, Runnable callback) {
@@ -48,6 +57,7 @@ public class PlayerComponent extends Rectangle {
             timeline.stop();
             setFill(playerAnim[0]);
             keyCount = 1;
+            // TODO there might be a race condition here if the tile size is set at the same time
             setY(getY() + getTranslateY());
             setX(getX() + getTranslateX());
             setTranslateX(0);
@@ -57,6 +67,20 @@ public class PlayerComponent extends Rectangle {
 
         timeline.playFromStart();
         translateTransition.playFromStart();
+    }
+
+    public void moveTo(int x, int y) {
+
+        // TODO use the proper animations
+        int xDiff = x - player.getX();
+        int yDiff = y - player.getY();
+        player.setX(x);
+        player.setY(y);
+
+        if (xDiff == 0 && yDiff == 0) return;
+
+        walkAnim(xDiff*tileSize, yDiff*tileSize, graphics.playerDownAnim, () -> {});
+
     }
 
 }
