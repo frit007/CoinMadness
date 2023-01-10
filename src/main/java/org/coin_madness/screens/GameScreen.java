@@ -11,6 +11,7 @@ import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.coin_madness.components.*;
 import org.coin_madness.controller.GameController;
+import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.*;
 import javafx.scene.text.*;
@@ -29,10 +30,12 @@ public class GameScreen extends BorderPane {
     private List<Coin> coins = new ArrayList<>();
     private List<Chest> chests = new ArrayList<>();
     private List<Traphole> trapholes = new ArrayList<>();
+    private Field[][] map;
+    
+    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
 
-    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics) {
-
-        new GameController(player, scene, map);
+        this.map = map;
+        new GameController(player, scene, map, connectionManager, this);
         Group mazeView = new Group();
 
         HBox topBar = new HBox();
@@ -87,6 +90,10 @@ public class GameScreen extends BorderPane {
         });
 
     }
+    public Field[][] getMap(){
+        return this.map;
+    }
+
 
     private void resizeStage(Double sceneHeight, int mazeRows) {
         tileSize = Math.floor(sceneHeight / mazeRows);
@@ -94,5 +101,5 @@ public class GameScreen extends BorderPane {
             view.setSideLength(tileSize);
         }
     }
-
+    
 }

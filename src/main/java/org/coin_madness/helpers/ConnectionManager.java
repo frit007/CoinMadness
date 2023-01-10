@@ -12,8 +12,10 @@ import java.util.Map;
 
 public class ConnectionManager {
     private Space lobby = null;
+    private Space positionsSpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
+    private String clientId;
     // Used by the server to be notified which client have disconnected
     private Action2<String, DisconnectReason> onClientDisconnect;
     // used by the client to be notified when it lost connection to the server
@@ -32,8 +34,16 @@ public class ConnectionManager {
         return repository != null;
     }
 
+    public String getClientId() {
+        return clientId;
+    }
+
     public Space getLobby() {
         return lobby;
+    }
+
+    public Space getPositionsSpace() {
+        return positionsSpace;
     }
 
     public void host() {
@@ -46,11 +56,40 @@ public class ConnectionManager {
         repository.addGate("tcp://0.0.0.0:9001/?keep");
         System.out.println("Server Created ! ");
 
+        startHostTimeoutThreads();
+    }
+
+    /**
+     * Create the spaces that are to be used in the game. Called by the host.
+     */
+    public void createGameSpaces() {
+        // Right now there is only one that we need to create
+        positionsSpace = new SequentialSpace();
+        repository.add("positions", positionsSpace);
+    }
+
+    /**
+     * Join the spaces that are to be used in the game. Called by the clients.
+     */
+    public void joinGameSpaces() {
+        // This means we are the host
+        if (remoteIp == null) return;
+        try {
+            // Right now we only join one space
+            positionsSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/positions?keep"));
+        } catch (IOException e) {
+            e.printStackTrace();
+            throw new RuntimeException("Could not join a remote game space");
+        }
+    }
+
+    private void startHostTimeoutThreads() {
         // listen and send keep alive messages to clients
         connectionThreads.startHandledThread(() -> {
             // keep a history about for how long a client has failed to send keep alives
             Map<String, Integer> timeoutHistory = new HashMap<>();
             while(true) {
+                // get all connected clients and increment their timeout counter
                 List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(String.class));
                 for (Object[] connectedClient: connectedClients) {
                     String connectedClientId = connectedClient[1].toString();
@@ -59,17 +98,16 @@ public class ConnectionManager {
                     } else {
                         timeoutHistory.put(connectedClientId, 1);
                     }
-
-                    // inform the client that they are still connected to the server
-                    lobby.put(GlobalMessage.SERVER_TO_CLIENT_KEEP_ALIVE, connectedClientId);
                 }
 
+                // Remove any client that has sent a keep alive from the timeout list
                 List<Object[]> keepAlives = lobby.getAll(new ActualField(GlobalMessage.CLIENT_TO_SERVER_KEEP_ALIVE), new FormalField(String.class));
                 for (Object[] keepAlive: keepAlives) {
                     String keepAliveClientId = keepAlive[1].toString();
                     timeoutHistory.remove(keepAliveClientId);
                 }
 
+                // Check if any client has timed out. Disconnect any timed out client
                 for (var timeout: timeoutHistory.entrySet()) {
                     if(timeout.getValue() > 5) {
                         disconnectClient(timeout.getKey(), DisconnectReason.TIMEOUT);
@@ -79,6 +117,21 @@ public class ConnectionManager {
                 Thread.sleep(1000);
             }
         });
+
+        // Send keep alives to clients, so they know they are still connected
+        connectionThreads.startHandledThread(() -> {
+            while (true) {
+                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(String.class));
+                for (Object[] connectedClient: connectedClients) {
+                    String connectedClientId = connectedClient[1].toString();
+                    lobby.put(GlobalMessage.SERVER_TO_CLIENT_KEEP_ALIVE, connectedClientId);
+                }
+                // inform the client that they are still connected to the server
+                Thread.sleep(1000);
+            }
+        });
+
+        // listen for voluntary disconnects
         connectionThreads.startHandledThread(() -> {
             while (true) {
                 String disconnectedClientId = lobby.get(new ActualField(GlobalMessage.DISCONNECT), new FormalField(String.class))[1].toString();
@@ -86,6 +139,7 @@ public class ConnectionManager {
             }
         });
     }
+
     private void disconnectClient(String disconnectedClient, DisconnectReason reason) {
         try {
             // remove the client from the list of clients
@@ -94,7 +148,7 @@ public class ConnectionManager {
                 onClientDisconnect.handle(disconnectedClient, reason);
             }
         } catch (InterruptedException e) {
-            throw new RuntimeException(e);
+            e.printStackTrace();
         }
     }
 
@@ -104,6 +158,7 @@ public class ConnectionManager {
     }
 
     public void startClientTimeoutThread(String clientId) {
+        this.clientId = clientId;
         // inform the server that we have not disconnected
         connectionThreads.startHandledThread(() -> {
             while (true) {
@@ -121,12 +176,12 @@ public class ConnectionManager {
                 }
             }
         });
-        // check if haven't received a keep alive in 5 seconds
+        // check if we haven't received a keep alive in 5 seconds
         connectionThreads.startHandledThread(() -> {
             while (true) {
                 synchronized (wrapper) {
                     wrapper.missedKeepAlives++;
-                    if(wrapper.missedKeepAlives > 5) {
+                    if(wrapper.missedKeepAlives > 1000) {
                         System.out.println("Client lost connection to the server");
                         if(onClientTimeout != null) {
                             onClientTimeout.handle(DisconnectReason.TIMEOUT);

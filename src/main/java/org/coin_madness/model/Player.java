@@ -7,7 +7,7 @@ public class Player extends MovableEntity {
     private float movementSpeed = 3;
     private EntityMovement entityMovement;
 
-    public Player(String id, int x, int y) {
+    public Player(int id, int x, int y) {
         super(id, x, y);
     }
 
@@ -20,14 +20,13 @@ public class Player extends MovableEntity {
         map[entityMovement.newX][entityMovement.newY].addEntity(this);
         x = entityMovement.newX;
         y = entityMovement.newY;
-        System.out.println("Do movement!");
     }
 
     public EntityMovement getEntityMovement() {
         return entityMovement;
     }
 
-    public String getId() {
+    public int getId() {
         return id;
     }
 
@@ -53,6 +52,19 @@ public class Player extends MovableEntity {
 
     public void setMovementSpeed(float movementSpeed) {
         this.movementSpeed = movementSpeed;
+    }
+
+
+        // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}
+    public boolean canMoveto(Field[][] fields, int deltaX, int deltaY ){
+        int newPositionX  = this.getX() + deltaX;
+        int newPositionY  = this.getY() + deltaY;
+        //Checking for walls
+        if(fields[newPositionY][newPositionX].isWall()){
+            return false;
+        }else {
+            return true;
+        }
     }
 
 }

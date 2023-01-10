@@ -51,6 +51,8 @@ public class App extends Application {
         stage.show();
     }
     ConnectionManager connectionManager;
+    //Dispay of the "main screen"
+    //Changing scenes
     private void showStartScreen(String errorMessage) {
         if(connectionManager != null) {
             connectionManager.stop();
@@ -64,8 +66,10 @@ public class App extends Application {
 
             lobbyScreen.setOnGameStart(() -> {
                 // TODO - maybe, move to some kind of GameBuilder
-                Player player = new Player("0", 15, 28);
-                BorderPane gameView = new GameScreen(stage, scene, player, map, graphics);
+                connectionManager.joinGameSpaces();
+                int id = Integer.parseInt(connectionManager.getClientId().substring(6));
+                Player player = new Player(id, id,0);
+                BorderPane gameView = new GameScreen(stage, scene, player, map, graphics, connectionManager);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
             });
