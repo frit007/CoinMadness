@@ -6,27 +6,27 @@ import javafx.scene.paint.ImagePattern;
 public class ImageLibrary {
 
     // ----- Maze -----
-    Image grassImage = new Image("Grass.png");
-    Image brickImage = new Image("Brick.png");
-
-    public ImagePattern ground = new ImagePattern(grassImage);
-    public ImagePattern wall = new ImagePattern(brickImage);
+    public Image ground = new Image("Grass.png");
+    public Image wall = new Image("Brick.png");
+    public Image coin = new Image("Coin.png");
+    public Image chest = new Image("Chest.png");
+    public Image traphole = new Image("Traphole.png");
 
     // ----- Player -----
-    public ImagePattern idleRight = new ImagePattern(new Image("Idle_Right_Anim.png"));
-    public ImagePattern walkRight = new ImagePattern(new Image("Walk_Right_Anim.png"));
-    public ImagePattern[] playerRightAnim = {idleRight, walkRight};
+    public Image idleRight = new Image("Idle_Right_Anim.png");
+    public Image walkRight = new Image("Walk_Right_Anim.png");
+    public Image[] playerRightAnim = {idleRight, walkRight};
 
-    public ImagePattern idleLeft = new ImagePattern(new Image("Idle_Left_Anim.png"));
-    public ImagePattern walkLeft = new ImagePattern(new Image("Walk_Left_Anim.png"));
-    public ImagePattern[] playerLeftAnim = {idleLeft, walkLeft};
+    public Image idleLeft = new Image("Idle_Left_Anim.png");
+    public Image walkLeft = new Image("Walk_Left_Anim.png");
+    public Image[] playerLeftAnim = {idleLeft, walkLeft};
 
-    public ImagePattern idleUp = new ImagePattern(new Image("Idle_Up_Anim.png"));
-    public ImagePattern walkUp = new ImagePattern(new Image("Walk_Up_Anim.png"));
-    public ImagePattern[] playerUpAnim = {idleUp, walkUp};
+    public Image idleUp = new Image("Idle_Up_Anim.png");
+    public Image walkUp = new Image("Walk_Up_Anim.png");
+    public Image[] playerUpAnim = {idleUp, walkUp};
 
-    public ImagePattern idleDown = new ImagePattern(new Image("Idle_Down_Anim.png"));
-    public ImagePattern walkDown = new ImagePattern(new Image("Walk_Down_Anim.png"));
-    public ImagePattern[] playerDownAnim = {idleDown, walkDown};
+    public Image idleDown = new Image("Idle_Down_Anim.png");
+    public Image walkDown = new Image("Walk_Down_Anim.png");
+    public Image[] playerDownAnim = {idleDown, walkDown};
 
 }

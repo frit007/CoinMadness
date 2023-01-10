@@ -1,19 +1,33 @@
 package org.coin_madness.model;
 
-public class Player {
+import org.coin_madness.helpers.TimeHelper;
 
-    private int id;
-    private int x;
-    private int y;
+public class Player extends MovableEntity {
+
     private float movementSpeed = 3;
+    private EntityMovement entityMovement;
 
-    public Player(int id, int x, int y) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
+    public Player(String id, int x, int y) {
+        super(id, x, y);
     }
 
-    public int getId() {
+    public void move(EntityMovement entityMovement, Field[][] map) {
+        if(this.entityMovement == null || this.entityMovement.getFinishMovementAt() < TimeHelper.getNowInMillis()) {
+            this.entityMovement = entityMovement;
+        }
+
+        map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
+        map[entityMovement.newX][entityMovement.newY].addEntity(this);
+        x = entityMovement.newX;
+        y = entityMovement.newY;
+        System.out.println("Do movement!");
+    }
+
+    public EntityMovement getEntityMovement() {
+        return entityMovement;
+    }
+
+    public String getId() {
         return id;
     }
 
