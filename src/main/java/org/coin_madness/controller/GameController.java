@@ -24,6 +24,7 @@ public class GameController {
     private ConnectionManager connectionManager;
     private int controlledPlayerID;
     private Direction currentDirection;
+    private Direction nextDirection;
     private Map<Integer, Player> networkedPlayers;
 
     public GameController(Player player, Scene scene, Field[][] map, ConnectionManager connectionManager) {
@@ -41,7 +42,8 @@ public class GameController {
 
         playerControl =  keyEvent -> {
             Direction dir = Direction.fromKeyCode(keyEvent.getCode());
-            if (dir != null) currentDirection = dir;
+            if (dir != null) nextDirection = dir;
+            if (currentDirection == null) currentDirection = dir;
         };
         
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
@@ -82,9 +84,19 @@ public class GameController {
                     // TODO Smooth things out here. There should be some method so that the player doesn't arrive
                     //  somewhere, stop, and then continue moving again
                     if (currentDirection != null && !player.isMoving()) {
-                        EntityMovement potentialMovement = new EntityMovement(player, currentDirection);
-                        if (player.canMoveto(map, potentialMovement)) {
-                            player.move(potentialMovement, map);
+
+                        EntityMovement preferredMovement = new EntityMovement(player, nextDirection);
+                        EntityMovement momentumMovement = new EntityMovement(player, currentDirection);
+                        EntityMovement chosenMovement = null;
+                        if (player.canMoveto(map, preferredMovement)) {
+                            chosenMovement = preferredMovement;
+                            currentDirection = nextDirection;
+                        } else if (player.canMoveto(map, momentumMovement)) {
+                            chosenMovement = momentumMovement;
+                        }
+
+                        if (chosenMovement != null) {
+                            player.move(chosenMovement, map);
                             // remove last position and replace with new position
                             connectionManager.getPositionsSpace().getp(
                                     new ActualField(player.getId()),
