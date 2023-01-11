@@ -11,21 +11,26 @@ public class Player extends MovableEntity {
         super(id, x, y);
     }
 
+    /**
+     * This should only be called when the player is not already moving.
+     */
     public void move(EntityMovement entityMovement, Field[][] map) {
         if(entityMovement.getNewX() == x && entityMovement.getNewY() == y) {
             return;
         }
-        if(this.entityMovement == null || this.entityMovement.getFinishMovementAt() < TimeHelper.getNowInMillis()) {
-            this.entityMovement = entityMovement;
-            map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
-            map[entityMovement.newX][entityMovement.newY].addEntity(this);
-            x = entityMovement.newX;
-            y = entityMovement.newY;
-        }
+        this.entityMovement = entityMovement;
+        map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
+        map[entityMovement.newX][entityMovement.newY].addEntity(this);
+        x = entityMovement.newX;
+        y = entityMovement.newY;
     }
 
     public EntityMovement getEntityMovement() {
         return entityMovement;
+    }
+
+    public boolean isMoving() {
+        return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() < TimeHelper.getNowInMillis());
     }
 
     public int getId() {

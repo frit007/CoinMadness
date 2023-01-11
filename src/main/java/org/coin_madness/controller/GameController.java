@@ -3,6 +3,7 @@ package org.coin_madness.controller;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.model.Direction;
@@ -22,6 +23,7 @@ public class GameController {
 
     private ConnectionManager connectionManager;
     private int controlledPlayerID;
+    private Direction currentDirection;
     private Map<Integer, Player> networkedPlayers;
 
     public GameController(Player player, Scene scene, Field[][] map, ConnectionManager connectionManager) {
@@ -38,29 +40,8 @@ public class GameController {
         networkedPlayers = new HashMap<>();
 
         playerControl =  keyEvent -> {
-            EntityMovement movement;
-            boolean moved = false;
-
             Direction dir = Direction.fromKeyCode(keyEvent.getCode());
-            movement = dir == null ? null : new EntityMovement(player, dir);
-
-            if (movement != null) {
-                // Constraints the movement further, checks of the moving to tile is a wall
-                // arguments{ Field[][]         ,int    ,int   }
-                moved = player.canMoveto(map, movement);
-            }
-            if (moved){
-                player.move(movement, map);
-            }
-
-            try {
-                if (moved) { // remove last pos --> replace with new pos
-                    connectionManager.getPositionsSpace().getp(new ActualField(player.getId()), new FormalField(Integer.class), new FormalField(Integer.class));
-                    connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+            if (dir != null) currentDirection = dir;
         };
         
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
@@ -98,9 +79,26 @@ public class GameController {
                         }
                     }
 
+                    // TODO Smooth things out here. There should be some method so that the player doesn't arrive
+                    //  somewhere, stop, and then continue moving again
+                    if (currentDirection != null && !player.isMoving()) {
+                        EntityMovement potentialMovement = new EntityMovement(player, currentDirection);
+                        if (player.canMoveto(map, potentialMovement)) {
+                            player.move(potentialMovement, map);
+                            // remove last position and replace with new position
+                            connectionManager.getPositionsSpace().getp(
+                                    new ActualField(player.getId()),
+                                    new FormalField(Integer.class),
+                                    new FormalField(Integer.class)
+                            );
+                            connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
+                        }
+                    }
+
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
             }
         }.start();
 
