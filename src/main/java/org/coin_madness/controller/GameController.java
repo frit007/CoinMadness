@@ -37,7 +37,6 @@ public class GameController {
         networkedPlayers = new HashMap<>();
 
         playerControl =  keyEvent -> {
-            //TODO: keypress queue
             EntityMovement movement;
             boolean moved = false;
 
@@ -58,7 +57,6 @@ public class GameController {
                     movement = null;
             }
 
-                //TODO: Queue
                 if (movement != null) {
                     // Constraints the movement further, checks of the moving to tile is a wall
                     // arguments{ Field[][]         ,int    ,int   }
