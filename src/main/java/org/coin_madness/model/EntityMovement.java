@@ -23,6 +23,14 @@ public class EntityMovement {
         finishMovementAt = startedMovementAt + (long)(1000 / player.getMovementSpeed());
     }
 
+    public EntityMovement(Player player, Direction dir) {
+        this(
+                player,
+                dir == Direction.RIGHT ? 1 : (dir == Direction.LEFT ? -1 : 0),
+                dir == Direction.DOWN ? 1 : (dir == Direction.UP ? -1 : 0)
+                );
+    }
+
     public long getStartedMovementAt() {
         return startedMovementAt;
     }
