@@ -1,4 +1,6 @@
-package org.coin_madness.model;
+package org.coin_madness.helpers;
+
+import org.coin_madness.model.Field;
 
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
@@ -13,19 +15,17 @@ public class MazeLoader {
         ArrayList<String[]> layout = readMap(filename, separator);
         int height = layout.size();
         int width = layout.get(0).length;
-        int id = 0;
 
         Field[][] fields = new Field[height][width];
         for(int y = 0; y < height; y++) {
             for(int x = 0; x < width; x++) {
-                Field field = new Field(id, x, y);
+                Field field = new Field(x, y);
 
-                if(Objects.equals(layout.get(y)[x], "1")) {
+                if(Objects.equals(layout.get(x)[y], "1")) {
                     field.setWall(true);
                 }
 
-                fields[y][x] = field;
-                id++;
+                fields[x][y] = field;
             }
         }
         return fields;

@@ -1,18 +1,36 @@
 package org.coin_madness.model;
 
-import org.coin_madness.screens.GameScreen;
+import org.coin_madness.helpers.TimeHelper;
 
-public class Player {
+public class Player extends MovableEntity {
 
-    private int id;
-    private int x;
-    private int y;
     private float movementSpeed = 3;
+    private EntityMovement entityMovement;
 
     public Player(int id, int x, int y) {
-        this.id = id;
-        this.x = x;
-        this.y = y;
+        super(id, x, y);
+    }
+
+    /**
+     * This should only be called when the player is not already moving.
+     */
+    public void move(EntityMovement entityMovement, Field[][] map) {
+        if(entityMovement.getNewX() == x && entityMovement.getNewY() == y) {
+            return;
+        }
+        this.entityMovement = entityMovement;
+        map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
+        map[entityMovement.newX][entityMovement.newY].addEntity(this);
+        x = entityMovement.newX;
+        y = entityMovement.newY;
+    }
+
+    public EntityMovement getEntityMovement() {
+        return entityMovement;
+    }
+
+    public boolean isMoving() {
+        return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() <= TimeHelper.getNowInMillis());
     }
 
     public int getId() {
@@ -45,15 +63,9 @@ public class Player {
 
 
         // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}
-    public boolean canMoveto(Field[][] fields, int deltaX, int deltaY ){
-        int newPositionX  = this.getX() + deltaX;
-        int newPositionY  = this.getY() + deltaY;
+    public boolean canMoveto(Field[][] fields, EntityMovement movement){
         //Checking for walls
-        if(fields[newPositionY][newPositionX].isWall()){
-            return false;
-        }else {
-            return true;
-        }
+        return !fields[movement.getNewX()][movement.getNewY()].isWall();
     }
 
 }

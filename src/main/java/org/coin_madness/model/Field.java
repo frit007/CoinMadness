@@ -1,21 +1,40 @@
 package org.coin_madness.model;
 
+import org.coin_madness.helpers.Action;
+import org.coin_madness.helpers.ConnectionManager;
+
+import java.util.ArrayList;
+import java.util.List;
+
 public class Field {
 
-    int id;
-    boolean isWall;
-    boolean hasCoin;
     int x;
     int y;
+    boolean isWall;
+    List<Entity> entities = new ArrayList<>();
+    private Action onChange;
 
-    public Field(int id, int x, int y) {
-        this.id = id;
+    public Field(int x, int y) {
         this.x = x;
         this.y = y;
     }
 
-    public int getId() {
-        return id;
+    public void setOnChange(Action onChange) {
+        this.onChange = onChange;
+    }
+
+    public void addEntity(Entity entity) {
+        entities.add(entity);
+        if(onChange != null) {
+            onChange.handle();
+        }
+    }
+
+    public void removeEntity(Entity entity) {
+        entities.remove(entity);
+        if(onChange != null) {
+            onChange.handle();
+        }
     }
 
     public boolean isWall() {
@@ -26,14 +45,6 @@ public class Field {
         isWall = wall;
     }
 
-    public boolean hasCoin() {
-        return hasCoin;
-    }
-
-    public void setHasCoin(boolean hasCoin) {
-        this.hasCoin = hasCoin;
-    }
-
     public int getX() {
         return x;
     }
@@ -41,5 +52,10 @@ public class Field {
     public int getY() {
         return y;
     }
+
+    public List<Entity> getEntities() {
+        return entities;
+    }
+
 
 }

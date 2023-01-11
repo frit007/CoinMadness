@@ -3,17 +3,15 @@ package org.coin_madness.controller;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
-import javafx.scene.paint.ImagePattern;
-import org.coin_madness.components.PlayerComponent;
 import org.coin_madness.helpers.ConnectionManager;
-import org.coin_madness.helpers.ImageLibrary;
+import org.coin_madness.model.Direction;
+import org.coin_madness.model.EntityMovement;
 import org.coin_madness.model.Field;
 import org.coin_madness.model.Player;
-import org.coin_madness.screens.GameScreen;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
-import org.jspace.TemplateField;
 
 import java.util.HashMap;
 import java.util.List;
@@ -22,22 +20,28 @@ import java.util.Map;
 public class GameController {
 
     private EventHandler<KeyEvent> playerControl;
-    private double tileSize;
+
     private ConnectionManager connectionManager;
-    private Integer controlledPlayerID;
-    private Map<Integer, PlayerComponent> networkedPlayers;
-    private GameScreen gameScreen;
+    private int controlledPlayerID;
+    private Direction currentDirection;
+    private Direction nextDirection;
+    private Map<Integer, Player> networkedPlayers;
+    private Player player;
+    private Field[][] map;
 
-    public GameController(Player player, PlayerComponent playerComponent, double tileSize, Scene scene, ImageLibrary graphics, ConnectionManager connectionManager, GameScreen gameScreen) {
-
-        this.tileSize = tileSize;
+    public GameController(Player player, Scene scene, Field[][] map, ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
         this.controlledPlayerID = player.getId();
-        this.gameScreen = gameScreen;
+        this.player = player;
+        this.map = map;
 
-        // post the initial location
+        // post the initial location, and take the field lock
         try {
             connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
+            connectionManager.getFieldLocksSpace().get(
+                    new ActualField(player.getX()),
+                    new ActualField(player.getY())
+            );
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -45,62 +49,15 @@ public class GameController {
         networkedPlayers = new HashMap<>();
 
         playerControl =  keyEvent -> {
-
-            Runnable reAddEventFilter = () -> {
-                scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
-            };
-            boolean moved = true;
-
-            int deltaX = 0;
-            int deltaY = 0;
-            ImagePattern[] animation = new ImagePattern[0];
-
-            switch (keyEvent.getCode()) {
-                case UP:
-                    deltaY = - 1;
-                    animation = graphics.playerUpAnim;
-                    break;
-                case DOWN:
-                    deltaY = 1;
-                    animation = graphics.playerDownAnim;
-                    break;
-                case LEFT:
-                    deltaX = -1;
-                    animation = graphics.playerLeftAnim;
-                    break;
-                case RIGHT:
-                    deltaX = 1;
-                    animation = graphics.playerRightAnim;
-                    break;
-                default:
-                    moved = false;
-            }
-            if (moved){
-                    // Constraints the movement further, checks of the moving to tile is a wall
-                            // arguments{ Field[][]         ,int    ,int   }
-                moved = player.canMoveto(gameScreen.getMap(), deltaX, deltaY);
-            }
-            if (moved){
-                player.setX(player.getX() + deltaX);
-                player.setY(player.getY() + deltaY);
-                scene.removeEventFilter(KeyEvent.KEY_PRESSED, playerControl);
-                playerComponent.walkAnim(deltaX*this.tileSize , deltaY*this.tileSize, animation , reAddEventFilter);
-            }
-
-
-
-
-            try {
-                if (moved) { // remove last pos --> replace with new pos
-                    connectionManager.getPositionsSpace().getp(new ActualField(player.getId()), new FormalField(Integer.class), new FormalField(Integer.class));
-                    connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
-                }
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            Direction dir = Direction.fromKeyCode(keyEvent.getCode());
+            if (dir != null) {
+                nextDirection = dir;
+                if (currentDirection == null) currentDirection = dir;
+                updateMovement();
             }
         };
+        
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
-
 
 
         // TODO There is probably a better way to do a game loop like this      
@@ -123,26 +80,75 @@ public class GameController {
                         if (rID.equals(controlledPlayerID)) continue;
 
                         if (networkedPlayers.containsKey(rID)) {
-                            networkedPlayers.get(rID).moveTo(rX, rY);
+                            Player net = networkedPlayers.get(rID);
+                            int deltaX = rX - net.getX();
+                            int deltaY = rY - net.getY();
+                            EntityMovement movement = new EntityMovement(net, deltaX, deltaY, () -> {});
+                            net.move(movement, map);
                         } else {
-                            PlayerComponent p = new PlayerComponent(new Player(rID, rX, rY), graphics, GameController.this.tileSize);
-                            gameScreen.getChildren().add(p);
+                            Player p = new Player(rID, rX, rY);
+                            map[p.getX()][p.getY()].addEntity(p);
                             networkedPlayers.put(rID, p);
                         }
-
                     }
 
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
+
             }
         }.start();
 
     }
 
+    /**
+     * If the player is not already moving, move it in the correct direction
+     * according to current and next direction.
+     * TODO remove the stutter in this movement (Zack: I'm not sure how we'd do this without changing a lot of the
+     *  application architecture)
+     */
+    public void updateMovement() {
+        try {
+            if (currentDirection != null && !player.isMoving()) {
 
-    public void setTileSize(double tileSize) {
-        this.tileSize = tileSize;
-        // TODO refactor so that this resizes ALL the PlayerComponents
+                // Select the correct movement based on current and next direction
+                EntityMovement preferredMovement = new EntityMovement(player, nextDirection, this::updateMovement);
+                EntityMovement momentumMovement = new EntityMovement(player, currentDirection, this::updateMovement);
+                EntityMovement chosenMovement = null;
+                if (player.canMoveto(map, preferredMovement)) {
+                    chosenMovement = preferredMovement;
+                    currentDirection = nextDirection;
+                } else if (player.canMoveto(map, momentumMovement)) {
+                    chosenMovement = momentumMovement;
+                }
+
+                if (chosenMovement != null) {
+
+                    Object[] lock = connectionManager.getFieldLocksSpace().getp(
+                            new ActualField(chosenMovement.getNewX()),
+                            new ActualField(chosenMovement.getNewY())
+                    );
+                    if (lock == null) return; // If the position is blocked
+
+                    // Actually make the movement
+                    player.move(chosenMovement, map);
+
+                    // Notify the other players about the movement
+                    connectionManager.getPositionsSpace().getp(
+                            new ActualField(player.getId()),
+                            new FormalField(Integer.class),
+                            new FormalField(Integer.class)
+                    );
+                    connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
+
+                    // release the old lock
+                    connectionManager.getFieldLocksSpace().put(chosenMovement.getOldX(), chosenMovement.getOldY());
+
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
+
 }

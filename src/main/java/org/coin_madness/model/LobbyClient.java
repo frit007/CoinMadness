@@ -14,7 +14,7 @@ import java.util.function.Consumer;
 
 public class LobbyClient {
     private ConnectionManager connectionManager;
-    private String clientId;
+    private Integer clientId;
     private LobbyCommon lobbyCommon;
     private ScopedThreads lobbyThreads;
 
@@ -29,9 +29,9 @@ public class LobbyClient {
             connectionManager.getLobby().put(LobbyMessage.JOIN);
             Object[] response = connectionManager.getLobby().get(
                     new ActualField(LobbyMessage.WELCOME),
-                    new FormalField(String.class)
+                    new FormalField(Integer.class)
             );
-            clientId = (String) response[1];
+            clientId = (Integer) response[1];
             connectionManager.startClientTimeoutThread(clientId);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -93,8 +93,8 @@ public class LobbyClient {
             while(true) {
                 // wait to update the lobby
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.LOBBY_UPDATED), new ActualField(clientId));
-                int connectedPlayers = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(String.class)).size();
-                int readyPlayers = connectionManager.getLobby().queryAll(new ActualField(LobbyMessage.READY), new FormalField(String.class)).size();
+                int connectedPlayers = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class)).size();
+                int readyPlayers = connectionManager.getLobby().queryAll(new ActualField(LobbyMessage.READY), new FormalField(Integer.class)).size();
 
                 LobbyUpdate lobbyUpdate = new LobbyUpdate(connectedPlayers, readyPlayers);
                 onLobbyUpdate.handle(lobbyUpdate);

@@ -2,19 +2,15 @@ package org.coin_madness;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
-import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.layout.CornerRadii;
-import javafx.scene.layout.StackPane;
+import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Field;
-import org.coin_madness.model.MazeLoader;
+import org.coin_madness.helpers.MazeLoader;
 import org.coin_madness.model.Player;
 import org.coin_madness.screens.GameScreen;
 import org.coin_madness.screens.LobbyScreen;
@@ -71,9 +67,9 @@ public class App extends Application {
             lobbyScreen.setOnGameStart(() -> {
                 // TODO - maybe, move to some kind of GameBuilder
                 connectionManager.joinGameSpaces();
-                int id = Integer.parseInt(connectionManager.getClientId().substring(6));
-                Player player = new Player(id, id,0);
-                Group gameView = new GameScreen(stage, scene, player, map, graphics, connectionManager);
+                int id = connectionManager.getClientId();
+                Player player = new Player(id, id,3);
+                BorderPane gameView = new GameScreen(stage, scene, player, map, graphics, connectionManager);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
             });
