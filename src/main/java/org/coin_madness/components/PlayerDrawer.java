@@ -112,6 +112,7 @@ public class PlayerDrawer implements Drawer<Player> {
                 view.setImage(playerAnim[0]);
                 keyCount = 1;
                 imageView.setVisible(false);
+                movement.finish();
             });
 
             timeline.playFromStart();

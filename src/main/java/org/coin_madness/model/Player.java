@@ -30,7 +30,7 @@ public class Player extends MovableEntity {
     }
 
     public boolean isMoving() {
-        return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() < TimeHelper.getNowInMillis());
+        return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() <= TimeHelper.getNowInMillis());
     }
 
     public int getId() {

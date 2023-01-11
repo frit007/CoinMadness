@@ -26,10 +26,14 @@ public class GameController {
     private Direction currentDirection;
     private Direction nextDirection;
     private Map<Integer, Player> networkedPlayers;
+    private Player player;
+    private Field[][] map;
 
     public GameController(Player player, Scene scene, Field[][] map, ConnectionManager connectionManager) {
         this.connectionManager = connectionManager;
         this.controlledPlayerID = player.getId();
+        this.player = player;
+        this.map = map;
 
         // post the initial location
         try {
@@ -42,8 +46,11 @@ public class GameController {
 
         playerControl =  keyEvent -> {
             Direction dir = Direction.fromKeyCode(keyEvent.getCode());
-            if (dir != null) nextDirection = dir;
-            if (currentDirection == null) currentDirection = dir;
+            if (dir != null) {
+                nextDirection = dir;
+                if (currentDirection == null) currentDirection = dir;
+                updateMovement();
+            }
         };
         
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
@@ -72,38 +79,12 @@ public class GameController {
                             Player net = networkedPlayers.get(rID);
                             int deltaX = rX - net.getX();
                             int deltaY = rY - net.getY();
-                            EntityMovement movement = new EntityMovement(net, deltaX, deltaY);
+                            EntityMovement movement = new EntityMovement(net, deltaX, deltaY, () -> {});
                             net.move(movement, map);
                         } else {
                             Player p = new Player(rID, rX, rY);
                             map[p.getX()][p.getY()].addEntity(p);
                             networkedPlayers.put(rID, p);
-                        }
-                    }
-
-                    // TODO Smooth things out here. There should be some method so that the player doesn't arrive
-                    //  somewhere, stop, and then continue moving again
-                    if (currentDirection != null && !player.isMoving()) {
-
-                        EntityMovement preferredMovement = new EntityMovement(player, nextDirection);
-                        EntityMovement momentumMovement = new EntityMovement(player, currentDirection);
-                        EntityMovement chosenMovement = null;
-                        if (player.canMoveto(map, preferredMovement)) {
-                            chosenMovement = preferredMovement;
-                            currentDirection = nextDirection;
-                        } else if (player.canMoveto(map, momentumMovement)) {
-                            chosenMovement = momentumMovement;
-                        }
-
-                        if (chosenMovement != null) {
-                            player.move(chosenMovement, map);
-                            // remove last position and replace with new position
-                            connectionManager.getPositionsSpace().getp(
-                                    new ActualField(player.getId()),
-                                    new FormalField(Integer.class),
-                                    new FormalField(Integer.class)
-                            );
-                            connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
                         }
                     }
 
@@ -115,4 +96,45 @@ public class GameController {
         }.start();
 
     }
+
+    /**
+     * If the player is not already moving, move it in the correct direction
+     * according to current and next direction.
+     * TODO remove the stutter in this movement (Zack: I'm not sure how we'd do this without changing a lot of the
+     *  application architecture)
+     */
+    public void updateMovement() {
+        try {
+            if (currentDirection != null && !player.isMoving()) {
+
+                // Select the correct movement based on current and next direction
+                EntityMovement preferredMovement = new EntityMovement(player, nextDirection, this::updateMovement);
+                EntityMovement momentumMovement = new EntityMovement(player, currentDirection, this::updateMovement);
+                EntityMovement chosenMovement = null;
+                if (player.canMoveto(map, preferredMovement)) {
+                    chosenMovement = preferredMovement;
+                    currentDirection = nextDirection;
+                } else if (player.canMoveto(map, momentumMovement)) {
+                    chosenMovement = momentumMovement;
+                }
+
+                if (chosenMovement != null) {
+
+                    // Actually make the movement
+                    player.move(chosenMovement, map);
+
+                    // Notify the other players about the movement
+                    connectionManager.getPositionsSpace().getp(
+                            new ActualField(player.getId()),
+                            new FormalField(Integer.class),
+                            new FormalField(Integer.class)
+                    );
+                    connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
+                }
+            }
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
+
 }
