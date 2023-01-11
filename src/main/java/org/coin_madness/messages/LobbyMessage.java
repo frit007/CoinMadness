@@ -9,16 +9,16 @@ public class LobbyMessage {
     // used to tell all client that the game has started
     public static final String GAME_STARTED = "game_started";
 
-    // (WELCOME, String clientId)
+    // (WELCOME, Integer clientId)
     // welcome is used to tell a client their new client_id
     // (Technically client can steal each other ids. But it doesn't matter who gets what id)
     public static final String WELCOME = "welcome";
 
-    // (LOBBY_UPDATED, String clientId)
+    // (LOBBY_UPDATED, Integer clientId)
     // is used to message every client that the lobby has been updated
     public static final String LOBBY_UPDATED = "lobby_updated";
 
-    // (READY, String clientId)
+    // (READY, Integer clientId)
     // is used to mark all clients that are ready
     public static final String READY = "ready";
 

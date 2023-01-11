@@ -1,9 +1,6 @@
 package org.coin_madness.components;
 
-import javafx.animation.Animation;
-import javafx.animation.KeyFrame;
-import javafx.animation.Timeline;
-import javafx.animation.TranslateTransition;
+import javafx.animation.*;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
 import javafx.scene.image.Image;
@@ -111,7 +108,10 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
                 view.setImage(playerAnim[0]);
                 keyCount = 1;
                 imageView.setVisible(false);
+                movement.finish();
             });
+
+            translateTransition.setInterpolator(Interpolator.LINEAR);
 
             timeline.playFromStart();
             translateTransition.playFromStart();

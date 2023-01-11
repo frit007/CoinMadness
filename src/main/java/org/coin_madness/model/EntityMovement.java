@@ -11,8 +11,9 @@ public class EntityMovement {
     int oldY;
     int deltaX;
     int deltaY;
+    private Runnable completionHandler;
 
-    public EntityMovement(MovableEntity player, int deltaX, int deltaY) {
+    public EntityMovement(Player player, int deltaX, int deltaY, Runnable completionHandler) {
         oldX = player.getX();
         oldY = player.getY();
         newX = oldX + deltaX;
@@ -21,6 +22,16 @@ public class EntityMovement {
         this.deltaY = deltaY;
         startedMovementAt = TimeHelper.getNowInMillis();
         finishMovementAt = startedMovementAt + (long)(1000 / player.getMovementSpeed());
+        this.completionHandler = completionHandler;
+    }
+
+    public EntityMovement(Player player, Direction dir, Runnable completionHandler) {
+        this(
+                player,
+                dir == Direction.RIGHT ? 1 : (dir == Direction.LEFT ? -1 : 0),
+                dir == Direction.DOWN ? 1 : (dir == Direction.UP ? -1 : 0),
+                completionHandler
+                );
     }
 
     public long getStartedMovementAt() {
@@ -58,4 +69,9 @@ public class EntityMovement {
     public long getDuration() {
         return finishMovementAt - startedMovementAt;
     }
+
+    public void finish() {
+        completionHandler.run();
+    }
+    
 }
