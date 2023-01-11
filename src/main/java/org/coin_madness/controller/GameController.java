@@ -5,6 +5,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
 import org.coin_madness.helpers.ConnectionManager;
+import org.coin_madness.model.Direction;
 import org.coin_madness.model.EntityMovement;
 import org.coin_madness.model.Field;
 import org.coin_madness.model.Player;
@@ -40,40 +41,26 @@ public class GameController {
             EntityMovement movement;
             boolean moved = false;
 
-            switch (keyEvent.getCode()) {
-                case UP:
-                    movement = new EntityMovement(player, 0, -1);
-                    break;
-                case DOWN:
-                    movement = new EntityMovement(player, 0, 1);
-                    break;
-                case LEFT:
-                    movement = new EntityMovement(player, -1, 0);
-                    break;
-                case RIGHT:
-                    movement = new EntityMovement(player, 1, 0);
-                    break;
-                default:
-                    movement = null;
+            Direction dir = Direction.fromKeyCode(keyEvent.getCode());
+            movement = dir == null ? null : new EntityMovement(player, dir);
+
+            if (movement != null) {
+                // Constraints the movement further, checks of the moving to tile is a wall
+                // arguments{ Field[][]         ,int    ,int   }
+                moved = player.canMoveto(map, movement);
+            }
+            if (moved){
+                player.move(movement, map);
             }
 
-                if (movement != null) {
-                    // Constraints the movement further, checks of the moving to tile is a wall
-                    // arguments{ Field[][]         ,int    ,int   }
-                    moved = player.canMoveto(map, movement);
+            try {
+                if (moved) { // remove last pos --> replace with new pos
+                    connectionManager.getPositionsSpace().getp(new ActualField(player.getId()), new FormalField(Integer.class), new FormalField(Integer.class));
+                    connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
                 }
-                if (moved){
-                    player.move(movement, map);
-                }
-
-                try {
-                    if (moved) { // remove last pos --> replace with new pos
-                        connectionManager.getPositionsSpace().getp(new ActualField(player.getId()), new FormalField(Integer.class), new FormalField(Integer.class));
-                        connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
-                    }
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
         };
         
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
