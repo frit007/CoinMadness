@@ -7,7 +7,6 @@ import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Objects;
 
 public class MazeLoader {
 
@@ -21,7 +20,7 @@ public class MazeLoader {
             for(int x = 0; x < width; x++) {
                 Field field = new Field(x, y);
 
-                if(Objects.equals(layout.get(x)[y], "1")) {
+                if(layout.get(x)[y].contains("1")) {
                     field.setWall(true);
                 }
 

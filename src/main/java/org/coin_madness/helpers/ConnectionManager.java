@@ -13,6 +13,9 @@ import java.util.Map;
 public class ConnectionManager {
     private Space lobby = null;
     private Space positionsSpace = null;
+    private Space coinSpace = null;
+    private Space chestSpace = null;
+    private Space trapholeSpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
     private String clientId;
@@ -46,6 +49,18 @@ public class ConnectionManager {
         return positionsSpace;
     }
 
+    public Space getCoinSpace() {
+        return coinSpace;
+    }
+
+    public Space getChestSpace() {
+        return chestSpace;
+    }
+
+    public Space getTrapholeSpace() {
+        return trapholeSpace;
+    }
+
     public void host() {
         repository = new SpaceRepository();
 
@@ -63,9 +78,17 @@ public class ConnectionManager {
      * Create the spaces that are to be used in the game. Called by the host.
      */
     public void createGameSpaces() {
-        // Right now there is only one that we need to create
         positionsSpace = new SequentialSpace();
         repository.add("positions", positionsSpace);
+
+        coinSpace = new SequentialSpace();
+        repository.add("coins", coinSpace);
+
+        chestSpace = new SequentialSpace();
+        repository.add("chests", chestSpace);
+
+        trapholeSpace = new SequentialSpace();
+        repository.add("trapholes", trapholeSpace);
     }
 
     /**
@@ -75,8 +98,10 @@ public class ConnectionManager {
         // This means we are the host
         if (remoteIp == null) return;
         try {
-            // Right now we only join one space
             positionsSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/positions?keep"));
+            coinSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/coins?keep"));
+            chestSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/chests?keep"));
+            trapholeSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/trapholes?keep"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not join a remote game space");

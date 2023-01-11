@@ -1,9 +1,10 @@
 package org.coin_madness.model;
 
 import org.coin_madness.helpers.Action;
-import org.coin_madness.helpers.ConnectionManager;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class Field {
@@ -28,12 +29,23 @@ public class Field {
         if(onChange != null) {
             onChange.handle();
         }
+        if(entity instanceof Player) { ///
+            playerCollisions((Player) entity);
+        }
     }
 
     public void removeEntity(Entity entity) {
         entities.remove(entity);
         if(onChange != null) {
             onChange.handle();
+        }
+    }
+
+    public void playerCollisions(Player player) {
+        for (Entity entity : entities) {
+            if (entity instanceof CollidesWithPlayer) {
+                ((CollidesWithPlayer) entity).onPlayerColission(player);
+            }
         }
     }
 
@@ -56,6 +68,5 @@ public class Field {
     public List<Entity> getEntities() {
         return entities;
     }
-
 
 }

@@ -12,7 +12,7 @@ public class EntityMovement {
     int deltaX;
     int deltaY;
 
-    public EntityMovement(Player player, int deltaX, int deltaY) {
+    public EntityMovement(MovableEntity player, int deltaX, int deltaY) {
         oldX = player.getX();
         oldY = player.getY();
         newX = oldX + deltaX;

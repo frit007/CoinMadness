@@ -6,18 +6,16 @@ import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.util.Duration;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.EntityMovement;
-import org.coin_madness.model.Player;
+import org.coin_madness.model.MovableEntity;
 
 import java.util.HashMap;
 
-public class PlayerDrawer implements Drawer<Player> {
+public class PlayerDrawer implements Drawer<MovableEntity> {
     private ImageLibrary graphics;
     private HashMap<Integer, AnimationState> playerAnimations = new HashMap<>();
     Group container;
@@ -38,7 +36,8 @@ public class PlayerDrawer implements Drawer<Player> {
     }
 
     @Override
-    public void draw(Player player, ImageView view) {
+    //TODO: different color for networkPlayers? enemies?
+    public void draw(MovableEntity player, ImageView view) {
         EntityMovement movement = player.getEntityMovement();
         if(movement == null) {
             view.setImage(graphics.idleDown);
