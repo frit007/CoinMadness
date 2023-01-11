@@ -3,6 +3,7 @@ package org.coin_madness.helpers;
 import org.coin_madness.exceptions.NotConnectedException;
 import org.coin_madness.messages.GlobalMessage;
 import org.coin_madness.model.DisconnectReason;
+import org.coin_madness.model.Field;
 import org.jspace.*;
 
 import java.io.IOException;
@@ -13,6 +14,7 @@ import java.util.Map;
 public class ConnectionManager {
     private Space lobby = null;
     private Space positionsSpace = null;
+    private Space fieldLocksSpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
     private int clientId;
@@ -63,9 +65,26 @@ public class ConnectionManager {
      * Create the spaces that are to be used in the game. Called by the host.
      */
     public void createGameSpaces() {
-        // Right now there is only one that we need to create
+
         positionsSpace = new SequentialSpace();
         repository.add("positions", positionsSpace);
+
+        // Right now we just read the map from the CSV file, but in future we might have more
+        //  maps and need to change this to use the correct one.
+        fieldLocksSpace = new SequentialSpace();
+        repository.add("fieldlocks", fieldLocksSpace);
+        try {
+            Field[][] map = (new MazeLoader()).load("src/main/resources/map.csv", ",");
+            for (Field[] row : map) {
+                for (Field cell : row) {
+                    fieldLocksSpace.put(cell.getX(), cell.getY());
+                }
+            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+
+
     }
 
     /**
@@ -75,8 +94,8 @@ public class ConnectionManager {
         // This means we are the host
         if (remoteIp == null) return;
         try {
-            // Right now we only join one space
             positionsSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/positions?keep"));
+            fieldLocksSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/fieldlocks?keep"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not join a remote game space");
