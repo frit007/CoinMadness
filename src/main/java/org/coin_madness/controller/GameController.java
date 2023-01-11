@@ -35,9 +35,13 @@ public class GameController {
         this.player = player;
         this.map = map;
 
-        // post the initial location
+        // post the initial location, and take the field lock
         try {
             connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
+            connectionManager.getFieldLocksSpace().get(
+                    new ActualField(player.getX()),
+                    new ActualField(player.getY())
+            );
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -120,6 +124,12 @@ public class GameController {
 
                 if (chosenMovement != null) {
 
+                    Object[] lock = connectionManager.getFieldLocksSpace().getp(
+                            new ActualField(chosenMovement.getNewX()),
+                            new ActualField(chosenMovement.getNewY())
+                    );
+                    if (lock == null) return; // If the position is blocked
+
                     // Actually make the movement
                     player.move(chosenMovement, map);
 
@@ -130,6 +140,10 @@ public class GameController {
                             new FormalField(Integer.class)
                     );
                     connectionManager.getPositionsSpace().put(player.getId(), player.getX(), player.getY());
+
+                    // release the old lock
+                    connectionManager.getFieldLocksSpace().put(chosenMovement.getOldX(), chosenMovement.getOldY());
+
                 }
             }
         } catch (InterruptedException e) {

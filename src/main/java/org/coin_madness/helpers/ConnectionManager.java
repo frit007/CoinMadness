@@ -48,6 +48,10 @@ public class ConnectionManager {
         return positionsSpace;
     }
 
+    public Space getFieldLocksSpace() {
+        return fieldLocksSpace;
+    }
+
     public void host() {
         repository = new SpaceRepository();
 
