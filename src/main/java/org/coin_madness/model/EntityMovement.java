@@ -13,7 +13,7 @@ public class EntityMovement {
     int deltaY;
     private Runnable completionHandler;
 
-    public EntityMovement(Player player, int deltaX, int deltaY, Runnable completionHandler) {
+    public EntityMovement(MovableEntity player, int deltaX, int deltaY, Runnable completionHandler) {
         oldX = player.getX();
         oldY = player.getY();
         newX = oldX + deltaX;

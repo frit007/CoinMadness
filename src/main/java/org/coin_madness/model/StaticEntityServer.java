@@ -27,10 +27,10 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         this.convert = convert;
     }
 
-    private List<String> getClientIds() throws InterruptedException {
+    private List<Integer> getClientIds() throws InterruptedException {
         List<Object[]> clients = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS),
-                                                                       new FormalField(String.class));
-        return clients.stream().map(c -> c[1].toString()).collect(Collectors.toList());
+                                                                       new FormalField(Integer.class));
+        return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
     }
 
     public void listenForEntityRequests(List<Entity> entities) {
@@ -43,7 +43,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
 
     public void add(List<Entity> entities) {
         try {
-            List<String> clientIds = getClientIds();
+            List<Integer> clientIds = getClientIds();
             addNewEntities(StaticEntityMessage.NEW_ENTITY, entities);
             sendNotifications(StaticEntityMessage.ADDED_ENTITIES, clientIds);
             receiveConfirmations(StaticEntityMessage.RECEIVED_ENTITIES, clientIds);
@@ -57,7 +57,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         try {
             Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
             Entity entity = convert.apply(receivedEntity);
-            String clientId = receivedEntity[3].toString();
+            int clientId = (int) receivedEntity[3];
             if (entities.contains(entity)) {
                sendAnswer(StaticEntityMessage.ANSWER_CLIENT, StaticEntityMessage.GIVE_ENTITY, clientId);
                remove(entity);
@@ -71,7 +71,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
 
     public void remove(Entity entity) {
         try {
-            List<String> clientIds = getClientIds();
+            List<Integer> clientIds = getClientIds();
             sendEntityNotifications(StaticEntityMessage.REMOVE_ENTITY, entity, clientIds);
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to notify clients to remove entity");
@@ -83,13 +83,13 @@ public class StaticEntityServer<Entity extends StaticEntity> {
             entitySpace.put(newEntities, entity.getX(), entity.getY());
     }
 
-    private void sendNotifications(String notification, List<String> clientIds) throws InterruptedException {
-        for (String clientId : clientIds)
+    private void sendNotifications(String notification, List<Integer> clientIds) throws InterruptedException {
+        for (int clientId : clientIds)
             entitySpace.put(notification, clientId);
     }
 
-    private void receiveConfirmations(String confirmation, List<String> clientIds) throws InterruptedException {
-        for (String clientId : clientIds)
+    private void receiveConfirmations(String confirmation, List<Integer> clientIds) throws InterruptedException {
+        for (int clientId : clientIds)
             entitySpace.get(new ActualField(confirmation), new ActualField(clientId));
     }
 
@@ -99,12 +99,12 @@ public class StaticEntityServer<Entity extends StaticEntity> {
                            new FormalField(Integer.class));
     }
 
-    private void sendEntityNotifications(String notification, Entity entity, List<String> clientIds) throws InterruptedException {
-        for (String clientId : clientIds)
+    private void sendEntityNotifications(String notification, Entity entity, List<Integer> clientIds) throws InterruptedException {
+        for (int clientId : clientIds)
             entitySpace.put(notification, entity.getX(), entity.getY(), clientId);
     }
 
-    private void sendAnswer(String answerMarker, String answer, String clientId) throws InterruptedException {
+    private void sendAnswer(String answerMarker, String answer, int clientId) throws InterruptedException {
         entitySpace.put(answerMarker, answer, clientId);
     }
 
@@ -112,7 +112,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         return entitySpace.get(new ActualField(request),
                 new FormalField(Integer.class),
                 new FormalField(Integer.class),
-                new FormalField(String.class));
+                new FormalField(Integer.class));
     }
 
 }

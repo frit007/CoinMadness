@@ -74,7 +74,7 @@ public class GameScreen extends BorderPane {
         chestClient.listenForChanges(chests);
         trapholeClient.listenForChanges(trapholes);
 
-        int id = Integer.parseInt(connectionManager.getClientId().substring(6));
+        int id = connectionManager.getClientId();
         Player player = new Player(id, id,3, coinClient, chestClient, trapholeClient);
 
         map[player.getX()][player.getY()].addEntity(player);

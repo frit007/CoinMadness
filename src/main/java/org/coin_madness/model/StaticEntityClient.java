@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class StaticEntityClient<Entity extends StaticEntity> {
 
-    private String clientId;
+    private int clientId;
     private Space entitySpace;
     private Field[][] map;
     private Function<Object[], Entity> convert;
