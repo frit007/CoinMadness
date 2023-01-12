@@ -2,11 +2,25 @@ package org.coin_madness.model;
 
 import org.coin_madness.helpers.TimeHelper;
 
+import java.util.ArrayList;
+import java.util.List;
+
 public class MovableEntity extends Entity {
 
     int id;
     private float movementSpeed = 3;
     private EntityMovement entityMovement;
+    private List<Runnable> onUpdate = new ArrayList<>();
+
+    public void addOnUpdate(Runnable onUpdate) {
+        this.onUpdate.add(onUpdate);
+    }
+
+    protected void sendUpdates() {
+        for (Runnable runnable: onUpdate) {
+            runnable.run();
+        }
+    }
 
     public MovableEntity(int id, int x, int y) {
         super(x, y);

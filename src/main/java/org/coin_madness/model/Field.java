@@ -30,7 +30,10 @@ public class Field {
             onChange.handle();
         }
         if(entity instanceof Player) { ///
-            playerCollisions((Player) entity);
+            Player localPlayer = (Player) entity;
+            if(localPlayer.isLocalPlayer()) {
+                playerCollisions(localPlayer);
+            }
         }
     }
 

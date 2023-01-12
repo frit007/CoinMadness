@@ -17,7 +17,7 @@ public class GameStatusBar extends HBox {
 
     private ImageLibrary graphics;
 
-    HBox root;
+    public HBox root;
     Label score;
 
     public class PlayerUI {
@@ -41,7 +41,7 @@ public class GameStatusBar extends HBox {
             playerImage.setFitHeight(25);
 
             root.getChildren().add(playerMenu);
-            player.setOnUpdate(this::updateCoins);
+            player.addOnUpdate(this::updateCoins);
         }
 
         private void updateCoins() {
