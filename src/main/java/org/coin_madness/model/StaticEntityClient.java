@@ -31,24 +31,24 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         this.convert = convert;
     }
 
-    public void listenForChanges(List<Entity> entities) {
+    public void listenForChanges() {
         staticEntityThreads.startHandledThread(() -> {
             while (true) {
-                add(entities);
+                add();
             }
         });
 
         staticEntityThreads.startHandledThread(() -> {
             while (true) {
-                remove(entities);
+                remove();
             }
         });
     }
 
-    public void add(List<Entity> entities) {
+    public void add() {
         try {
             receiveNotification(StaticEntityMessage.ADDED_ENTITIES);
-            receiveEntities(StaticEntityMessage.NEW_ENTITY, entities);
+            List<Entity> entities = receiveEntities(StaticEntityMessage.NEW_ENTITY);
             placeEntities(entities);
             sendConfirmation(StaticEntityMessage.RECEIVED_ENTITIES);
         } catch (InterruptedException e) {
@@ -70,10 +70,10 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         }
     }
 
-    public void remove(List<Entity> entities) {
+    public void remove() {
         try {
             Entity entity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
-            removeEntity(entity, entities);
+            removeEntity(entity);
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to remove entity");
         }
@@ -84,13 +84,13 @@ public class StaticEntityClient<Entity extends StaticEntity> {
                         new ActualField(clientId));
     }
 
-    private void receiveEntities(String newEntities, List<Entity> entities) throws InterruptedException {
+    private List<Entity> receiveEntities(String newEntities) throws InterruptedException {
         List<Object[]> receivedEntities = entitySpace
                 .queryAll(new ActualField(newEntities),
                         new FormalField(Integer.class),
                         new FormalField(Integer.class));
 
-        entities.addAll(receivedEntities.stream().map(convert).collect(Collectors.toList()));
+        return receivedEntities.stream().map(convert).collect(Collectors.toList());
     }
 
     private void placeEntities(List<Entity> entities) {
@@ -106,8 +106,8 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         entitySpace.put(notification, entity.getX(), entity.getY(), clientId);
     }
 
-    private String receiveAnswer(String notification) throws InterruptedException {
-        Object[] answer = entitySpace.get(new ActualField(notification),
+    private String receiveAnswer(String answerMarker) throws InterruptedException {
+        Object[] answer = entitySpace.get(new ActualField(answerMarker),
                                           new FormalField(String.class),
                                           new ActualField(clientId));
         return answer[1].toString();
@@ -121,8 +121,7 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         return convert.apply(receivedEntity);
     }
 
-    private void removeEntity(Entity entity, List<Entity> entities) {
-        entities.remove(entity);
+    private void removeEntity(Entity entity) {
         Platform.runLater(() -> map[entity.getX()][entity.getY()].removeEntity(entity));
     }
 

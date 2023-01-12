@@ -19,7 +19,7 @@ public class StaticEntityPlacer {
         while(amountOfCoins > 0 && remainingFields.size() > 0) {
             int pos = rand.nextInt(remainingFields.size());
             Field field = remainingFields.remove(pos);
-            Coin coin = new Coin(field.getX(), field.getY());
+            Coin coin = new Coin(field.getX(), field.getY(), null);
             coins.add(coin);
             amountOfCoins--;
         }

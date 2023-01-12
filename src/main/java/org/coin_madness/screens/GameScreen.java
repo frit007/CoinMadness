@@ -14,12 +14,8 @@ import org.coin_madness.controller.GameController;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.helpers.ScopedThreads;
-import org.coin_madness.messages.GlobalMessage;
-import org.coin_madness.messages.StaticEntityMessage;
 import org.coin_madness.model.*;
 import javafx.scene.text.*;
-import org.jspace.ActualField;
-import org.jspace.FormalField;
 
 import java.util.*;
 import java.util.function.Function;
@@ -33,14 +29,12 @@ public class GameScreen extends BorderPane {
     private GridPane mapView;
     private double tileSize;
     ArrayList<FieldView> views = new ArrayList<>();
-    private List<Coin> coins = new ArrayList<>();
-    private List<Chest> chests = new ArrayList<>();
-    private List<Traphole> trapholes = new ArrayList<>();
+    ScopedThreads gameScreenThreads = new ScopedThreads(() -> {});
+    private StaticEntityClient<Coin> coinClient;
     private GameStatusBar gameStatusBar;
     private Scene scene;
     private Field[][] map;
-    
-    ScopedThreads gameScreenThreads = new ScopedThreads(() -> {});
+ 
     
     public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
         this.scene = scene;
@@ -48,13 +42,21 @@ public class GameScreen extends BorderPane {
         gameStatusBar = new GameStatusBar(graphics);
 
         //TODO: move
-        Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2]);
+        Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], coinClient);
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2]);
 
-        coins = Collections.synchronizedList(coins);
-        chests = Collections.synchronizedList(chests);
-        trapholes = Collections.synchronizedList(trapholes);
+        coinClient = new StaticEntityClient<>(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, map, createCoin);
+        StaticEntityClient<Chest> chestClient = new StaticEntityClient<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, map, createChest);
+        StaticEntityClient<Traphole> trapholeClient = new StaticEntityClient<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, map, createTraphole);
+
+        coinClient.listenForChanges();
+        chestClient.listenForChanges();
+        trapholeClient.listenForChanges();
+
+        int id = connectionManager.getClientId();
+        Player player = new Player(id, id,3);
+        map[player.getX()][player.getY()].addEntity(player);
 
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer();
@@ -66,9 +68,9 @@ public class GameScreen extends BorderPane {
             StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, createChest);
             StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, createTraphole);
 
-            coinServer.listenForEntityRequests(coins);
-            chestServer.listenForEntityRequests(chests);
-            trapholeServer.listenForEntityRequests(trapholes);
+            coinServer.listenForEntityRequests(placedCoins);
+            chestServer.listenForEntityRequests(placedChests);
+            trapholeServer.listenForEntityRequests(placedTrapholes);
 
             gameScreenThreads.startHandledThread(() -> {
                 coinServer.add(placedCoins);
@@ -76,19 +78,7 @@ public class GameScreen extends BorderPane {
                 trapholeServer.add(placedTrapholes);
             });
         }
-
-        StaticEntityClient<Coin> coinClient = new StaticEntityClient<>(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, map, createCoin);
-        StaticEntityClient<Chest> chestClient = new StaticEntityClient<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, map, createChest);
-        StaticEntityClient<Traphole> trapholeClient = new StaticEntityClient<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, map, createTraphole);
-
-        coinClient.listenForChanges(coins);
-        chestClient.listenForChanges(chests);
-        trapholeClient.listenForChanges(trapholes);
-
-        int id = connectionManager.getClientId();
-        Player player = new Player(id, id,3, true, coinClient, chestClient, trapholeClient);
-
-        map[player.getX()][player.getY()].addEntity(player);
+        ///
 
         new GameController(player, scene, map, connectionManager, gameStatusBar);
         Group mazeView = new Group();
