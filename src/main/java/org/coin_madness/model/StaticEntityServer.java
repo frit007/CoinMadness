@@ -17,6 +17,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     private ConnectionManager connectionManager;
     private Space entitySpace;
     private Function<Object[], Entity> convert;
+    private int clientId;
     ScopedThreads staticEntityThreads;
 
     public StaticEntityServer(ConnectionManager connectionManager, Space entitySpace,
@@ -25,6 +26,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         this.entitySpace = entitySpace;
         this.staticEntityThreads = staticEntityThreads;
         this.convert = convert;
+        this.clientId = connectionManager.getClientId();
     }
 
     private List<Integer> getClientIds() throws InterruptedException {
@@ -102,7 +104,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
 
     private void sendEntityNotifications(String notification, Entity entity, List<Integer> clientIds) throws InterruptedException {
         for (int clientId : clientIds)
-            entitySpace.put(notification, entity.getX(), entity.getY(), clientId);
+            entitySpace.put(notification, entity.getX(), entity.getY(), this.clientId, clientId);
     }
 
     private void sendAnswer(String answerMarker, String answer, int clientId) throws InterruptedException {

@@ -29,7 +29,7 @@ public class GameScreen extends BorderPane {
     private double tileSize;
     ArrayList<FieldView> views = new ArrayList<>();
     ScopedThreads gameScreenThreads = new ScopedThreads(() -> {});
-    private StaticEntityClient<Coin> coinClient;
+    private CoinClient coinClient;
     
     public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
 
@@ -38,7 +38,7 @@ public class GameScreen extends BorderPane {
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2]);
 
-        coinClient = new StaticEntityClient<>(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, map, createCoin);
+        coinClient = new CoinClient(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, map, createCoin);
         StaticEntityClient<Chest> chestClient = new StaticEntityClient<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, map, createChest);
         StaticEntityClient<Traphole> trapholeClient = new StaticEntityClient<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, map, createTraphole);
 

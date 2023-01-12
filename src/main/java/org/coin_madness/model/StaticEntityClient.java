@@ -56,23 +56,10 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         }
     }
 
-    public void request(Entity entity, Action given, Action denied) {
-        try {
-            sendEntityRequest(StaticEntityMessage.REQUEST_ENTITY, entity);
-            String answer = receiveAnswer(StaticEntityMessage.ANSWER_CLIENT);
-            if(Objects.equals(answer, StaticEntityMessage.GIVE_ENTITY)) {
-                given.handle();
-            } else {
-                denied.handle();
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Could not request static entity");
-        }
-    }
-
     public void remove() {
         try {
-            Entity entity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
+            Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
+            Entity entity = convert.apply(receivedEntity);
             removeEntity(entity);
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to remove entity");
@@ -102,26 +89,26 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         entitySpace.put(confirmation, clientId);
     }
 
-    private void sendEntityRequest(String notification, Entity entity) throws InterruptedException {
+    void sendEntityRequest(String notification, Entity entity) throws InterruptedException {
         entitySpace.put(notification, entity.getX(), entity.getY(), clientId);
     }
 
-    private String receiveAnswer(String answerMarker) throws InterruptedException {
+    String receiveAnswer(String answerMarker) throws InterruptedException {
         Object[] answer = entitySpace.get(new ActualField(answerMarker),
                                           new FormalField(String.class),
                                           new ActualField(clientId));
         return answer[1].toString();
     }
 
-    private Entity receiveEntityNotification(String notification) throws InterruptedException {
-        Object[] receivedEntity = entitySpace.get(new ActualField(notification),
-                                                  new FormalField(Integer.class),
-                                                  new FormalField(Integer.class),
-                                                  new ActualField(clientId));
-        return convert.apply(receivedEntity);
+    Object[] receiveEntityNotification(String notification) throws InterruptedException {
+        return entitySpace.get(new ActualField(notification),
+                               new FormalField(Integer.class),
+                               new FormalField(Integer.class),
+                               new FormalField(Integer.class),
+                               new ActualField(clientId));
     }
 
-    private void removeEntity(Entity entity) {
+    void removeEntity(Entity entity) {
         Platform.runLater(() -> map[entity.getX()][entity.getY()].removeEntity(entity));
     }
 
