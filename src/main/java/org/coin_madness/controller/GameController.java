@@ -9,6 +9,7 @@ import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.model.Direction;
 import org.coin_madness.model.EntityMovement;
 import org.coin_madness.model.Field;
+import org.coin_madness.model.NetworkPlayer;
 import org.coin_madness.model.Player;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
@@ -25,7 +26,7 @@ public class GameController {
     private int controlledPlayerID;
     private Direction currentDirection;
     private Direction nextDirection;
-    private Map<Integer, Player> networkedPlayers;
+    private Map<Integer, NetworkPlayer> networkedPlayers;
     private Player player;
     private Field[][] map;
 
@@ -80,13 +81,13 @@ public class GameController {
                         if (rID.equals(controlledPlayerID)) continue;
 
                         if (networkedPlayers.containsKey(rID)) {
-                            Player net = networkedPlayers.get(rID);
+                            NetworkPlayer net = networkedPlayers.get(rID);
                             int deltaX = rX - net.getX();
                             int deltaY = rY - net.getY();
                             EntityMovement movement = new EntityMovement(net, deltaX, deltaY, () -> {});
                             net.move(movement, map);
                         } else {
-                            Player p = new Player(rID, rX, rY);
+                            NetworkPlayer p = new NetworkPlayer(rID, rX, rY);
                             map[p.getX()][p.getY()].addEntity(p);
                             networkedPlayers.put(rID, p);
                             gameStatusBar.addPlayer(p);

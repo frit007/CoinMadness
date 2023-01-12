@@ -20,12 +20,9 @@ public class StaticEntityPlacer {
             int pos = rand.nextInt(remainingFields.size());
             Field field = remainingFields.remove(pos);
             Coin coin = new Coin(field.getX(), field.getY());
-            field.addEntity(coin);
             coins.add(coin);
             amountOfCoins--;
         }
-
-
         return coins;
     }
 
@@ -37,7 +34,6 @@ public class StaticEntityPlacer {
         while(remainingFields.size() > 0) {
             Field field = remainingFields.remove(0);
             Chest chest = new Chest(field.getX(), field.getY());
-            field.addEntity(chest);
             chests.add(chest);
         }
         return chests;
@@ -58,7 +54,6 @@ public class StaticEntityPlacer {
             int pos = rand.nextInt(remainingFields.size());
             Field field = remainingFields.remove(pos);
             Traphole traphole = new Traphole(field.getX(), field.getY());
-            field.addEntity(traphole);
             trapholes.add(traphole);
             amountOfTrapholes--;
         }

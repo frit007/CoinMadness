@@ -1,87 +1,46 @@
 package org.coin_madness.model;
 
-import org.coin_madness.helpers.TimeHelper;
-
 public class Player extends MovableEntity {
 
-    private float movementSpeed = 3;
-    private EntityMovement entityMovement;
-
-    public Player(int id, int x, int y) {
+    private int amountOfCoins = 0;
+    private StaticEntityClient<Coin> coinClient;
+    private StaticEntityClient<Chest> chestClient;
+    private StaticEntityClient<Traphole> trapholeClient;
+    private boolean localPlayer;
+    public Player(int id, int x, int y, boolean localPlayer, StaticEntityClient<Coin> coinClient, StaticEntityClient<Chest> chestClient, StaticEntityClient<Traphole> trapholeClient) {
         super(id, x, y);
+        this.coinClient = coinClient;
+        this.chestClient = chestClient;
+        this.trapholeClient = trapholeClient;
     }
 
-    Runnable onUpdate;
-
-
-    /**
-     * This should only be called when the player is not already moving.
-     */
-    public void move(EntityMovement entityMovement, Field[][] map) {
-        if(entityMovement.getNewX() == x && entityMovement.getNewY() == y) {
-            return;
-        }
-        this.entityMovement = entityMovement;
-        map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
-        map[entityMovement.newX][entityMovement.newY].addEntity(this);
-        x = entityMovement.newX;
-        y = entityMovement.newY;
-
-        sendUpdate();
-    }
-
-    public EntityMovement getEntityMovement() {
-        return entityMovement;
-    }
-
-    public boolean isMoving() {
-        return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() <= TimeHelper.getNowInMillis());
-    }
-    public void setOnUpdate(Runnable onUpdate) {
-        this.onUpdate = onUpdate;
-    }
-    private void sendUpdate() {
-        if(onUpdate != null) {
-            onUpdate.run();
-        }
-    }
-
-    public int getId() {
-        return id;
-    }
-
-    public int getX() {
-        return x;
-    }
-
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public int getY() {
-        return y;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
-    public float getMovementSpeed() {
-        return movementSpeed;
-    }
-
-    public void setMovementSpeed(float movementSpeed) {
-        this.movementSpeed = movementSpeed;
-    }
-
-
-        // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}
+    // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}
     public boolean canMoveto(Field[][] fields, EntityMovement movement){
         //Checking for walls
         return !fields[movement.getNewX()][movement.getNewY()].isWall();
     }
 
     public int getAmountOfCoins() {
-        return id;
+        return amountOfCoins;
+    }
+
+    public void setAmountOfCoins(int amountOfCoins) {
+        this.amountOfCoins = amountOfCoins;
+    }
+
+    public StaticEntityClient<Coin> getCoinClient() {
+        return coinClient;
+    }
+
+    public StaticEntityClient<Chest> getChestClient() {
+        return chestClient;
+    }
+
+    public StaticEntityClient<Traphole> getTrapholeClient() {
+        return trapholeClient;
+    }
+
+    public boolean isLocalPlayer() {
+        return localPlayer;
     }
 }
