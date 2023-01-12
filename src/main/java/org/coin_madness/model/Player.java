@@ -11,6 +11,9 @@ public class Player extends MovableEntity {
         super(id, x, y);
     }
 
+    Runnable onUpdate;
+
+
     /**
      * This should only be called when the player is not already moving.
      */
@@ -23,6 +26,8 @@ public class Player extends MovableEntity {
         map[entityMovement.newX][entityMovement.newY].addEntity(this);
         x = entityMovement.newX;
         y = entityMovement.newY;
+
+        sendUpdate();
     }
 
     public EntityMovement getEntityMovement() {
@@ -31,6 +36,14 @@ public class Player extends MovableEntity {
 
     public boolean isMoving() {
         return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() <= TimeHelper.getNowInMillis());
+    }
+    public void setOnUpdate(Runnable onUpdate) {
+        this.onUpdate = onUpdate;
+    }
+    private void sendUpdate() {
+        if(onUpdate != null) {
+            onUpdate.run();
+        }
     }
 
     public int getId() {
@@ -68,4 +81,7 @@ public class Player extends MovableEntity {
         return !fields[movement.getNewX()][movement.getNewY()].isWall();
     }
 
+    public int getAmountOfCoins() {
+        return id;
+    }
 }

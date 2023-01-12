@@ -1,11 +1,11 @@
 package org.coin_madness.screens;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -14,7 +14,6 @@ import org.coin_madness.controller.GameController;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.*;
-import javafx.scene.text.*;
 
 import java.util.*;
 
@@ -31,15 +30,21 @@ public class GameScreen extends BorderPane {
     private List<Chest> chests = new ArrayList<>();
     private List<Traphole> trapholes = new ArrayList<>();
     private Field[][] map;
+    private GameStatusBar gameStatusBar;
+    private Scene scene;
     
     public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
-
+        this.scene = scene;
+        gameStatusBar = new GameStatusBar(graphics);
         this.map = map;
-        new GameController(player, scene, map, connectionManager);
+        new GameController(player, scene, map, connectionManager, gameStatusBar);
         Group mazeView = new Group();
 
-        HBox topBar = new HBox();
-        topBar.getChildren().add(new Text(10,0,"Coins: "));
+        // HBox topBar = new HBox();
+        // topBar.getChildren().add(new Text(10,0,"Coins: "));
+        int preferredGameStatusBarHeight = 30;
+        gameStatusBar.setPrefHeight(preferredGameStatusBarHeight);
+        gameStatusBar.addPlayer(player);
 
         mapView = new GridPane();
         mapView.setAlignment(Pos.CENTER);
@@ -78,14 +83,18 @@ public class GameScreen extends BorderPane {
         mazeView.getChildren().add(scrollPane);
 
         setAlignment(mazeView, Pos.CENTER);
-        setTop(topBar);
+        setTop(gameStatusBar);
         setCenter(mazeView);
 
-        resizeStage(scene.getHeight() - topBar.getHeight(), map.length);
-
         stage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            resizeStage(scene.getHeight() - topBar.getHeight(), map.length);
-            stage.setWidth((tileSize + 1) * map[0].length);
+            resizeStage(scene.getHeight() - preferredGameStatusBarHeight, map.length);
+            double cellWidth = mapView.getCellBounds(0,0).getWidth();
+            stage.setWidth(cellWidth * map[0].length);
+
+        });
+
+        Platform.runLater(() -> {
+            resizeStage(scene.getHeight() - preferredGameStatusBarHeight, map.length);
         });
 
     }
@@ -96,9 +105,11 @@ public class GameScreen extends BorderPane {
 
     private void resizeStage(Double sceneHeight, int mazeRows) {
         tileSize = Math.floor(sceneHeight / mazeRows);
+        gameStatusBar.setPrefHeight(scene.getHeight() - map[0].length * tileSize);
         for (FieldView view : views) {
             view.setSideLength(tileSize);
         }
+
     }
     
 }

@@ -204,7 +204,7 @@ public class ConnectionManager {
             while (true) {
                 synchronized (wrapper) {
                     wrapper.missedKeepAlives++;
-                    if(wrapper.missedKeepAlives > 1000) {
+                    if(wrapper.missedKeepAlives > 5) {
                         System.out.println("Client lost connection to the server");
                         if(onClientTimeout != null) {
                             onClientTimeout.handle(DisconnectReason.TIMEOUT);

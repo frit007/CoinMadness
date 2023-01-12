@@ -3,8 +3,8 @@ package org.coin_madness.controller;
 import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
-import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
+import org.coin_madness.components.GameStatusBar;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.model.Direction;
 import org.coin_madness.model.EntityMovement;
@@ -29,7 +29,7 @@ public class GameController {
     private Player player;
     private Field[][] map;
 
-    public GameController(Player player, Scene scene, Field[][] map, ConnectionManager connectionManager) {
+    public GameController(Player player, Scene scene, Field[][] map, ConnectionManager connectionManager, GameStatusBar gameStatusBar) {
         this.connectionManager = connectionManager;
         this.controlledPlayerID = player.getId();
         this.player = player;
@@ -89,6 +89,7 @@ public class GameController {
                             Player p = new Player(rID, rX, rY);
                             map[p.getX()][p.getY()].addEntity(p);
                             networkedPlayers.put(rID, p);
+                            gameStatusBar.addPlayer(p);
                         }
                     }
 
