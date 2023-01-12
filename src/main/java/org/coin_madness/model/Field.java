@@ -29,7 +29,7 @@ public class Field {
         if(onChange != null) {
             onChange.handle();
         }
-        if(entity instanceof Player) { ///
+        if(entity instanceof Player) {
             playerCollisions((Player) entity);
         }
     }
