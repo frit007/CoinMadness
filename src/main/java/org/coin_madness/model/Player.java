@@ -1,12 +1,13 @@
 package org.coin_madness.model;
 
 public class Player extends MovableEntity {
-
+    public static final int COIN_LIMIT = 4;
     private int amountOfCoins = 0;
-    private boolean localPlayer;
+    private final boolean localPlayer;
 
     public Player(int id, int x, int y, boolean localPlayer) {
         super(id, x, y);
+        this.localPlayer = localPlayer;
     }
 
     // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}
@@ -21,6 +22,7 @@ public class Player extends MovableEntity {
 
     public void setAmountOfCoins(int amountOfCoins) {
         this.amountOfCoins = amountOfCoins;
+        sendUpdates();
     }
     
     public boolean isLocalPlayer() {

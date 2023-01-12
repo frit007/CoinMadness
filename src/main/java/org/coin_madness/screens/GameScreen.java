@@ -34,11 +34,13 @@ public class GameScreen extends BorderPane {
     private GameStatusBar gameStatusBar;
     private Scene scene;
     private Field[][] map;
+    private Stage stage;
  
     
     public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
         this.scene = scene;
         this.map = map;
+        this.stage = stage;
         gameStatusBar = new GameStatusBar(graphics);
 
         //TODO: move
@@ -55,7 +57,7 @@ public class GameScreen extends BorderPane {
         trapholeClient.listenForChanges();
 
         int id = connectionManager.getClientId();
-        Player player = new Player(id, id,3);
+        Player player = new Player(id, id,3, true);
         map[player.getX()][player.getY()].addEntity(player);
 
         if (connectionManager.isHost()) {
@@ -128,17 +130,18 @@ public class GameScreen extends BorderPane {
             resizeStage(scene.getHeight() - preferredGameStatusBarHeight, map.length);
             double cellWidth = mapView.getCellBounds(0,0).getWidth();
             stage.setWidth(cellWidth * map[0].length);
-            gameStatusBar.setPrefWidth(cellWidth * map[0].length);
             gameStatusBar.root.setPrefWidth(cellWidth * map[0].length);
         });
 
         Platform.runLater(() -> {
             resizeStage(scene.getHeight() - preferredGameStatusBarHeight, map.length);
+            gameStatusBar.root.setPrefWidth(scene.getWidth());
         });
 
     }
 
     private void resizeStage(Double sceneHeight, int mazeRows) {
+
         tileSize = Math.floor(sceneHeight / mazeRows);
         gameStatusBar.setPrefHeight(scene.getHeight() - map[0].length * tileSize);
         for (FieldView view : views) {

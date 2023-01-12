@@ -12,6 +12,9 @@ import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Player;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
 
 public class GameStatusBar extends HBox {
 
@@ -36,18 +39,28 @@ public class GameStatusBar extends HBox {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
             playerImage.setPreserveRatio(true);
             playerImage.setFitHeight(25);
 
-            root.getChildren().add(playerMenu);
+
+            int index = 0;
+            while (index < playerUIs.size()) {
+                if(player.getId() < playerUIs.get(index).player.getId()) {
+                    break;
+                }
+                index++;
+            }
+            // make sure the players are drawn in the same order on everyones screen
+            playerUIs.add(index, this);
+            root.getChildren().add(index + 1, playerMenu);
+
             player.addOnUpdate(this::updateCoins);
         }
 
         private void updateCoins() {
             coins.getChildren().clear();
 
-            int coinLimit = 4; // TODO use a global coin limit to make it easier to change it
+            int coinLimit = Player.COIN_LIMIT;
             for (int i = 0; i < coinLimit; i++) {
                 ImageView view = new ImageView();
                 view.setFitWidth(30);
@@ -62,6 +75,7 @@ public class GameStatusBar extends HBox {
         }
 
     }
+    List<PlayerUI> playerUIs = new ArrayList<>();
 
     public GameStatusBar(ImageLibrary graphics) {
         setBackground(new Background(new BackgroundFill(Color.LIGHTGRAY,
@@ -71,6 +85,7 @@ public class GameStatusBar extends HBox {
         try {
             root = FXMLLoader.load(Thread.currentThread().getContextClassLoader().getResource("status_bar.fxml"));
             score = (Label) root.lookup("#score");
+
             // TODO listen for score updates
         } catch (IOException e) {
             e.printStackTrace();

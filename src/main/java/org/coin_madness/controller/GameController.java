@@ -86,7 +86,7 @@ public class GameController {
                             EntityMovement movement = new EntityMovement(net, deltaX, deltaY, () -> {});
                             net.move(movement, map);
                         } else {
-                            Player p = new Player(rID, rX, rY, false, null, null, null);
+                            Player p = new Player(rID, rX, rY, false);
                             map[p.getX()][p.getY()].addEntity(p);
                             networkedPlayers.put(rID, p);
                             gameStatusBar.addPlayer(p);
