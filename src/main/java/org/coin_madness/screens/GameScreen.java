@@ -29,31 +29,30 @@ public class GameScreen extends BorderPane {
     private GridPane mapView;
     private double tileSize;
     ArrayList<FieldView> views = new ArrayList<>();
-    ScopedThreads gameScreenThreads = new ScopedThreads(() -> {});
     private GameStatusBar gameStatusBar;
     private Scene scene;
     private Field[][] map;
-    private Stage stage;
-    private CoinClient coinClient;
-    
+    protected GameState gameState = new GameState();
     public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
         this.scene = scene;
         this.map = map;
-        this.stage = stage;
         gameStatusBar = new GameStatusBar(graphics);
 
+        gameState.connectionManager = connectionManager;
+        gameState.map = map;
+
         //TODO: move
-        Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], coinClient);
+        Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2]);
 
-        coinClient = new CoinClient(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, map, createCoin);
-        StaticEntityClient<Chest> chestClient = new StaticEntityClient<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, map, createChest);
-        StaticEntityClient<Traphole> trapholeClient = new StaticEntityClient<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, map, createTraphole);
+        gameState.coinClient = new CoinClient(connectionManager.getCoinSpace(), gameState, createCoin);
+        gameState.chestClient = new StaticEntityClient<>(connectionManager.getChestSpace(), gameState, createChest);
+        gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
 
-        coinClient.listenForChanges();
-        chestClient.listenForChanges();
-        trapholeClient.listenForChanges();
+        gameState.coinClient.listenForChanges();
+        gameState.chestClient.listenForChanges();
+        gameState.trapholeClient.listenForChanges();
 
         int id = connectionManager.getClientId();
         Player player = new Player(id, id,3, true);
@@ -65,15 +64,15 @@ public class GameScreen extends BorderPane {
             List<Chest> placedChests = placer.placeChests(map);
             List<Traphole> placedTrapholes = placer.placeTrapholes(map, AMOUNT_OF_TRAPHOLES);
 
-            StaticEntityServer<Coin> coinServer = new StaticEntityServer<>(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, createCoin);
-            StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, createChest);
-            StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, createTraphole);
+            StaticEntityServer<Coin> coinServer = new StaticEntityServer<>(gameState, connectionManager.getCoinSpace(), createCoin);
+            StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(gameState, connectionManager.getChestSpace(), createChest);
+            StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
 
             coinServer.listenForEntityRequests(placedCoins);
             chestServer.listenForEntityRequests(placedChests);
             trapholeServer.listenForEntityRequests(placedTrapholes);
 
-            gameScreenThreads.startHandledThread(() -> {
+            gameState.gameThreads.startHandledThread(() -> {
                 coinServer.add(placedCoins);
                 chestServer.add(placedChests);
                 trapholeServer.add(placedTrapholes);
@@ -81,7 +80,7 @@ public class GameScreen extends BorderPane {
         }
         ///
 
-        new GameController(player, scene, map, connectionManager, gameStatusBar);
+        new GameController(player, scene, connectionManager, gameStatusBar, gameState);
         Group mazeView = new Group();
 
         // HBox topBar = new HBox();
