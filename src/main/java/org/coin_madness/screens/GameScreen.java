@@ -45,6 +45,10 @@ public class GameScreen extends BorderPane {
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2]);
 
+        coins = Collections.synchronizedList(coins);
+        chests = Collections.synchronizedList(chests);
+        trapholes = Collections.synchronizedList(trapholes);
+
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer();
             List<Coin> placedCoins = placer.placeCoins(map, AMOUNT_OF_COINS);

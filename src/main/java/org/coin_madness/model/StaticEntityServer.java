@@ -59,6 +59,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
             Entity entity = convert.apply(receivedEntity);
             int clientId = (int) receivedEntity[3];
             if (entities.contains(entity)) {
+                entities.remove(entity);
                sendAnswer(StaticEntityMessage.ANSWER_CLIENT, StaticEntityMessage.GIVE_ENTITY, clientId);
                remove(entity);
             } else {

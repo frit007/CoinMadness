@@ -1,5 +1,6 @@
 package org.coin_madness.model;
 
+import javafx.application.Platform;
 import org.coin_madness.helpers.Action;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ScopedThreads;
@@ -94,7 +95,7 @@ public class StaticEntityClient<Entity extends StaticEntity> {
 
     private void placeEntities(List<Entity> entities) {
         for (Entity entity : entities)
-            map[entity.getX()][entity.getY()].addEntity(entity);
+            Platform.runLater(() -> map[entity.getX()][entity.getY()].addEntity(entity));
     }
 
     private void sendConfirmation(String confirmation) throws InterruptedException {
@@ -121,8 +122,8 @@ public class StaticEntityClient<Entity extends StaticEntity> {
     }
 
     private void removeEntity(Entity entity, List<Entity> entities) {
-        map[entity.getX()][entity.getY()].removeEntity(entity);
         entities.remove(entity);
+        Platform.runLater(() -> map[entity.getX()][entity.getY()].removeEntity(entity));
     }
 
 }
