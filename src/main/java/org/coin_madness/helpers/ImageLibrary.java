@@ -29,4 +29,7 @@ public class ImageLibrary {
     public Image walkDown = new Image("Walk_Down_Anim.png");
     public Image[] playerDownAnim = {idleDown, walkDown};
 
+    // ---- Player UI ----
+    public Image coinSlot = new Image("Coin_Slot.png");
+
 }

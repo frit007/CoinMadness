@@ -1,11 +1,11 @@
 package org.coin_madness.screens;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.ScrollPane;
-import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -13,10 +13,12 @@ import org.coin_madness.components.*;
 import org.coin_madness.controller.GameController;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
+import org.coin_madness.helpers.ScopedThreads;
 import org.coin_madness.model.*;
 import javafx.scene.text.*;
 
 import java.util.*;
+import java.util.function.Function;
 
 public class GameScreen extends BorderPane {
 
@@ -27,19 +29,65 @@ public class GameScreen extends BorderPane {
     private GridPane mapView;
     private double tileSize;
     ArrayList<FieldView> views = new ArrayList<>();
-    private List<Coin> coins = new ArrayList<>();
-    private List<Chest> chests = new ArrayList<>();
-    private List<Traphole> trapholes = new ArrayList<>();
+    private GameStatusBar gameStatusBar;
+    private Scene scene;
     private Field[][] map;
-    
-    public GameScreen(Stage stage, Scene scene, Player player, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
-
+    protected GameState gameState = new GameState();
+    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
+        this.scene = scene;
         this.map = map;
-        new GameController(player, scene, map, connectionManager);
+        gameStatusBar = new GameStatusBar(graphics);
+
+        gameState.connectionManager = connectionManager;
+        gameState.map = map;
+
+        //TODO: move
+        Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
+        Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
+        Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2]);
+
+        gameState.coinClient = new CoinClient(connectionManager.getCoinSpace(), gameState, createCoin);
+        gameState.chestClient = new StaticEntityClient<>(connectionManager.getChestSpace(), gameState, createChest);
+        gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
+
+        gameState.coinClient.listenForChanges();
+        gameState.chestClient.listenForChanges();
+        gameState.trapholeClient.listenForChanges();
+
+        int id = connectionManager.getClientId();
+        Player player = new Player(id, id,3, true);
+        map[player.getX()][player.getY()].addEntity(player);
+
+        if (connectionManager.isHost()) {
+            StaticEntityPlacer placer = new StaticEntityPlacer();
+            List<Coin> placedCoins = placer.placeCoins(map, AMOUNT_OF_COINS);
+            List<Chest> placedChests = placer.placeChests(map);
+            List<Traphole> placedTrapholes = placer.placeTrapholes(map, AMOUNT_OF_TRAPHOLES);
+
+            StaticEntityServer<Coin> coinServer = new StaticEntityServer<>(gameState, connectionManager.getCoinSpace(), createCoin);
+            StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(gameState, connectionManager.getChestSpace(), createChest);
+            StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
+
+            coinServer.listenForEntityRequests(placedCoins);
+            chestServer.listenForEntityRequests(placedChests);
+            trapholeServer.listenForEntityRequests(placedTrapholes);
+
+            gameState.gameThreads.startHandledThread(() -> {
+                coinServer.add(placedCoins);
+                chestServer.add(placedChests);
+                trapholeServer.add(placedTrapholes);
+            });
+        }
+        ///
+
+        new GameController(player, scene, connectionManager, gameStatusBar, gameState);
         Group mazeView = new Group();
 
-        HBox topBar = new HBox();
-        topBar.getChildren().add(new Text(10,0,"Coins: "));
+        // HBox topBar = new HBox();
+        // topBar.getChildren().add(new Text(10,0,"Coins: "));
+        int preferredGameStatusBarHeight = 30;
+        gameStatusBar.setPrefHeight(preferredGameStatusBarHeight);
+        gameStatusBar.addPlayer(player);
 
         mapView = new GridPane();
         mapView.setAlignment(Pos.CENTER);
@@ -50,7 +98,9 @@ public class GameScreen extends BorderPane {
         drawerMap.put(Coin.class, new CoinDrawer(graphics));
         drawerMap.put(Chest.class, new ChestDrawer(graphics));
         drawerMap.put(Traphole.class, new TrapholeDrawer(graphics));
-        drawerMap.put(Player.class, new PlayerDrawer(graphics, mazeView));
+        PlayerDrawer playerDrawer = new PlayerDrawer(graphics, mazeView);
+        drawerMap.put(Player.class, playerDrawer);
+        drawerMap.put(Enemy.class, playerDrawer);
 
         for (Field[] row : map) {
             for(Field field : row) {
@@ -61,12 +111,6 @@ public class GameScreen extends BorderPane {
             }
         }
 
-        StaticEntityPlacer placer = new StaticEntityPlacer();
-        coins = placer.placeCoins(map, AMOUNT_OF_COINS);
-        trapholes = placer.placeTrapholes(map, AMOUNT_OF_TRAPHOLES);
-        chests = placer.placeChests(map);
-        map[player.getX()][player.getY()].addEntity(player);
-
         scrollPane = new ScrollPane(mapView);
         scrollPane.getStyleClass().add("edge-to-edge");
         scrollPane.setFitToWidth(true);
@@ -76,29 +120,33 @@ public class GameScreen extends BorderPane {
         scrollPane.setVbarPolicy(ScrollPane.ScrollBarPolicy.NEVER);
 
         mazeView.getChildren().add(scrollPane);
-
         setAlignment(mazeView, Pos.CENTER);
-        setTop(topBar);
+        setTop(gameStatusBar);
         setCenter(mazeView);
 
-        resizeStage(scene.getHeight() - topBar.getHeight(), map.length);
-
         stage.heightProperty().addListener((obs, oldVal, newVal) -> {
-            resizeStage(scene.getHeight() - topBar.getHeight(), map.length);
-            stage.setWidth((tileSize + 1) * map[0].length);
+            resizeStage(scene.getHeight() - preferredGameStatusBarHeight, map.length);
+            double cellWidth = mapView.getCellBounds(0,0).getWidth();
+            stage.setWidth(cellWidth * map[0].length);
+            gameStatusBar.root.setPrefWidth(cellWidth * map[0].length);
+        });
+
+        Platform.runLater(() -> {
+            resizeStage(scene.getHeight() - preferredGameStatusBarHeight, map.length);
+            gameStatusBar.root.setPrefWidth(scene.getWidth());
         });
 
     }
-    public Field[][] getMap(){
-        return this.map;
-    }
-
 
     private void resizeStage(Double sceneHeight, int mazeRows) {
+
         tileSize = Math.floor(sceneHeight / mazeRows);
+        gameStatusBar.setPrefHeight(scene.getHeight() - map[0].length * tileSize);
         for (FieldView view : views) {
             view.setSideLength(tileSize);
         }
+
+
     }
     
 }

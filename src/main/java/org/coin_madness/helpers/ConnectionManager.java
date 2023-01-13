@@ -14,6 +14,9 @@ import java.util.Map;
 public class ConnectionManager {
     private Space lobby = null;
     private Space positionsSpace = null;
+    private Space coinSpace = null;
+    private Space chestSpace = null;
+    private Space trapholeSpace = null;
     private Space fieldLocksSpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
@@ -48,6 +51,18 @@ public class ConnectionManager {
         return positionsSpace;
     }
 
+    public Space getCoinSpace() {
+        return coinSpace;
+    }
+
+    public Space getChestSpace() {
+        return chestSpace;
+    }
+
+    public Space getTrapholeSpace() {
+        return trapholeSpace;
+    }
+
     public Space getFieldLocksSpace() {
         return fieldLocksSpace;
     }
@@ -69,9 +84,17 @@ public class ConnectionManager {
      * Create the spaces that are to be used in the game. Called by the host.
      */
     public void createGameSpaces() {
-
         positionsSpace = new SequentialSpace();
         repository.add("positions", positionsSpace);
+
+        coinSpace = new SequentialSpace();
+        repository.add("coins", coinSpace);
+
+        chestSpace = new SequentialSpace();
+        repository.add("chests", chestSpace);
+
+        trapholeSpace = new SequentialSpace();
+        repository.add("trapholes", trapholeSpace);
 
         // Right now we just read the map from the CSV file, but in future we might have more
         //  maps and need to change this to use the correct one.
@@ -99,6 +122,9 @@ public class ConnectionManager {
         if (remoteIp == null) return;
         try {
             positionsSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/positions?keep"));
+            coinSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/coins?keep"));
+            chestSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/chests?keep"));
+            trapholeSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/trapholes?keep"));
             fieldLocksSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/fieldlocks?keep"));
         } catch (IOException e) {
             e.printStackTrace();
@@ -204,7 +230,7 @@ public class ConnectionManager {
             while (true) {
                 synchronized (wrapper) {
                     wrapper.missedKeepAlives++;
-                    if(wrapper.missedKeepAlives > 1000) {
+                    if(wrapper.missedKeepAlives > 5) {
                         System.out.println("Client lost connection to the server");
                         if(onClientTimeout != null) {
                             onClientTimeout.handle(DisconnectReason.TIMEOUT);

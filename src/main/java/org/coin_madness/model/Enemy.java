@@ -6,7 +6,4 @@ public class Enemy extends MovableEntity {
         super(id, x, y);
     }
 
-    public void move(EntityMovement movement, Field[][] map) {
-
-    }
 }

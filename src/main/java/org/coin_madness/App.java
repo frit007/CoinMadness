@@ -27,7 +27,7 @@ public class App extends Application {
     private StackPane root;
     public static final Color BACKGROUND = Color.WHITE;
     private static final int SCENE_WIDTH = 640;
-    private static final int SCENE_HEIGHT = 640;
+    private static final int SCENE_HEIGHT = 670;
     ImageLibrary graphics = new ImageLibrary();
     Stage stage;
     Scene scene;
@@ -67,9 +67,7 @@ public class App extends Application {
             lobbyScreen.setOnGameStart(() -> {
                 // TODO - maybe, move to some kind of GameBuilder
                 connectionManager.joinGameSpaces();
-                int id = connectionManager.getClientId();
-                Player player = new Player(id, id,3);
-                BorderPane gameView = new GameScreen(stage, scene, player, map, graphics, connectionManager);
+                BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
             });
