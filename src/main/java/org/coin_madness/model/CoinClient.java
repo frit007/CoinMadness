@@ -1,5 +1,6 @@
 package org.coin_madness.model;
 
+import javafx.application.Platform;
 import org.coin_madness.helpers.Action;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ScopedThreads;
@@ -14,9 +15,8 @@ public class CoinClient extends StaticEntityClient<Coin> {
 
     private Function<Object[], Coin> convert;
 
-    public CoinClient(ConnectionManager connectionManager, Space entitySpace,
-                      ScopedThreads staticEntityThreads, Field[][] map, Function<Object[], Coin> convert) {
-        super(connectionManager, entitySpace, staticEntityThreads, map, convert);
+    public CoinClient(Space entitySpace, GameState gameState, Function<Object[], Coin> convert) {
+        super(entitySpace, gameState, convert);
         this.convert = convert;
     }
 
@@ -34,22 +34,24 @@ public class CoinClient extends StaticEntityClient<Coin> {
         }
     }
 
-    public void remove(HashMap<Integer, Player> networkPlayers) {
+    public void remove() {
         try {
             Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
             Coin coin = convert.apply(receivedEntity);
-            int clientId = (int) receivedEntity[2];
-            removeCoin(coin, clientId, networkPlayers);
+            int clientId = (int) receivedEntity[3];
+            removeEntity(coin, clientId);
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to remove coin");
         }
     }
 
-    private void removeCoin(Coin coin, int clientId, HashMap<Integer, Player> networkPlayers) {
+    private void removeEntity(Coin coin, int clientId) {
         removeEntity(coin);
-        if (networkPlayers.containsKey(clientId)) {
-            Player net = networkPlayers.get(clientId);
-            net.setAmountOfCoins(net.getAmountOfCoins() + 1);
+        if(gameState.networkedPlayers.containsKey(clientId)) {
+            Platform.runLater(() -> {
+                Player net = gameState.networkedPlayers.get(clientId);
+                net.setAmountOfCoins(net.getAmountOfCoins() + 1);
+            });
         }
     }
 

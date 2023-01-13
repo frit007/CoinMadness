@@ -95,7 +95,13 @@ public class LobbyClient {
             while(true) {
                 // wait to update the lobby
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.LOBBY_UPDATED), new ActualField(clientId));
-                int connectedPlayers = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class)).size();
+                int connectedPlayers = connectionManager
+                        .getLobby()
+                        .queryAll(
+                                new ActualField(GlobalMessage.CLIENTS),
+                                new FormalField(Integer.class),
+                                new FormalField(Integer.class)
+                        ).size();
                 int readyPlayers = connectionManager.getLobby().queryAll(new ActualField(LobbyMessage.READY), new FormalField(Integer.class)).size();
 
                 LobbyUpdate lobbyUpdate = new LobbyUpdate(connectedPlayers, readyPlayers);

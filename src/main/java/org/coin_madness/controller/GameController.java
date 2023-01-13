@@ -4,18 +4,13 @@ import javafx.animation.AnimationTimer;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
+import org.coin_madness.components.GameStatusBar;
 import org.coin_madness.helpers.ConnectionManager;
-import org.coin_madness.model.Direction;
-import org.coin_madness.model.EntityMovement;
-import org.coin_madness.model.Field;
-import org.coin_madness.model.NetworkPlayer;
-import org.coin_madness.model.Player;
+import org.coin_madness.model.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GameController {
 
@@ -25,15 +20,16 @@ public class GameController {
     private int controlledPlayerID;
     private Direction currentDirection;
     private Direction nextDirection;
-    private Map<Integer, NetworkPlayer> networkedPlayers;
     private Player player;
     private Field[][] map;
+    private GameState gameState;
 
-    public GameController(Player player, Scene scene, Field[][] map, ConnectionManager connectionManager) {
+    public GameController(Scene scene, ConnectionManager connectionManager, GameState gameState) {
         this.connectionManager = connectionManager;
+        player = gameState.localPlayer;
         this.controlledPlayerID = player.getId();
-        this.player = player;
-        this.map = map;
+        this.map = gameState.map;
+        this.gameState = gameState;
 
         // post the initial location, and take the field lock
         try {
@@ -45,8 +41,6 @@ public class GameController {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        networkedPlayers = new HashMap<>();
 
         playerControl =  keyEvent -> {
             Direction dir = Direction.fromKeyCode(keyEvent.getCode());
@@ -79,16 +73,14 @@ public class GameController {
 
                         if (rID.equals(controlledPlayerID)) continue;
 
-                        if (networkedPlayers.containsKey(rID)) {
-                            NetworkPlayer net = networkedPlayers.get(rID);
+                        if (gameState.networkedPlayers.containsKey(rID)) {
+                            Player net = gameState.networkedPlayers.get(rID);
                             int deltaX = rX - net.getX();
                             int deltaY = rY - net.getY();
                             EntityMovement movement = new EntityMovement(net, deltaX, deltaY, () -> {});
                             net.move(movement, map);
                         } else {
-                            NetworkPlayer p = new NetworkPlayer(rID, rX, rY);
-                            map[p.getX()][p.getY()].addEntity(p);
-                            networkedPlayers.put(rID, p);
+                            // unknown player, all known players have been created at start up.
                         }
                     }
 
@@ -109,7 +101,7 @@ public class GameController {
      */
     public void updateMovement() {
         try {
-            if (currentDirection != null && !player.isMoving()) {
+            if (currentDirection != null && !player.isMoving() && player.isAlive()) {
 
                 // Select the correct movement based on current and next direction
                 EntityMovement preferredMovement = new EntityMovement(player, nextDirection, this::updateMovement);

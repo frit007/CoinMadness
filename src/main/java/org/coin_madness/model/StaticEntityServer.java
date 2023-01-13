@@ -1,7 +1,6 @@
 package org.coin_madness.model;
 
 import org.coin_madness.helpers.ConnectionManager;
-import org.coin_madness.helpers.ScopedThreads;
 import org.coin_madness.messages.GlobalMessage;
 import org.coin_madness.messages.StaticEntityMessage;
 import org.jspace.ActualField;
@@ -14,25 +13,36 @@ import java.util.stream.Collectors;
 
 public class StaticEntityServer<Entity extends StaticEntity> {
 
+    private final GameState gameState;
     private ConnectionManager connectionManager;
     private Space entitySpace;
     private Function<Object[], Entity> convert;
     private int clientId;
-    ScopedThreads staticEntityThreads;
 
-    public StaticEntityServer(ConnectionManager connectionManager, Space entitySpace,
-                              ScopedThreads staticEntityThreads, Function<Object[], Entity> convert) {
-        this.connectionManager = connectionManager;
+    public StaticEntityServer(GameState gameState, Space entitySpace, Function<Object[], Entity> convert) {
+        this.gameState = gameState;
+        this.connectionManager = gameState.connectionManager;
         this.entitySpace = entitySpace;
-        this.staticEntityThreads = staticEntityThreads;
         this.convert = convert;
         this.clientId = connectionManager.getClientId();
     }
 
-    protected List<Integer> getClientIds() throws InterruptedException {
-        List<Object[]> clients = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS),
-                                                                       new FormalField(Integer.class));
+    private List<Integer> getClientIds() throws InterruptedException {
+        List<Object[]> clients = connectionManager
+                .getLobby()
+                .queryAll(new ActualField(GlobalMessage.CLIENTS),
+                        new FormalField(Integer.class),
+                        new FormalField(Integer.class)
+                );
         return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
+    }
+
+    public void listenForEntityRequests(List<Entity> entities) {
+        gameState.gameThreads.startHandledThread(() -> {
+            while (true) {
+                checkRequest(entities);
+            }
+        });
     }
 
     public void add(List<Entity> entities) {
@@ -47,10 +57,27 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         }
     }
 
-    public void remove(Entity entity) {
+    public void checkRequest(List<Entity> entities) {
+        try {
+            Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
+            Entity entity = convert.apply(receivedEntity);
+            int clientId = (int) receivedEntity[3];
+            if (entities.contains(entity)) {
+                entities.remove(entity);
+               sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.GIVE_ENTITY, clientId);
+               remove(entity, clientId);
+            } else {
+                sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.DENY_ENTITY, clientId);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException("Could not check static entity request");
+        }
+    }
+
+    public void remove(Entity entity, Integer removerClientId) {
         try {
             List<Integer> clientIds = getClientIds();
-            sendEntityNotifications(StaticEntityMessage.REMOVE_ENTITY, entity, clientIds);
+            sendEntityNotifications(StaticEntityMessage.REMOVE_ENTITY, entity, removerClientId, clientIds);
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to notify clients to remove entity");
         }
@@ -77,9 +104,9 @@ public class StaticEntityServer<Entity extends StaticEntity> {
                            new FormalField(Integer.class));
     }
 
-    private void sendEntityNotifications(String notification, Entity entity, List<Integer> clientIds) throws InterruptedException {
+    private void sendEntityNotifications(String notification, Entity entity, Integer removerClientId, List<Integer> clientIds) throws InterruptedException {
         for (int clientId : clientIds)
-            entitySpace.put(notification, entity.getX(), entity.getY(), this.clientId, clientId);
+            entitySpace.put(notification, entity.getX(), entity.getY(), removerClientId, clientId);
     }
 
     protected void sendAnswer(String answerMarker, String answer, int clientId) throws InterruptedException {

@@ -1,6 +1,7 @@
 package org.coin_madness;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -11,12 +12,15 @@ import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Field;
 import org.coin_madness.helpers.MazeLoader;
+import org.coin_madness.model.GameState;
 import org.coin_madness.model.Player;
+import org.coin_madness.screens.EndScreen;
 import org.coin_madness.screens.GameScreen;
 import org.coin_madness.screens.LobbyScreen;
 import org.coin_madness.screens.MainScreen;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 
 /**
@@ -27,7 +31,7 @@ public class App extends Application {
     private StackPane root;
     public static final Color BACKGROUND = Color.WHITE;
     private static final int SCENE_WIDTH = 640;
-    private static final int SCENE_HEIGHT = 640;
+    private static final int SCENE_HEIGHT = 670;
     ImageLibrary graphics = new ImageLibrary();
     Stage stage;
     Scene scene;
@@ -36,9 +40,6 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         this.stage = stage;
-        ConnectionManager connectionManager = new ConnectionManager();
-        MazeLoader loader = new MazeLoader();
-        map = loader.load("src/main/resources/map.csv", ",");
 
         root = new StackPane();
         root.setBackground(new Background(new BackgroundFill(BACKGROUND, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -54,8 +55,17 @@ public class App extends Application {
     //Dispay of the "main screen"
     //Changing scenes
     private void showStartScreen(String errorMessage) {
+        MazeLoader loader = new MazeLoader();
+        try {
+            map = loader.load("src/main/resources/map.csv", ",");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
         if(connectionManager != null) {
-            connectionManager.stop();
+            ConnectionManager previousConnectionManager = connectionManager;
+            new Thread(() -> {
+                previousConnectionManager.stop();
+            }).start();
         }
         connectionManager = new ConnectionManager();
         MainScreen mainScreen = new MainScreen(connectionManager, errorMessage);
@@ -67,7 +77,7 @@ public class App extends Application {
             lobbyScreen.setOnGameStart(() -> {
                 // TODO - maybe, move to some kind of GameBuilder
                 connectionManager.joinGameSpaces();
-                BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager);
+                BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager, this::showEndScreen);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
             });
@@ -76,8 +86,29 @@ public class App extends Application {
             });
         });
 
-
         changeView(mainScreen);
+    }
+
+    private void showEndScreen(GameState gameState) {
+        EndScreen endScreen = new EndScreen(gameState, graphics, error -> {
+            System.out.println("Get end click!");
+
+            showStartScreen(error);
+        });
+
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                Platform.runLater(() -> {
+                    changeView(endScreen);
+                });
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+
+
     }
 
     private void changeView(Node view) {

@@ -16,29 +16,26 @@ import java.util.stream.Collectors;
 
 public class StaticEntityClient<Entity extends StaticEntity> {
 
-    private int clientId;
-    private Space entitySpace;
-    private Field[][] map;
-    private Function<Object[], Entity> convert;
-    ScopedThreads staticEntityThreads;
+    protected final GameState gameState;
+    protected int clientId;
+    protected Space entitySpace;
+    protected Function<Object[], Entity> convert;
 
-    public StaticEntityClient(ConnectionManager connectionManager, Space entitySpace,
-                              ScopedThreads staticEntityThreads, Field[][] map, Function<Object[], Entity> convert) {
-        this.clientId = connectionManager.getClientId();
+    public StaticEntityClient(Space entitySpace, GameState gameState, Function<Object[], Entity> convert) {
+        this.clientId = gameState.connectionManager.getClientId();
         this.entitySpace = entitySpace;
-        this.staticEntityThreads = staticEntityThreads;
-        this.map = map;
         this.convert = convert;
+        this.gameState = gameState;
     }
 
     public void listenForChanges() {
-        staticEntityThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread(() -> {
             while (true) {
                 add();
             }
         });
 
-        staticEntityThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread(() -> {
             while (true) {
                 remove();
             }
@@ -82,7 +79,7 @@ public class StaticEntityClient<Entity extends StaticEntity> {
 
     private void placeEntities(List<Entity> entities) {
         for (Entity entity : entities)
-            Platform.runLater(() -> map[entity.getX()][entity.getY()].addEntity(entity));
+            Platform.runLater(() -> gameState.map[entity.getX()][entity.getY()].addEntity(entity));
     }
 
     private void sendConfirmation(String confirmation) throws InterruptedException {
@@ -109,7 +106,7 @@ public class StaticEntityClient<Entity extends StaticEntity> {
     }
 
     protected void removeEntity(Entity entity) {
-        Platform.runLater(() -> map[entity.getX()][entity.getY()].removeEntity(entity));
+        Platform.runLater(() -> gameState.map[entity.getX()][entity.getY()].removeEntity(entity));
     }
 
 }

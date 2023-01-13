@@ -9,6 +9,7 @@ import javafx.util.Duration;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.EntityMovement;
 import org.coin_madness.model.MovableEntity;
+import org.coin_madness.model.Player;
 
 import java.util.HashMap;
 
@@ -36,12 +37,26 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
     //TODO: different color for networkPlayers? enemies?
     public void draw(MovableEntity player, ImageView view) {
         EntityMovement movement = player.getEntityMovement();
+        //Handling
         if(movement == null) {
             view.setImage(graphics.idleDown);
             return;
         }
 
         AnimationState animationState = getAnimation(player.getId());
+
+        if(player instanceof Player) {
+            Player player1 = (Player) player;
+            if(!player1.isAlive()) {
+                view.setImage(graphics.tombstone);
+                // stop the animation, since the player is now they dead
+                animationState.translateTransition.stop();
+                animationState.timeline.stop();
+                animationState.imageView.setImage(null);
+                return;
+            }
+        }
+
 
         if(animationState.currentMovement != movement) {
             animationState.playAnim(findAnimation(movement), movement, view);

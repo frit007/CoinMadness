@@ -18,7 +18,7 @@ public class LobbyCommon {
     // send a direct notification to everybody that they need to fetch lobby information
     public void sendLobbyUpdated() {
         try {
-            var clients = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class));
+            var clients = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class));
             for (var client: clients) {
                 Integer otherClientId = (Integer) client[1];
                 connectionManager.getLobby().put(LobbyMessage.LOBBY_UPDATED, otherClientId);

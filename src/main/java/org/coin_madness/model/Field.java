@@ -3,8 +3,6 @@ package org.coin_madness.model;
 import org.coin_madness.helpers.Action;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class Field {
@@ -26,23 +24,23 @@ public class Field {
 
     public void addEntity(Entity entity) {
         entities.add(entity);
-        if(onChange != null) {
-            onChange.handle();
+        if(entity instanceof Player) { ///
+            Player localPlayer = (Player) entity;
+            if(localPlayer.isLocalPlayer()) {
+                playerCollisions(localPlayer);
+            }
         }
-        if(entity instanceof Player) {
-            playerCollisions((Player) entity);
-        }
+        sendUpdated();
     }
 
     public void removeEntity(Entity entity) {
         entities.remove(entity);
-        if(onChange != null) {
-            onChange.handle();
-        }
+        sendUpdated();
     }
 
     public void playerCollisions(Player player) {
-        for (Entity entity : entities) {
+        // copy the player array since onPlayerCollision might update it
+        for (Entity entity : new ArrayList<>(entities)) {
             if (entity instanceof CollidesWithPlayer) {
                 ((CollidesWithPlayer) entity).onPlayerColission(player);
             }
@@ -69,4 +67,9 @@ public class Field {
         return entities;
     }
 
+    public void sendUpdated() {
+        if(onChange != null) {
+            onChange.handle();
+        }
+    }
 }
