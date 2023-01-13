@@ -11,12 +11,15 @@ import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Field;
 import org.coin_madness.helpers.MazeLoader;
+import org.coin_madness.model.GameState;
 import org.coin_madness.model.Player;
+import org.coin_madness.screens.EndScreen;
 import org.coin_madness.screens.GameScreen;
 import org.coin_madness.screens.LobbyScreen;
 import org.coin_madness.screens.MainScreen;
 
 import java.io.IOException;
+import java.util.function.Consumer;
 
 
 /**
@@ -36,9 +39,6 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         this.stage = stage;
-        ConnectionManager connectionManager = new ConnectionManager();
-        MazeLoader loader = new MazeLoader();
-        map = loader.load("src/main/resources/map.csv", ",");
 
         root = new StackPane();
         root.setBackground(new Background(new BackgroundFill(BACKGROUND, CornerRadii.EMPTY, Insets.EMPTY)));
@@ -54,11 +54,25 @@ public class App extends Application {
     //Dispay of the "main screen"
     //Changing scenes
     private void showStartScreen(String errorMessage) {
-        if(connectionManager != null) {
-            connectionManager.stop();
+        System.out.println("1");
+        MazeLoader loader = new MazeLoader();
+        try {
+            map = loader.load("src/main/resources/map.csv", ",");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
         }
+        System.out.println("2");
+        if(connectionManager != null) {
+            ConnectionManager previousConnectionManager = connectionManager;
+            new Thread(() -> {
+                previousConnectionManager.stop();
+            }).start();
+        }
+        System.out.println("3");
         connectionManager = new ConnectionManager();
+        System.out.println("4");
         MainScreen mainScreen = new MainScreen(connectionManager, errorMessage);
+        System.out.println("5");
         mainScreen.setOnEnterLobby(() -> {
             LobbyScreen lobbyScreen = new LobbyScreen(connectionManager);
 
@@ -67,7 +81,7 @@ public class App extends Application {
             lobbyScreen.setOnGameStart(() -> {
                 // TODO - maybe, move to some kind of GameBuilder
                 connectionManager.joinGameSpaces();
-                BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager);
+                BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager, this::showEndScreen);
                 gameView.setFocusTraversable(true);
                 changeView(gameView);
             });
@@ -75,9 +89,21 @@ public class App extends Application {
                 showStartScreen(error);
             });
         });
-
+        System.out.println("6");
 
         changeView(mainScreen);
+        System.out.println("7");
+
+    }
+
+    private void showEndScreen(GameState gameState) {
+        EndScreen endScreen = new EndScreen(gameState, graphics, error -> {
+            System.out.println("Get end click!");
+
+            showStartScreen(error);
+        });
+
+        changeView(endScreen);
     }
 
     private void changeView(Node view) {

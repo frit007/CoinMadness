@@ -106,7 +106,7 @@ public class GameController {
      */
     public void updateMovement() {
         try {
-            if (currentDirection != null && !player.isMoving()) {
+            if (currentDirection != null && !player.isMoving() && player.getPlayerAlive()) {
 
                 // Select the correct movement based on current and next direction
                 EntityMovement preferredMovement = new EntityMovement(player, nextDirection, this::updateMovement);

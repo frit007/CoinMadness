@@ -28,8 +28,12 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     }
 
     private List<Integer> getClientIds() throws InterruptedException {
-        List<Object[]> clients = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS),
-                                                                       new FormalField(Integer.class));
+        List<Object[]> clients = connectionManager
+                .getLobby()
+                .queryAll(new ActualField(GlobalMessage.CLIENTS),
+                        new FormalField(Integer.class),
+                        new FormalField(Integer.class)
+                );
         return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
     }
 

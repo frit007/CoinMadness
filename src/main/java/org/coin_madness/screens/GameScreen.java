@@ -18,6 +18,7 @@ import org.coin_madness.model.*;
 import javafx.scene.text.*;
 
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 public class GameScreen extends BorderPane {
@@ -33,7 +34,7 @@ public class GameScreen extends BorderPane {
     private Scene scene;
     private Field[][] map;
     protected GameState gameState = new GameState();
-    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
+    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager, Consumer<GameState> onGameEnd) {
         this.scene = scene;
         this.map = map;
         gameStatusBar = new GameStatusBar(graphics);
@@ -44,25 +45,30 @@ public class GameScreen extends BorderPane {
         //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
-        Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2]);
+        Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2], gameState);
 
         gameState.coinClient = new CoinClient(connectionManager.getCoinSpace(), gameState, createCoin);
         gameState.chestClient = new StaticEntityClient<>(connectionManager.getChestSpace(), gameState, createChest);
         gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
+        gameState.deathClient = new DeathClient(gameState, onGameEnd);
 
         gameState.coinClient.listenForChanges();
         gameState.chestClient.listenForChanges();
         gameState.trapholeClient.listenForChanges();
 
         int id = connectionManager.getClientId();
+
+
+        
         Player player = new Player(id, id,3, true);
+        gameState.localPlayer = player;
         map[player.getX()][player.getY()].addEntity(player);
 
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer();
             List<Coin> placedCoins = placer.placeCoins(map, AMOUNT_OF_COINS);
             List<Chest> placedChests = placer.placeChests(map);
-            List<Traphole> placedTrapholes = placer.placeTrapholes(map, AMOUNT_OF_TRAPHOLES);
+            List<Traphole> placedTrapholes = placer.placeTrapholes(gameState, AMOUNT_OF_TRAPHOLES);
 
             StaticEntityServer<Coin> coinServer = new StaticEntityServer<>(gameState, connectionManager.getCoinSpace(), createCoin);
             StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(gameState, connectionManager.getChestSpace(), createChest);

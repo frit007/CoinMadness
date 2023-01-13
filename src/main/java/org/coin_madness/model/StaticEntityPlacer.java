@@ -45,15 +45,15 @@ public class StaticEntityPlacer {
                 && (f.getY() == 1 || f.getY() == 30);
     }
 
-    public List<Traphole> placeTrapholes(Field[][] map, int amountOfTrapholes) {
-        List<Field> remainingFields = Arrays.asList(map).stream().flatMap(Arrays::stream)
+    public List<Traphole> placeTrapholes(GameState gameState, int amountOfTrapholes) {
+        List<Field> remainingFields = Arrays.asList(gameState.map).stream().flatMap(Arrays::stream)
                                                                  .filter(f -> !f.isWall())
                                                                  .collect(Collectors.toList());
         ArrayList<Traphole> trapholes = new ArrayList<>();
         while(amountOfTrapholes > 0 && remainingFields.size() > 0) {
             int pos = rand.nextInt(remainingFields.size());
             Field field = remainingFields.remove(pos);
-            Traphole traphole = new Traphole(field.getX(), field.getY());
+            Traphole traphole = new Traphole(field.getX(), field.getY(), gameState);
             trapholes.add(traphole);
             amountOfTrapholes--;
         }

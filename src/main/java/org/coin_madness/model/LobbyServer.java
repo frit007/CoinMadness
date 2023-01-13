@@ -27,6 +27,29 @@ public class LobbyServer {
         return nextClientId;
     }
 
+    private int findNextAvailableModel() {
+        int availableModels = 4;
+        for(int i = 0; i < availableModels; i++) {
+            try {
+                Object[] existingClientWithModelId = connectionManager
+                        .getLobby()
+                        .queryp(
+                                new ActualField(GlobalMessage.CLIENTS),
+                                new FormalField(Integer.class),
+                                new ActualField(i)
+                        );
+                if(existingClientWithModelId == null) {
+                    return i;
+                }
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
+        // give everybody else the last model
+        return availableModels - 1;
+    }
+
     public void setup() {
         try {
             // setup lobby lock
@@ -42,7 +65,7 @@ public class LobbyServer {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
                 int clientId = createClientId();
 
-                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId);
+                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableModel());
                 connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId);
             }
         });
@@ -63,7 +86,7 @@ public class LobbyServer {
         try {
             boolean everyBodyReady = true;
             connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
-            List<Integer> clientIds = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class))
+            List<Integer> clientIds = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class))
                     .stream()
                     .map(x -> (Integer) x[1])
                     .collect(Collectors.toList());

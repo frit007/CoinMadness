@@ -18,6 +18,7 @@ public class ConnectionManager {
     private Space chestSpace = null;
     private Space trapholeSpace = null;
     private Space fieldLocksSpace = null;
+    private Space deathSpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
     private int clientId;
@@ -66,6 +67,9 @@ public class ConnectionManager {
     public Space getFieldLocksSpace() {
         return fieldLocksSpace;
     }
+    public Space getDeathSpace() {
+        return deathSpace;
+    }
 
     public void host() {
         repository = new SpaceRepository();
@@ -95,6 +99,9 @@ public class ConnectionManager {
 
         trapholeSpace = new SequentialSpace();
         repository.add("trapholes", trapholeSpace);
+
+        deathSpace = new SequentialSpace();
+        repository.add("death", deathSpace);
 
         // Right now we just read the map from the CSV file, but in future we might have more
         //  maps and need to change this to use the correct one.
@@ -126,6 +133,7 @@ public class ConnectionManager {
             chestSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/chests?keep"));
             trapholeSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/trapholes?keep"));
             fieldLocksSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/fieldlocks?keep"));
+            deathSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/death?keep"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not join a remote game space");
@@ -139,7 +147,7 @@ public class ConnectionManager {
             Map<Integer, Integer> timeoutHistory = new HashMap<>();
             while(true) {
                 // get all connected clients and increment their timeout counter
-                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class));
+                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class));
                 for (Object[] connectedClient: connectedClients) {
                     Integer connectedClientId = (Integer) connectedClient[1];
                     if(timeoutHistory.containsKey(connectedClientId)) {
@@ -170,7 +178,7 @@ public class ConnectionManager {
         // Send keep alives to clients, so they know they are still connected
         connectionThreads.startHandledThread(() -> {
             while (true) {
-                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class));
+                List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class));
                 for (Object[] connectedClient: connectedClients) {
                     Integer connectedClientId = (Integer) connectedClient[1];
                     lobby.put(GlobalMessage.SERVER_TO_CLIENT_KEEP_ALIVE, connectedClientId);
@@ -192,7 +200,7 @@ public class ConnectionManager {
     private void disconnectClient(Integer disconnectedClient, DisconnectReason reason) {
         try {
             // remove the client from the list of clients
-            lobby.getp(new ActualField(GlobalMessage.CLIENTS), new ActualField(disconnectedClient));
+            lobby.getp(new ActualField(GlobalMessage.CLIENTS), new ActualField(disconnectedClient), new FormalField(Integer.class));
             if(onClientDisconnect != null) {
                 onClientDisconnect.handle(disconnectedClient, reason);
             }
@@ -203,7 +211,12 @@ public class ConnectionManager {
 
     public void join(String ip) throws IOException {
         remoteIp = ip;
-        lobby = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + ip + ":9001/lobby?keep"));
+        try {
+            lobby = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + ip + ":9001/lobby?keep"));
+        } catch (IOException e) {
+            remoteIp = null;
+            throw e;
+        }
     }
 
     public void startClientTimeoutThread(Integer clientId) {

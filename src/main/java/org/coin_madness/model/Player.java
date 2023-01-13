@@ -1,9 +1,18 @@
 package org.coin_madness.model;
 
 public class Player extends MovableEntity {
+    private boolean isAlive = true;
     public static final int COIN_LIMIT = 4;
     private int amountOfCoins = 0;
     private final boolean localPlayer;
+
+    public boolean getPlayerAlive(){
+        return this.isAlive;
+    }
+    public void kill(){
+        this.isAlive = false;
+        this.sendUpdates();
+    }
 
     public Player(int id, int x, int y, boolean localPlayer) {
         super(id, x, y);

@@ -3,7 +3,6 @@ package org.coin_madness.components;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
-import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Label;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
@@ -13,7 +12,6 @@ import org.coin_madness.model.Player;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.List;
 
 public class GameStatusBar extends HBox {
@@ -35,7 +33,7 @@ public class GameStatusBar extends HBox {
                 playerMenu = FXMLLoader.load(Thread.currentThread().getContextClassLoader().getResource("player_ui.fxml"));
                 coins = (HBox) playerMenu.lookup("#coins");
                 playerImage = (ImageView) playerMenu.lookup("#player_image");
-                updateCoins();
+                updatePlayerUI();
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -54,12 +52,15 @@ public class GameStatusBar extends HBox {
             playerUIs.add(index, this);
             root.getChildren().add(index + 1, playerMenu);
 
-            player.addOnUpdate(this::updateCoins);
+            player.addOnUpdate(this::updatePlayerUI);
+
         }
 
-        private void updateCoins() {
+        private void updatePlayerUI() {
             coins.getChildren().clear();
-
+            if(!player.getPlayerAlive()){
+                playerImage.setImage(graphics.tombstone);
+            }
             int coinLimit = Player.COIN_LIMIT;
             for (int i = 0; i < coinLimit; i++) {
                 ImageView view = new ImageView();
@@ -101,4 +102,7 @@ public class GameStatusBar extends HBox {
     public void addPlayer(Player player) {
         new PlayerUI(player);
     }
+
+
+
 }
