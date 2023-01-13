@@ -16,17 +16,20 @@ public class DeathClient {
         this.goToEndScreen = goToEndScreen;
 
         gameState.gameThreads.startHandledThread(() -> {
-            Object[] deathMessage = gameState.connectionManager.getDeathSpace().get(
-                new ActualField(gameState.connectionManager.getClientId()),
-                new FormalField(Integer.class)
-            );
-            int killedClientId = (int) deathMessage[1];
-            Platform.runLater(() -> {
-                Player player = gameState.networkedPlayers.get(killedClientId);
-                player.kill();
-                System.out.println("Player " + player.getId() + " has died");
-                checkForGameOver();
-            });
+            while(true) {
+                Object[] deathMessage = gameState.connectionManager.getDeathSpace().get(
+                        new ActualField(gameState.connectionManager.getClientId()),
+                        new FormalField(Integer.class)
+                );
+                int killedClientId = (int) deathMessage[1];
+                Platform.runLater(() -> {
+                    Player player = gameState.networkedPlayers.get(killedClientId);
+                    player.kill();
+                    gameState.map[player.getX()][player.getY()].sendUpdated();
+                    System.out.println("Player " + player.getId() + " has died");
+                    checkForGameOver();
+                });
+            }
         });
     }
 
