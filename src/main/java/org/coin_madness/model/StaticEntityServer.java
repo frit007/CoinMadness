@@ -29,18 +29,10 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         this.clientId = connectionManager.getClientId();
     }
 
-    private List<Integer> getClientIds() throws InterruptedException {
+    protected List<Integer> getClientIds() throws InterruptedException {
         List<Object[]> clients = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS),
                                                                        new FormalField(Integer.class));
         return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
-    }
-
-    public void listenForEntityRequests(List<Entity> entities) {
-        staticEntityThreads.startHandledThread(() -> {
-            while (true) {
-                checkRequest(entities);
-            }
-        });
     }
 
     public void add(List<Entity> entities) {
@@ -52,23 +44,6 @@ public class StaticEntityServer<Entity extends StaticEntity> {
             clearSpaceFromNewEntities(StaticEntityMessage.NEW_ENTITY);
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to send static entities");
-        }
-    }
-
-    public void checkRequest(List<Entity> entities) {
-        try {
-            Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
-            Entity entity = convert.apply(receivedEntity);
-            int clientId = (int) receivedEntity[3];
-            if (entities.contains(entity)) {
-                entities.remove(entity);
-               sendAnswer(StaticEntityMessage.ANSWER_CLIENT, StaticEntityMessage.GIVE_ENTITY, clientId);
-               remove(entity);
-            } else {
-                sendAnswer(StaticEntityMessage.ANSWER_CLIENT, StaticEntityMessage.DENY_ENTITY, clientId);
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Could not check static entity request");
         }
     }
 
@@ -107,11 +82,11 @@ public class StaticEntityServer<Entity extends StaticEntity> {
             entitySpace.put(notification, entity.getX(), entity.getY(), this.clientId, clientId);
     }
 
-    private void sendAnswer(String answerMarker, String answer, int clientId) throws InterruptedException {
+    protected void sendAnswer(String answerMarker, String answer, int clientId) throws InterruptedException {
         entitySpace.put(answerMarker, answer, clientId);
     }
 
-    private Object[] receiveEntityRequest(String request) throws InterruptedException {
+    protected Object[] receiveEntityRequest(String request) throws InterruptedException {
         return entitySpace.get(new ActualField(request),
                 new FormalField(Integer.class),
                 new FormalField(Integer.class),

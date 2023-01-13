@@ -33,7 +33,7 @@ public class StaticEntityPlacer {
         ArrayList<Chest> chests = new ArrayList<>();
         while(remainingFields.size() > 0) {
             Field field = remainingFields.remove(0);
-            Chest chest = new Chest(field.getX(), field.getY());
+            Chest chest = new Chest(field.getX(), field.getY(), null);
             chests.add(chest);
         }
         return chests;

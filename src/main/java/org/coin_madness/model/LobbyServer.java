@@ -43,7 +43,7 @@ public class LobbyServer {
                 int clientId = createClientId();
 
                 connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId);
-                connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId);
+                connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId, connectionManager.getClientId());
             }
         });
 

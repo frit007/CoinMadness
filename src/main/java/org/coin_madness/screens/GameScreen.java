@@ -30,16 +30,17 @@ public class GameScreen extends BorderPane {
     ArrayList<FieldView> views = new ArrayList<>();
     ScopedThreads gameScreenThreads = new ScopedThreads(() -> {});
     private CoinClient coinClient;
+    private ChestClient chestClient;
     
     public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager) {
 
         //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], coinClient);
-        Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
+        Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2], chestClient);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2]);
 
         coinClient = new CoinClient(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, map, createCoin);
-        StaticEntityClient<Chest> chestClient = new StaticEntityClient<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, map, createChest);
+        chestClient = new ChestClient(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, map, createChest);
         StaticEntityClient<Traphole> trapholeClient = new StaticEntityClient<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, map, createTraphole);
 
         coinClient.listenForChanges();
@@ -56,13 +57,12 @@ public class GameScreen extends BorderPane {
             List<Chest> placedChests = placer.placeChests(map);
             List<Traphole> placedTrapholes = placer.placeTrapholes(map, AMOUNT_OF_TRAPHOLES);
 
-            StaticEntityServer<Coin> coinServer = new StaticEntityServer<>(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, createCoin);
-            StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, createChest);
+            CoinServer coinServer = new CoinServer(connectionManager, connectionManager.getCoinSpace(), gameScreenThreads, createCoin);
+            ChestServer chestServer = new ChestServer(connectionManager, connectionManager.getChestSpace(), gameScreenThreads, createChest);
             StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(connectionManager, connectionManager.getTrapholeSpace(), gameScreenThreads, createTraphole);
 
-            coinServer.listenForEntityRequests(placedCoins);
-            chestServer.listenForEntityRequests(placedChests);
-            trapholeServer.listenForEntityRequests(placedTrapholes);
+            coinServer.listenForCoinRequests(placedCoins);
+            chestServer.listenForChestRequests(placedChests);
 
             gameScreenThreads.startHandledThread(() -> {
                 coinServer.add(placedCoins);

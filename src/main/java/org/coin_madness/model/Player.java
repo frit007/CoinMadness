@@ -3,6 +3,7 @@ package org.coin_madness.model;
 public class Player extends MovableEntity {
 
     private int amountOfCoins = 0;
+    private int score = 0;
 
     public Player(int id, int x, int y) {
         super(id, x, y);
@@ -22,4 +23,11 @@ public class Player extends MovableEntity {
         this.amountOfCoins = amountOfCoins;
     }
 
+    public int getScore() {
+        return score;
+    }
+
+    public void setScore(int score) {
+        this.score = score;
+    }
 }

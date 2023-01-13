@@ -66,7 +66,7 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         }
     }
 
-    private void receiveNotification(String notification) throws InterruptedException {
+    protected void receiveNotification(String notification) throws InterruptedException {
         entitySpace.get(new ActualField(notification),
                         new ActualField(clientId));
     }
@@ -89,18 +89,18 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         entitySpace.put(confirmation, clientId);
     }
 
-    void sendEntityRequest(String notification, Entity entity) throws InterruptedException {
+    protected void sendEntityRequest(String notification, Entity entity) throws InterruptedException {
         entitySpace.put(notification, entity.getX(), entity.getY(), clientId);
     }
 
-    String receiveAnswer(String answerMarker) throws InterruptedException {
+    protected String receiveAnswer(String answerMarker) throws InterruptedException {
         Object[] answer = entitySpace.get(new ActualField(answerMarker),
                                           new FormalField(String.class),
                                           new ActualField(clientId));
         return answer[1].toString();
     }
 
-    Object[] receiveEntityNotification(String notification) throws InterruptedException {
+    protected Object[] receiveEntityNotification(String notification) throws InterruptedException {
         return entitySpace.get(new ActualField(notification),
                                new FormalField(Integer.class),
                                new FormalField(Integer.class),
@@ -108,7 +108,7 @@ public class StaticEntityClient<Entity extends StaticEntity> {
                                new ActualField(clientId));
     }
 
-    void removeEntity(Entity entity) {
+    protected void removeEntity(Entity entity) {
         Platform.runLater(() -> map[entity.getX()][entity.getY()].removeEntity(entity));
     }
 

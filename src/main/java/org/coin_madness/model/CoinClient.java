@@ -22,8 +22,8 @@ public class CoinClient extends StaticEntityClient<Coin> {
 
     public void request(Coin coin, Action given, Action denied) {
         try {
-            super.sendEntityRequest(StaticEntityMessage.REQUEST_ENTITY, coin);
-            String answer = super.receiveAnswer(StaticEntityMessage.ANSWER_CLIENT);
+            sendEntityRequest(StaticEntityMessage.REQUEST_ENTITY, coin);
+            String answer = receiveAnswer(StaticEntityMessage.ANSWER_MARKER);
             if (Objects.equals(answer, StaticEntityMessage.GIVE_ENTITY)) {
                 given.handle();
             } else {
@@ -36,18 +36,18 @@ public class CoinClient extends StaticEntityClient<Coin> {
 
     public void remove(HashMap<Integer, Player> networkPlayers) {
         try {
-            Object[] receivedEntity = super.receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
+            Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
             Coin coin = convert.apply(receivedEntity);
             int clientId = (int) receivedEntity[2];
-            removeEntity(coin, clientId, networkPlayers);
+            removeCoin(coin, clientId, networkPlayers);
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to remove coin");
         }
     }
 
-    private void removeEntity(Coin coin, int clientId, HashMap<Integer, Player> networkPlayers) {
-        super.removeEntity(coin);
-        if(networkPlayers.containsKey(clientId)) {
+    private void removeCoin(Coin coin, int clientId, HashMap<Integer, Player> networkPlayers) {
+        removeEntity(coin);
+        if (networkPlayers.containsKey(clientId)) {
             Player net = networkPlayers.get(clientId);
             net.setAmountOfCoins(net.getAmountOfCoins() + 1);
         }

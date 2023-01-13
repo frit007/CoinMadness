@@ -21,6 +21,7 @@ public class ConnectionManager {
     private String remoteIp = null;
     private SpaceRepository repository = null;
     private int clientId;
+    private int serverId;
     // Used by the server to be notified which client have disconnected
     private Action2<Integer, DisconnectReason> onClientDisconnect;
     // used by the client to be notified when it lost connection to the server
@@ -41,6 +42,10 @@ public class ConnectionManager {
 
     public int getClientId() {
         return clientId;
+    }
+
+    public int getServerId() {
+        return serverId;
     }
 
     public Space getLobby() {
@@ -206,8 +211,9 @@ public class ConnectionManager {
         lobby = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + ip + ":9001/lobby?keep"));
     }
 
-    public void startClientTimeoutThread(Integer clientId) {
+    public void startClientTimeoutThread(Integer clientId, Integer serverId) {
         this.clientId = clientId;
+        this.serverId = serverId;
         // inform the server that we have not disconnected
         connectionThreads.startHandledThread(() -> {
             while (true) {

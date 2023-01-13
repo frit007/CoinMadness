@@ -29,10 +29,12 @@ public class LobbyClient {
             connectionManager.getLobby().put(LobbyMessage.JOIN);
             Object[] response = connectionManager.getLobby().get(
                     new ActualField(LobbyMessage.WELCOME),
+                    new FormalField(Integer.class),
                     new FormalField(Integer.class)
             );
             clientId = (Integer) response[1];
-            connectionManager.startClientTimeoutThread(clientId);
+            int serverId = (Integer) response[2];
+            connectionManager.startClientTimeoutThread(clientId, serverId);
         } catch (InterruptedException e) {
             e.printStackTrace();
             return;

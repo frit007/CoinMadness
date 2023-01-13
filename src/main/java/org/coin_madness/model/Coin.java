@@ -3,6 +3,7 @@ package org.coin_madness.model;
 public class Coin extends StaticEntity implements CollidesWithPlayer {
 
     private CoinClient coinClient;
+
     public Coin(int x, int y, CoinClient coinClient) {
         super(x, y);
         this.coinClient = coinClient;
