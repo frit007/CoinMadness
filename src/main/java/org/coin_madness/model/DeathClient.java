@@ -38,7 +38,7 @@ public class DeathClient {
     
     private boolean everybodyIsDead() {
         for (Player player : gameState.allPlayers())
-            if(player.getPlayerAlive())
+            if(player.isAlive())
                 return false;
 
         return true;

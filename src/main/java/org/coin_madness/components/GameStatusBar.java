@@ -58,7 +58,7 @@ public class GameStatusBar extends HBox {
 
         private void updatePlayerUI() {
             coins.getChildren().clear();
-            if(!player.getPlayerAlive()){
+            if(!player.isAlive()){
                 playerImage.setImage(graphics.tombstone);
             }
             int coinLimit = Player.COIN_LIMIT;

@@ -14,8 +14,11 @@ import org.coin_madness.controller.GameController;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.helpers.ScopedThreads;
+import org.coin_madness.messages.GlobalMessage;
 import org.coin_madness.model.*;
 import javafx.scene.text.*;
+import org.jspace.ActualField;
+import org.jspace.FormalField;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -42,6 +45,8 @@ public class GameScreen extends BorderPane {
         gameState.connectionManager = connectionManager;
         gameState.map = map;
 
+        createPlayers();
+
         //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2]);
@@ -56,13 +61,6 @@ public class GameScreen extends BorderPane {
         gameState.chestClient.listenForChanges();
         gameState.trapholeClient.listenForChanges();
 
-        int id = connectionManager.getClientId();
-
-
-        
-        Player player = new Player(id, id,3, true);
-        gameState.localPlayer = player;
-        map[player.getX()][player.getY()].addEntity(player);
 
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer();
@@ -86,14 +84,17 @@ public class GameScreen extends BorderPane {
         }
         ///
 
-        new GameController(player, scene, connectionManager, gameStatusBar, gameState);
+        new GameController(scene, connectionManager, gameState);
         Group mazeView = new Group();
 
         // HBox topBar = new HBox();
         // topBar.getChildren().add(new Text(10,0,"Coins: "));
         int preferredGameStatusBarHeight = 30;
         gameStatusBar.setPrefHeight(preferredGameStatusBarHeight);
-        gameStatusBar.addPlayer(player);
+        gameStatusBar.addPlayer(gameState.localPlayer);
+        for (Player networkPlayer: gameState.networkedPlayers.values()) {
+            gameStatusBar.addPlayer(networkPlayer);
+        }
 
         mapView = new GridPane();
         mapView.setAlignment(Pos.CENTER);
@@ -141,6 +142,32 @@ public class GameScreen extends BorderPane {
             resizeStage(scene.getHeight() - preferredGameStatusBarHeight, map.length);
             gameStatusBar.root.setPrefWidth(scene.getWidth());
         });
+
+    }
+    private void createPlayers() {
+        try {
+            List<Object[]> players = gameState.connectionManager.getLobby().queryAll(
+                    new ActualField(GlobalMessage.CLIENTS),
+                    new FormalField(Integer.class),
+                    new FormalField(Integer.class)
+            );
+            for(Object[] playerInfo : players) {
+                int clientId = (int) playerInfo[1];
+                int modelId = (int) playerInfo[2];
+                boolean localPlayer = clientId == gameState.connectionManager.getClientId();
+                Player player = new Player(clientId, clientId, 3, modelId, localPlayer);
+
+                if(localPlayer) {
+                    gameState.localPlayer = player;
+                } else {
+                    gameState.networkedPlayers.put(clientId, player);
+                }
+
+                map[player.getX()][player.getY()].addEntity(player);
+            }
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        }
 
     }
 

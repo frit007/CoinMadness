@@ -1,6 +1,7 @@
 package org.coin_madness;
 
 import javafx.application.Application;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.Scene;
@@ -54,25 +55,20 @@ public class App extends Application {
     //Dispay of the "main screen"
     //Changing scenes
     private void showStartScreen(String errorMessage) {
-        System.out.println("1");
         MazeLoader loader = new MazeLoader();
         try {
             map = loader.load("src/main/resources/map.csv", ",");
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-        System.out.println("2");
         if(connectionManager != null) {
             ConnectionManager previousConnectionManager = connectionManager;
             new Thread(() -> {
                 previousConnectionManager.stop();
             }).start();
         }
-        System.out.println("3");
         connectionManager = new ConnectionManager();
-        System.out.println("4");
         MainScreen mainScreen = new MainScreen(connectionManager, errorMessage);
-        System.out.println("5");
         mainScreen.setOnEnterLobby(() -> {
             LobbyScreen lobbyScreen = new LobbyScreen(connectionManager);
 
@@ -89,11 +85,8 @@ public class App extends Application {
                 showStartScreen(error);
             });
         });
-        System.out.println("6");
 
         changeView(mainScreen);
-        System.out.println("7");
-
     }
 
     private void showEndScreen(GameState gameState) {
@@ -103,7 +96,19 @@ public class App extends Application {
             showStartScreen(error);
         });
 
-        changeView(endScreen);
+        new Thread(() -> {
+            try {
+                Thread.sleep(2000);
+                Platform.runLater(() -> {
+                    changeView(endScreen);
+                });
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
+        }).start();
+
+
+
     }
 
     private void changeView(Node view) {

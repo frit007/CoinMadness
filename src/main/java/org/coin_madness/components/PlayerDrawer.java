@@ -7,7 +7,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 import org.coin_madness.helpers.ImageLibrary;
-import org.coin_madness.model.Entity;
 import org.coin_madness.model.EntityMovement;
 import org.coin_madness.model.MovableEntity;
 import org.coin_madness.model.Player;
@@ -48,7 +47,7 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
 
         if(player instanceof Player) {
             Player player1 = (Player) player;
-            if(!player1.getPlayerAlive()) {
+            if(!player1.isAlive()) {
                 view.setImage(graphics.tombstone);
                 // stop the animation, since the player is now they dead
                 animationState.translateTransition.stop();

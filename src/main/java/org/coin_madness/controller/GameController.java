@@ -10,9 +10,7 @@ import org.coin_madness.model.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class GameController {
 
@@ -26,10 +24,10 @@ public class GameController {
     private Field[][] map;
     private GameState gameState;
 
-    public GameController(Player player, Scene scene, ConnectionManager connectionManager, GameStatusBar gameStatusBar, GameState gameState) {
+    public GameController(Scene scene, ConnectionManager connectionManager, GameState gameState) {
         this.connectionManager = connectionManager;
+        player = gameState.localPlayer;
         this.controlledPlayerID = player.getId();
-        this.player = player;
         this.map = gameState.map;
         this.gameState = gameState;
 
@@ -82,10 +80,7 @@ public class GameController {
                             EntityMovement movement = new EntityMovement(net, deltaX, deltaY, () -> {});
                             net.move(movement, map);
                         } else {
-                            Player p = new Player(rID, rX, rY, false);
-                            map[p.getX()][p.getY()].addEntity(p);
-                            gameState.networkedPlayers.put(rID, p);
-                            gameStatusBar.addPlayer(p);
+                            // unknown player, all known players have been created at start up.
                         }
                     }
 
@@ -106,7 +101,7 @@ public class GameController {
      */
     public void updateMovement() {
         try {
-            if (currentDirection != null && !player.isMoving() && player.getPlayerAlive()) {
+            if (currentDirection != null && !player.isMoving() && player.isAlive()) {
 
                 // Select the correct movement based on current and next direction
                 EntityMovement preferredMovement = new EntityMovement(player, nextDirection, this::updateMovement);
