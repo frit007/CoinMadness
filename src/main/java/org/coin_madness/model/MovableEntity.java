@@ -8,6 +8,7 @@ import java.util.List;
 public class MovableEntity extends Entity {
 
     int id;
+    private boolean alive = true;
     protected int spriteId;
     private float movementSpeed = 3;
     private EntityMovement entityMovement;
@@ -21,6 +22,13 @@ public class MovableEntity extends Entity {
         for (Runnable runnable: onUpdate) {
             runnable.run();
         }
+    }
+    public boolean isAlive(){
+        return this.alive;
+    }
+    public void kill(){
+        this.alive = false;
+        this.sendUpdates();
     }
 
     public MovableEntity(int id, int spriteId, int x, int y) {

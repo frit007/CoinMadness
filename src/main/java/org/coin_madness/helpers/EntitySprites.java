@@ -2,53 +2,15 @@ package org.coin_madness.helpers;
 
 import javafx.scene.image.Image;
 
-import java.util.ArrayList;
 import java.util.List;
 
-public class EntitySprites {
+public interface EntitySprites {
 
-    public List<Image> upMovement;
-    public List<Image> rightMovement;
-    public List<Image> leftMovement;
-    public List<Image> downMovement;
+    public Image getDownIdle();
 
-    public Image getRightIdle() {
-        return rightMovement.get(1);
-    }
-    public Image getUpIdle() {
-        return upMovement.get(1);
-    }
-    public Image getDownIdle() {
-        return downMovement.get(1);
-    }
-    public Image getLeftIdle() {
-        return leftMovement.get(1);
-    }
+    public List<Image> upAnimation();
+    public List<Image> rightAnimation();
+    public List<Image> leftAnimation();
+    public List<Image> downAnimation();
 
-    private String getRootPath() {
-        return System.getProperty("user.dir");
-    }
-
-    private List<Image> loadMovementImages(String folder) {
-//        System.out.println();
-        List<Image> images = new ArrayList<>();
-        for (int i = 1; i < 4; i++) {
-            String path = "file:" + getRootPath() + "/"+"src/main/resources/" + folder + i + ".png";
-            try {
-                Image image = new Image(path);
-                images.add(image);
-            } catch (Exception e) {
-                e.printStackTrace();
-                System.out.println("cannot load: " + path);
-            }
-        }
-        return images;
-    }
-
-    public EntitySprites(String basePath) {
-        upMovement = loadMovementImages(basePath+"UP_Movement/");
-        leftMovement = loadMovementImages(basePath+"LEFT_Movement/");
-        rightMovement = loadMovementImages(basePath+"RIGHT_Movement/");
-        downMovement = loadMovementImages(basePath+"DOWN_Movement/");
-    }
 }

@@ -1,6 +1,7 @@
 package org.coin_madness.helpers;
 
 import javafx.scene.image.Image;
+import org.coin_madness.model.EntityMovement;
 
 public class ImageLibrary {
 
@@ -33,11 +34,14 @@ public class ImageLibrary {
     // ---- Player UI ----
     public Image coinSlot = new Image("Coin_Slot.png");
 
+    public static final int ENEMY_SPRITE_ID = 4;
+
     private EntitySprites[] sprites = new EntitySprites[] {
-            new EntitySprites("Player1/"),
-            new EntitySprites("Player2/"),
-            new EntitySprites("Player3/"),
-            new EntitySprites("Player4/"),
+            new PlayerSprites("Player1/"),
+            new PlayerSprites("Player2/"),
+            new PlayerSprites("Player3/"),
+            new PlayerSprites("Player4/"),
+            new EnemySprites(),
     };
 
     public EntitySprites getSprites(int spriteId) {

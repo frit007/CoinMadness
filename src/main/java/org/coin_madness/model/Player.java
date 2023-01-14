@@ -1,7 +1,6 @@
 package org.coin_madness.model;
 
 public class Player extends MovableEntity {
-    private boolean alive = true;
     public static final int COIN_LIMIT = 4;
     private int amountOfCoins = 0;
     private final boolean localPlayer;
@@ -12,13 +11,7 @@ public class Player extends MovableEntity {
         this.localPlayer = localPlayer;
     }
 
-    public boolean isAlive(){
-        return this.alive;
-    }
-    public void kill(){
-        this.alive = false;
-        this.sendUpdates();
-    }
+
 
     // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}
     public boolean canMoveto(Field[][] fields, EntityMovement movement){

@@ -7,6 +7,7 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 import org.coin_madness.helpers.EntitySprites;
+import org.coin_madness.helpers.PlayerSprites;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.EntityMovement;
 import org.coin_madness.model.MovableEntity;
@@ -50,17 +51,16 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
         AnimationState animationState = getAnimation(player.getId());
 
 
-        if(player instanceof Player) {
-            Player player1 = (Player) player;
-            if(!player1.isAlive()) {
-                view.setImage(graphics.tombstone);
-                // stop the animation, since the player is now dead
-                animationState.translateTransition.stop();
-                animationState.timeline.stop();
-                animationState.imageView.setImage(null);
-                return;
-            }
+
+        if(!player.isAlive()) {
+            view.setImage(graphics.tombstone);
+            // stop the animation, since the player is now dead
+            animationState.translateTransition.stop();
+            animationState.timeline.stop();
+            animationState.imageView.setImage(null);
+            return;
         }
+
 
         if(animationState.currentMovement != movement) {
             animationState.playAnim(findAnimation(movement, sprites), movement, view);
@@ -69,13 +69,13 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
 
     private List<Image> findAnimation(EntityMovement movement, EntitySprites sprites) {
         if(movement.getDeltaX() > 0) {
-            return sprites.rightMovement;
+            return sprites.rightAnimation();
         } else if(movement.getDeltaX() < 0) {
-            return sprites.leftMovement;
+            return sprites.leftAnimation();
         } else if (movement.getDeltaY() > 0) {
-            return sprites.downMovement;
+            return sprites.downAnimation();
         } else {
-            return sprites.upMovement;
+            return sprites.rightAnimation();
         }
     }
 
@@ -120,12 +120,12 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
 
             translateTransition.setByX(movement.getDeltaX() * view.getFitWidth());
             translateTransition.setByY(movement.getDeltaY() * view.getFitWidth());
-            imageView.setImage(playerAnim.get(1));
+            imageView.setImage(playerAnim.get(0));
             imageView.setVisible(true);
 
             translateTransition.setOnFinished(actionEvent -> {
                 timeline.stop();
-                view.setImage(playerAnim.get(1));
+                view.setImage(playerAnim.get(0));
                 keyCount = 1;
                 imageView.setVisible(false);
                 movement.finish();

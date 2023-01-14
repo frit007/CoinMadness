@@ -19,6 +19,7 @@ public class ConnectionManager {
     private Space trapholeSpace = null;
     private Space fieldLocksSpace = null;
     private Space deathSpace = null;
+    private Space enemySpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
     private int clientId;
@@ -67,8 +68,13 @@ public class ConnectionManager {
     public Space getFieldLocksSpace() {
         return fieldLocksSpace;
     }
+
     public Space getDeathSpace() {
         return deathSpace;
+    }
+
+    public Space getEnemySpace() {
+        return enemySpace;
     }
 
     public void host() {
@@ -103,6 +109,9 @@ public class ConnectionManager {
         deathSpace = new SequentialSpace();
         repository.add("death", deathSpace);
 
+        enemySpace = new SequentialSpace();
+        repository.add("enemies", enemySpace);
+
         // Right now we just read the map from the CSV file, but in future we might have more
         //  maps and need to change this to use the correct one.
         fieldLocksSpace = new SequentialSpace();
@@ -134,6 +143,7 @@ public class ConnectionManager {
             trapholeSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/trapholes?keep"));
             fieldLocksSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/fieldlocks?keep"));
             deathSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/death?keep"));
+            enemySpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/enemies?keep"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not join a remote game space");

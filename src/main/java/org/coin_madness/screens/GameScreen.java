@@ -56,11 +56,12 @@ public class GameScreen extends BorderPane {
         gameState.chestClient = new StaticEntityClient<>(connectionManager.getChestSpace(), gameState, createChest);
         gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
         gameState.deathClient = new DeathClient(gameState, onGameEnd);
+        gameState.enemyClient = new EnemyClient(gameState);
 
         gameState.coinClient.listenForChanges();
         gameState.chestClient.listenForChanges();
         gameState.trapholeClient.listenForChanges();
-
+        gameState.enemyClient.listenForChanges();
 
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer();
@@ -71,10 +72,12 @@ public class GameScreen extends BorderPane {
             StaticEntityServer<Coin> coinServer = new StaticEntityServer<>(gameState, connectionManager.getCoinSpace(), createCoin);
             StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(gameState, connectionManager.getChestSpace(), createChest);
             StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
+            EnemyServer enemyServer = new EnemyServer(gameState);
 
             coinServer.listenForEntityRequests(placedCoins);
             chestServer.listenForEntityRequests(placedChests);
             trapholeServer.listenForEntityRequests(placedTrapholes);
+            enemyServer.createEnemies();
 
             gameState.gameThreads.startHandledThread(() -> {
                 coinServer.add(placedCoins);
