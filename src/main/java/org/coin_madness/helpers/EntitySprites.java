@@ -2,11 +2,10 @@ package org.coin_madness.helpers;
 
 import javafx.scene.image.Image;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 
-public class PlayerSprites {
+public class EntitySprites {
 
     public List<Image> upMovement;
     public List<Image> rightMovement;
@@ -26,12 +25,18 @@ public class PlayerSprites {
         return leftMovement.get(1);
     }
 
+    private String getRootPath() {
+        return System.getProperty("user.dir");
+    }
+
     private List<Image> loadMovementImages(String folder) {
+//        System.out.println();
         List<Image> images = new ArrayList<>();
         for (int i = 1; i < 4; i++) {
-            String path = "file:" + folder + i + ".png";
+            String path = "file:" + getRootPath() + "/"+"src/main/resources/" + folder + i + ".png";
             try {
-                images.add(new Image(path));
+                Image image = new Image(path);
+                images.add(image);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("cannot load: " + path);
@@ -40,7 +45,7 @@ public class PlayerSprites {
         return images;
     }
 
-    public PlayerSprites(String basePath) {
+    public EntitySprites(String basePath) {
         upMovement = loadMovementImages(basePath+"UP_Movement/");
         leftMovement = loadMovementImages(basePath+"LEFT_Movement/");
         rightMovement = loadMovementImages(basePath+"RIGHT_Movement/");

@@ -5,11 +5,10 @@ public class Player extends MovableEntity {
     public static final int COIN_LIMIT = 4;
     private int amountOfCoins = 0;
     private final boolean localPlayer;
-    private int modelId;
 
-    public Player(int id, int x, int y, int modelId, boolean localPlayer) {
-        super(id, x, y);
-        this.modelId = modelId;
+    public Player(int id, int x, int y, int spriteId, boolean localPlayer) {
+        super(id, spriteId, x, y);
+        this.spriteId = spriteId;
         this.localPlayer = localPlayer;
     }
 
@@ -19,9 +18,6 @@ public class Player extends MovableEntity {
     public void kill(){
         this.alive = false;
         this.sendUpdates();
-    }
-    public int getModelId() {
-        return modelId;
     }
 
     // canMoveto checks for if the new position can be moved to { i.e. NOT a wall for now}

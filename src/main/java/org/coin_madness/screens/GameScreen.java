@@ -153,9 +153,9 @@ public class GameScreen extends BorderPane {
             );
             for(Object[] playerInfo : players) {
                 int clientId = (int) playerInfo[1];
-                int modelId = (int) playerInfo[2];
+                int spriteId = (int) playerInfo[2];
                 boolean localPlayer = clientId == gameState.connectionManager.getClientId();
-                Player player = new Player(clientId, clientId, 3, modelId, localPlayer);
+                Player player = new Player(clientId, clientId, 3, spriteId, localPlayer);
 
                 if(localPlayer) {
                     gameState.localPlayer = player;

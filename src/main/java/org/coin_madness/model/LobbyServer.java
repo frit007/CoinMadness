@@ -27,18 +27,18 @@ public class LobbyServer {
         return nextClientId;
     }
 
-    private int findNextAvailableModel() {
-        int availableModels = 4;
-        for(int i = 0; i < availableModels; i++) {
+    private int findNextAvailableSprite() {
+        int availableSprites = 4;
+        for(int i = 0; i < availableSprites; i++) {
             try {
-                Object[] existingClientWithModelId = connectionManager
+                Object[] existingClientWithSpriteId = connectionManager
                         .getLobby()
                         .queryp(
                                 new ActualField(GlobalMessage.CLIENTS),
                                 new FormalField(Integer.class),
                                 new ActualField(i)
                         );
-                if(existingClientWithModelId == null) {
+                if(existingClientWithSpriteId == null) {
                     return i;
                 }
             } catch (InterruptedException e) {
@@ -46,8 +46,8 @@ public class LobbyServer {
             }
         }
 
-        // give everybody else the last model
-        return availableModels - 1;
+        // give everybody else the last sprite
+        return availableSprites - 1;
     }
 
     public void setup() {
@@ -65,7 +65,7 @@ public class LobbyServer {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
                 int clientId = createClientId();
 
-                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableModel());
+                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableSprite());
                 connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId);
             }
         });

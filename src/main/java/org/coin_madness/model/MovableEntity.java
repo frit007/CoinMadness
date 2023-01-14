@@ -8,6 +8,7 @@ import java.util.List;
 public class MovableEntity extends Entity {
 
     int id;
+    protected int spriteId;
     private float movementSpeed = 3;
     private EntityMovement entityMovement;
     private List<Runnable> onUpdate = new ArrayList<>();
@@ -22,9 +23,14 @@ public class MovableEntity extends Entity {
         }
     }
 
-    public MovableEntity(int id, int x, int y) {
+    public MovableEntity(int id, int spriteId, int x, int y) {
         super(x, y);
         this.id = id;
+        this.spriteId = spriteId;
+    }
+
+    public int getSpriteId() {
+        return spriteId;
     }
 
     /**
