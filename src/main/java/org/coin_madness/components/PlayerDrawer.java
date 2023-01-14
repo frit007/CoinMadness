@@ -38,21 +38,21 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
 
     @Override
     //TODO: different color for networkPlayers? enemies?
-    public void draw(MovableEntity player, ImageView view) {
-        EntityMovement movement = player.getEntityMovement();
-        int spriteId = player.getSpriteId();
+    public void draw(MovableEntity entity, ImageView view) {
+        EntityMovement movement = entity.getEntityMovement();
+        int spriteId = entity.getSpriteId();
         EntitySprites sprites = graphics.getSprites(spriteId);
+
+
         //Handling
         if(movement == null) {
             view.setImage(sprites.getDownIdle());
             return;
         }
 
-        AnimationState animationState = getAnimation(player.getId());
+        AnimationState animationState = getAnimation(entity.getId());
 
-
-
-        if(!player.isAlive()) {
+        if(!entity.isAlive()) {
             view.setImage(graphics.tombstone);
             // stop the animation, since the player is now dead
             animationState.translateTransition.stop();
@@ -62,8 +62,12 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
         }
 
 
-        if(animationState.currentMovement != movement) {
+        if(!movement.equals(animationState.currentMovement)) {
             animationState.playAnim(findAnimation(movement, sprites), movement, view);
+        }
+
+        if(animationState.currentMovement != null) {
+            view.setImage(null);
         }
     }
 
@@ -97,6 +101,7 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
         }
 
         public void playAnim(List<Image> playerAnim, EntityMovement movement, ImageView view) {
+            this.currentMovement = movement;
             timeline.getKeyFrames().clear();
             timeline.getKeyFrames().add(new KeyFrame(Duration.millis(movement.getDuration() / FRAMES), actionEvent -> {
                 imageView.setImage(playerAnim.get(keyCount));
@@ -126,9 +131,10 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
             translateTransition.setOnFinished(actionEvent -> {
                 timeline.stop();
                 view.setImage(playerAnim.get(0));
-                keyCount = 1;
+                keyCount = 0;
                 imageView.setVisible(false);
                 movement.finish();
+                this.currentMovement = null;
             });
 
             translateTransition.setInterpolator(Interpolator.LINEAR);

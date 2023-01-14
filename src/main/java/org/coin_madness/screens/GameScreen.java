@@ -108,9 +108,8 @@ public class GameScreen extends BorderPane {
         drawerMap.put(Coin.class, new CoinDrawer(graphics));
         drawerMap.put(Chest.class, new ChestDrawer(graphics));
         drawerMap.put(Traphole.class, new TrapholeDrawer(graphics));
-        PlayerDrawer playerDrawer = new PlayerDrawer(graphics, mazeView);
-        drawerMap.put(Player.class, playerDrawer);
-        drawerMap.put(Enemy.class, playerDrawer);
+        drawerMap.put(Player.class, new PlayerDrawer(graphics, mazeView));
+        drawerMap.put(Enemy.class, new PlayerDrawer(graphics, mazeView));
 
         for (Field[] row : map) {
             for(Field field : row) {

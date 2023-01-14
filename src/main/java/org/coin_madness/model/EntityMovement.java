@@ -73,5 +73,26 @@ public class EntityMovement {
     public void finish() {
         completionHandler.run();
     }
-    
+
+    public boolean equals(EntityMovement movement) {
+        return movement!= null
+                && getNewX() == movement.getNewX()
+                && getNewY() == movement.getNewY()
+                && getOldX() == movement.getOldX()
+                && getOldY() == movement.getOldY();
+    }
+
+    @Override
+    public String toString() {
+        return "EntityMovement{" +
+                "startedMovementAt=" + startedMovementAt +
+                ", finishMovementAt=" + finishMovementAt +
+                ", newX=" + newX +
+                ", newY=" + newY +
+                ", oldX=" + oldX +
+                ", oldY=" + oldY +
+                ", deltaX=" + deltaX +
+                ", deltaY=" + deltaY +
+                '}';
+    }
 }

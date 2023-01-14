@@ -33,7 +33,7 @@ public class EnemyClient {
 
                 Platform.runLater(() -> {
                     if(!gameState.enemies.containsKey(enemyId)) {
-                        Enemy enemy = new Enemy(enemyId, visibleToClientId, x, y);
+                        Enemy enemy = new Enemy(enemyId, visibleToClientId, x, y, gameState);
                         gameState.enemies.put(enemyId, enemy);
                         gameState.map[x][y].addEntity(enemy);
                     }
@@ -61,7 +61,7 @@ public class EnemyClient {
                 int deltaX = (int)enemyMovement[5];
                 int deltaY = (int)enemyMovement[6];
                 float movementSpeed = (float)enemyMovement[7];
-
+                System.out.println("Received move enemyId:" +enemyId +" oldX:" + oldX + " oldY:" + oldY + " deltaX: " + deltaX + " deltaY: " + deltaY);
                 Platform.runLater(() -> {
                     Enemy enemy = gameState.enemies.get(enemyId);
                     if(enemy != null) {

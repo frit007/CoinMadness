@@ -36,7 +36,7 @@ public class EnemyServer {
             int pos = rand.nextInt(remainingFields.size());
             Field field = remainingFields.remove(pos);
 
-            Enemy enemy = new Enemy(id++,player.getId(), field.getX(), field.getY());
+            Enemy enemy = new Enemy(id++, player.getId(), field.getX(), field.getY(), gameState);
 
             gameState.enemies.put(enemy.getId(), enemy);
 
@@ -65,9 +65,12 @@ public class EnemyServer {
             Random rand = new Random();
             while(true){
                 long sleepDuration = 1000;
-                ArrayList<EntityMovement> possibleMoves = new ArrayList<>(0);
+
 
                 for (Enemy enemy : gameState.enemies.values()) {
+                    ArrayList<EntityMovement> possibleMoves = new ArrayList<>(0);
+
+                    System.out.println("update ghost: " + enemy.getId() + " x: " + enemy.getX() + " y: " + enemy.getY());
                     enemy.setMovementSpeed(movementSpeed);
                     possibleMoves.add(new EntityMovement(enemy, 1, 0, () -> {}));
                     possibleMoves.add(new EntityMovement(enemy, -1, 0, () -> {}));
