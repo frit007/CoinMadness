@@ -27,9 +27,9 @@ public class LobbyServer {
         return nextClientId;
     }
 
-    private int findNextAvailableModel() throws InterruptedException {
-        int availableModels = 4;
-        for(int i = 0; i < availableModels; i++) {
+    private int findNextAvailableSprite() throws InterruptedException {
+        int availableSprites = 4;
+        for(int i = 0; i < availableSprites; i++) {
             Object[] existingClientWithModelId = connectionManager
                     .getLobby()
                     .queryp(

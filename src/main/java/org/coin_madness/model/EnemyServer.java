@@ -61,7 +61,7 @@ public class EnemyServer {
     }
 
     private void enemyMovement() {
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("Server generates enemy movement",() -> {
             Random rand = new Random();
             while(true){
                 long sleepDuration = 1000;

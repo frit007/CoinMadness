@@ -79,7 +79,7 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
         } else if (movement.getDeltaY() > 0) {
             return sprites.downAnimation();
         } else {
-            return sprites.rightAnimation();
+            return sprites.upAnimation();
         }
     }
 

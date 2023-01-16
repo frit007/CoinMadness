@@ -16,7 +16,7 @@ public class EnemyClient {
     }
 
     public void listenForNewEnemies() {
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("Listen for new enemies", () -> {
             while(true) {
                 Object[] newEnemy = enemySpace.get(
                         new ActualField(EnemyMessage.CREATE_ENEMY),
@@ -43,7 +43,7 @@ public class EnemyClient {
     }
 
     public void listenForEnemyMovement() {
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("Listen for enemy movement", () -> {
             while(true) {
                 Object[] enemyMovement = enemySpace.get(
                         new ActualField(EnemyMessage.MOVE_ENEMY),
@@ -61,7 +61,6 @@ public class EnemyClient {
                 int deltaX = (int)enemyMovement[5];
                 int deltaY = (int)enemyMovement[6];
                 float movementSpeed = (float)enemyMovement[7];
-                System.out.println("Received move enemyId:" +enemyId +" oldX:" + oldX + " oldY:" + oldY + " deltaX: " + deltaX + " deltaY: " + deltaY);
                 Platform.runLater(() -> {
                     Enemy enemy = gameState.enemies.get(enemyId);
                     if(enemy != null) {
