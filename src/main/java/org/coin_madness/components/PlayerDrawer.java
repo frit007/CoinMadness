@@ -6,12 +6,15 @@ import javafx.scene.Group;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
+import org.coin_madness.helpers.EntitySprites;
+import org.coin_madness.helpers.PlayerSprites;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.EntityMovement;
 import org.coin_madness.model.MovableEntity;
 import org.coin_madness.model.Player;
 
 import java.util.HashMap;
+import java.util.List;
 
 public class PlayerDrawer implements Drawer<MovableEntity> {
     private ImageLibrary graphics;
@@ -35,45 +38,51 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
 
     @Override
     //TODO: different color for networkPlayers? enemies?
-    public void draw(MovableEntity player, ImageView view) {
-        EntityMovement movement = player.getEntityMovement();
+    public void draw(MovableEntity entity, ImageView view) {
+        EntityMovement movement = entity.getEntityMovement();
+        int spriteId = entity.getSpriteId();
+        EntitySprites sprites = graphics.getSprites(spriteId);
+
+
         //Handling
         if(movement == null) {
-            view.setImage(graphics.idleDown);
+            view.setImage(sprites.getDownIdle());
             return;
         }
 
-        AnimationState animationState = getAnimation(player.getId());
+        AnimationState animationState = getAnimation(entity.getId());
 
-        if(player instanceof Player) {
-            Player player1 = (Player) player;
-            if(!player1.isAlive()) {
-                view.setImage(graphics.tombstone);
-                // stop the animation, since the player is now they dead
-                animationState.translateTransition.stop();
-                animationState.timeline.stop();
-                animationState.imageView.setImage(null);
-                return;
-            }
+        if(!entity.isAlive()) {
+            view.setImage(graphics.tombstone);
+            // stop the animation, since the player is now dead
+            animationState.translateTransition.stop();
+            animationState.timeline.stop();
+            animationState.imageView.setImage(null);
+            return;
         }
 
 
-        if(animationState.currentMovement != movement) {
-            animationState.playAnim(findAnimation(movement), movement, view);
+        if(!movement.equals(animationState.currentMovement)) {
+            animationState.playAnim(findAnimation(movement, sprites), movement, view);
+        }
+
+        if(animationState.currentMovement != null) {
+            view.setImage(null);
         }
     }
 
-    public Image[] findAnimation(EntityMovement movement) {
+    private List<Image> findAnimation(EntityMovement movement, EntitySprites sprites) {
         if(movement.getDeltaX() > 0) {
-            return graphics.playerRightAnim;
+            return sprites.rightAnimation();
         } else if(movement.getDeltaX() < 0) {
-            return graphics.playerLeftAnim;
+            return sprites.leftAnimation();
         } else if (movement.getDeltaY() > 0) {
-            return graphics.playerDownAnim;
+            return sprites.downAnimation();
         } else {
-            return graphics.playerUpAnim;
+            return sprites.rightAnimation();
         }
     }
+
 
     public class AnimationState {
         private Timeline timeline;
@@ -91,11 +100,12 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
             container.getChildren().add(imageView);
         }
 
-        public void playAnim(Image[] playerAnim, EntityMovement movement, ImageView view) {
+        public void playAnim(List<Image> playerAnim, EntityMovement movement, ImageView view) {
+            this.currentMovement = movement;
             timeline.getKeyFrames().clear();
             timeline.getKeyFrames().add(new KeyFrame(Duration.millis(movement.getDuration() / FRAMES), actionEvent -> {
-                imageView.setImage(playerAnim[keyCount]);
-                keyCount = (keyCount + 1) % playerAnim.length;
+                imageView.setImage(playerAnim.get(keyCount));
+                keyCount = (keyCount + 1) % playerAnim.size();
             }));
 
             translateTransition.setNode(imageView);
@@ -115,15 +125,16 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
 
             translateTransition.setByX(movement.getDeltaX() * view.getFitWidth());
             translateTransition.setByY(movement.getDeltaY() * view.getFitWidth());
-            imageView.setImage(playerAnim[0]);
+            imageView.setImage(playerAnim.get(0));
             imageView.setVisible(true);
 
             translateTransition.setOnFinished(actionEvent -> {
                 timeline.stop();
-                view.setImage(playerAnim[0]);
-                keyCount = 1;
+                view.setImage(playerAnim.get(0));
+                keyCount = 0;
                 imageView.setVisible(false);
                 movement.finish();
+                this.currentMovement = null;
             });
 
             translateTransition.setInterpolator(Interpolator.LINEAR);

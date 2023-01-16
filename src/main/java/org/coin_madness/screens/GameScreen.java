@@ -67,11 +67,12 @@ public class GameScreen extends BorderPane {
         gameState.chestClient = new StaticEntityClient<>(connectionManager.getChestSpace(), gameState, createChest);
         gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
         gameState.deathClient = new DeathClient(gameState, onGameEnd);
+        gameState.enemyClient = new EnemyClient(gameState);
 
         gameState.coinClient.listenForChanges();
         gameState.chestClient.listenForChanges();
         gameState.trapholeClient.listenForChanges();
-
+        gameState.enemyClient.listenForChanges();
 
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer();
@@ -82,10 +83,12 @@ public class GameScreen extends BorderPane {
             StaticEntityServer<Coin> coinServer = new StaticEntityServer<>(gameState, connectionManager.getCoinSpace(), createCoin);
             StaticEntityServer<Chest> chestServer = new StaticEntityServer<>(gameState, connectionManager.getChestSpace(), createChest);
             StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
+            EnemyServer enemyServer = new EnemyServer(gameState);
 
             coinServer.listenForEntityRequests(placedCoins);
             chestServer.listenForEntityRequests(placedChests);
             trapholeServer.listenForEntityRequests(placedTrapholes);
+            enemyServer.createEnemies();
 
             gameState.gameThreads.startHandledThread("Place coins, chest and traps",() -> {
                 coinServer.add(placedCoins);
@@ -116,9 +119,8 @@ public class GameScreen extends BorderPane {
         drawerMap.put(Coin.class, new CoinDrawer(graphics));
         drawerMap.put(Chest.class, new ChestDrawer(graphics));
         drawerMap.put(Traphole.class, new TrapholeDrawer(graphics));
-        PlayerDrawer playerDrawer = new PlayerDrawer(graphics, mazeView);
-        drawerMap.put(Player.class, playerDrawer);
-        drawerMap.put(Enemy.class, playerDrawer);
+        drawerMap.put(Player.class, new PlayerDrawer(graphics, mazeView));
+        drawerMap.put(Enemy.class, new PlayerDrawer(graphics, mazeView));
 
         for (Field[] row : map) {
             for(Field field : row) {
@@ -164,9 +166,9 @@ public class GameScreen extends BorderPane {
             );
             for(Object[] playerInfo : players) {
                 int clientId = (int) playerInfo[1];
-                int modelId = (int) playerInfo[2];
+                int spriteId = (int) playerInfo[2];
                 boolean localPlayer = clientId == gameState.connectionManager.getClientId();
-                Player player = new Player(clientId, clientId, 3, modelId, localPlayer);
+                Player player = new Player(clientId, clientId, 3, spriteId, localPlayer);
 
                 if(localPlayer) {
                     gameState.localPlayer = player;

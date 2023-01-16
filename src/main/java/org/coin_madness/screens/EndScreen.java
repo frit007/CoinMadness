@@ -32,8 +32,10 @@ public class EndScreen extends VBox {
         scoreLabel.setPadding(new Insets(20,60,20,60));
 
         HBox playerScoreLabelBox = new HBox();
+        playerScoreLabelBox.setAlignment(Pos.CENTER);
         ImageView localPlayerIcon = new ImageView();
-        localPlayerIcon.setImage(graphics.idleDown); //TODO - Change for each local player
+        int spriteId = gameState.localPlayer.getSpriteId();
+        localPlayerIcon.setImage(graphics.getSprites(spriteId).getDownIdle()); //TODO - Change for each local player
         localPlayerIcon.setFitHeight(60); localPlayerIcon.setFitWidth(60);
         playerScoreLabelBox.getChildren().addAll(localPlayerIcon, scoreLabel);
 
@@ -53,8 +55,11 @@ public class EndScreen extends VBox {
 
     private HBox addPlayerScore(Player player) {
         HBox playerBox = new HBox();
+        playerBox.setAlignment(Pos.CENTER);
         ImageView playerIcon = new ImageView();
-        playerIcon.setImage(graphics.idleDown);
+
+        int spriteId = player.getSpriteId();
+        playerIcon.setImage(graphics.getSprites(spriteId).getDownIdle());
         playerIcon.setFitWidth(30);
         playerIcon.setFitHeight(30);
 

@@ -40,6 +40,9 @@ public class GameStatusBar extends HBox {
             playerImage.setPreserveRatio(true);
             playerImage.setFitHeight(25);
 
+            int spriteId = player.getSpriteId();
+            playerImage.setImage(graphics.getSprites(spriteId).getDownIdle());
+
 
             int index = 0;
             while (index < playerUIs.size()) {

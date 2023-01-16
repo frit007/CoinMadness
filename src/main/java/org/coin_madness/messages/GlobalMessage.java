@@ -11,7 +11,7 @@ public class GlobalMessage {
     // If we have not heard from the server in 5 seconds assume that the server has died
     public static final String SERVER_TO_CLIENT_KEEP_ALIVE = "server_to_client_keep_alive";
 
-    // (CLIENTS, Integer clientId, Integer modelId)
+    // (CLIENTS, Integer clientId, Integer spriteId)
     // clients is used to keep a record of who is connected to the server
     // it also clarifies which
     public static final String CLIENTS = "clients";

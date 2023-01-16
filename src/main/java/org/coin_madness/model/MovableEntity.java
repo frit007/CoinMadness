@@ -8,6 +8,8 @@ import java.util.List;
 public class MovableEntity extends Entity {
 
     int id;
+    private boolean alive = true;
+    protected int spriteId;
     private float movementSpeed = 3;
     private EntityMovement entityMovement;
     private List<Runnable> onUpdate = new ArrayList<>();
@@ -21,10 +23,22 @@ public class MovableEntity extends Entity {
             runnable.run();
         }
     }
+    public boolean isAlive(){
+        return this.alive;
+    }
+    public void kill(){
+        this.alive = false;
+        this.sendUpdates();
+    }
 
-    public MovableEntity(int id, int x, int y) {
+    public MovableEntity(int id, int spriteId, int x, int y) {
         super(x, y);
         this.id = id;
+        this.spriteId = spriteId;
+    }
+
+    public int getSpriteId() {
+        return spriteId;
     }
 
     /**

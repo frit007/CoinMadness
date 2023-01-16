@@ -20,7 +20,11 @@ public class GameState {
 
     public DeathClient deathClient;
 
+    public EnemyClient enemyClient;
+    
     public Player localPlayer;
+
+    public HashMap<Integer, Enemy> enemies = new HashMap<>();
 
     public List<Player> allPlayers() {
         List<Player> players = new ArrayList<>();

@@ -42,8 +42,8 @@ public class LobbyServer {
             }
         }
 
-        // give everybody else the last model
-        return availableModels - 1;
+        // give everybody else the last sprite
+        return availableSprites - 1;
     }
 
     public void setup() {
@@ -61,7 +61,7 @@ public class LobbyServer {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
                 int clientId = createClientId();
 
-                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableModel());
+                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableSprite());
                 connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId);
             }
         });
