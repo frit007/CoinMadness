@@ -30,6 +30,16 @@ public class Field {
                 playerCollisions(localPlayer);
             }
         }
+        if (entity instanceof Enemy) {
+            for (Entity e : entities) {
+                if (e instanceof Player) {
+                    Player player = (Player) e;
+                    if(player.isLocalPlayer()) {
+                        playerCollisions(player);
+                    }
+                }
+            }
+        }
         sendUpdated();
     }
 
