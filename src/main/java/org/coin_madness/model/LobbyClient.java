@@ -49,11 +49,9 @@ public class LobbyClient {
     }
 
     public void waitForGameStart(Runnable onGameStart) {
-        lobbyThreads.startHandledThread(() -> {
+        lobbyThreads.startHandledThread("Wait for game start", () -> {
             connectionManager.getLobby().query(new ActualField(LobbyMessage.GAME_STARTED));
-            Platform.runLater(() -> {
-                onGameStart.run();
-            });
+            onGameStart.run();
         });
     }
 
@@ -89,7 +87,7 @@ public class LobbyClient {
         }
     }
     public void waitForLobbyUpdate(Action1<LobbyUpdate> onLobbyUpdate) {
-        lobbyThreads.startHandledThread(() -> {
+        lobbyThreads.startHandledThread("Wait for lobby update", () -> {
             while(true) {
                 // wait to update the lobby
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.LOBBY_UPDATED), new ActualField(clientId));

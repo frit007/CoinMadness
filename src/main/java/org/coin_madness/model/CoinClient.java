@@ -34,15 +34,11 @@ public class CoinClient extends StaticEntityClient<Coin> {
         }
     }
 
-    public void remove() {
-        try {
-            Object[] receivedEntity = super.receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
-            Coin coin = convert.apply(receivedEntity);
-            int clientId = (int) receivedEntity[3];
-            removeEntity(coin, clientId);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to remove coin");
-        }
+    public void remove() throws InterruptedException {
+        Object[] receivedEntity = super.receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
+        Coin coin = convert.apply(receivedEntity);
+        int clientId = (int) receivedEntity[3];
+        removeEntity(coin, clientId);
     }
 
     private void removeEntity(Coin coin, int clientId) {

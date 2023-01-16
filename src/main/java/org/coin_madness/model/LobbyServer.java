@@ -27,22 +27,18 @@ public class LobbyServer {
         return nextClientId;
     }
 
-    private int findNextAvailableModel() {
+    private int findNextAvailableModel() throws InterruptedException {
         int availableModels = 4;
         for(int i = 0; i < availableModels; i++) {
-            try {
-                Object[] existingClientWithModelId = connectionManager
-                        .getLobby()
-                        .queryp(
-                                new ActualField(GlobalMessage.CLIENTS),
-                                new FormalField(Integer.class),
-                                new ActualField(i)
-                        );
-                if(existingClientWithModelId == null) {
-                    return i;
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+            Object[] existingClientWithModelId = connectionManager
+                    .getLobby()
+                    .queryp(
+                            new ActualField(GlobalMessage.CLIENTS),
+                            new FormalField(Integer.class),
+                            new ActualField(i)
+                    );
+            if(existingClientWithModelId == null) {
+                return i;
             }
         }
 
@@ -60,7 +56,7 @@ public class LobbyServer {
         }
 
         // Listen for join requests
-        lobbyThreads.startHandledThread(() -> {
+        lobbyThreads.startHandledThread("Listen for join requests", () -> {
             while(true) {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
                 int clientId = createClientId();

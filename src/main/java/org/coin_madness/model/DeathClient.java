@@ -15,7 +15,7 @@ public class DeathClient {
         this.gameState = gameState;
         this.goToEndScreen = goToEndScreen;
 
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("Listen for deaths", () -> {
             while(true) {
                 Object[] deathMessage = gameState.connectionManager.getDeathSpace().get(
                         new ActualField(gameState.connectionManager.getClientId()),

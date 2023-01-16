@@ -29,38 +29,30 @@ public class StaticEntityClient<Entity extends StaticEntity> {
     }
 
     public void listenForChanges() {
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("Listen for add", () -> {
             while (true) {
                 add();
             }
         });
 
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("Listen for remove", () -> {
             while (true) {
                 remove();
             }
         });
     }
 
-    public void add() {
-        try {
-            receiveNotification(StaticEntityMessage.ADDED_ENTITIES);
-            List<Entity> entities = receiveEntities(StaticEntityMessage.NEW_ENTITY);
-            placeEntities(entities);
-            sendConfirmation(StaticEntityMessage.RECEIVED_ENTITIES);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to receive static entities");
-        }
+    public void add() throws InterruptedException {
+        receiveNotification(StaticEntityMessage.ADDED_ENTITIES);
+        List<Entity> entities = receiveEntities(StaticEntityMessage.NEW_ENTITY);
+        placeEntities(entities);
+        sendConfirmation(StaticEntityMessage.RECEIVED_ENTITIES);
     }
 
-    public void remove() {
-        try {
-            Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
-            Entity entity = convert.apply(receivedEntity);
-            removeEntity(entity);
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to remove entity");
-        }
+    public void remove() throws InterruptedException {
+        Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
+        Entity entity = convert.apply(receivedEntity);
+        removeEntity(entity);
     }
 
     private void receiveNotification(String notification) throws InterruptedException {

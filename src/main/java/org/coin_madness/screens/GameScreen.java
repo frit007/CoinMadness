@@ -37,7 +37,7 @@ public class GameScreen extends BorderPane {
     private Scene scene;
     private Field[][] map;
     protected GameState gameState = new GameState();
-    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager, Consumer<GameState> onGameEnd) {
+    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager, Consumer<GameState> onGameEnd, Consumer<String> onGameError) {
         this.scene = scene;
         this.map = map;
         gameStatusBar = new GameStatusBar(graphics);
@@ -46,6 +46,17 @@ public class GameScreen extends BorderPane {
         gameState.map = map;
 
         createPlayers();
+
+        connectionManager.setOnClientTimeout((disconnectReason) -> {
+            Platform.runLater(() -> {
+                onGameError.accept("Sorry, lost connection to the server");
+            });
+            connectionManager.setOnClientDisconnect(null);
+            new Thread(() -> {
+                gameState.gameThreads.cleanup();
+                connectionManager.stop();
+            }).start();
+        });
 
         //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
@@ -76,7 +87,7 @@ public class GameScreen extends BorderPane {
             chestServer.listenForEntityRequests(placedChests);
             trapholeServer.listenForEntityRequests(placedTrapholes);
 
-            gameState.gameThreads.startHandledThread(() -> {
+            gameState.gameThreads.startHandledThread("Place coins, chest and traps",() -> {
                 coinServer.add(placedCoins);
                 chestServer.add(placedChests);
                 trapholeServer.add(placedTrapholes);
