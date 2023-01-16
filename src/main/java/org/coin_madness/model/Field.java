@@ -42,7 +42,7 @@ public class Field {
         // copy the player array since onPlayerCollision might update it
         for (Entity entity : new ArrayList<>(entities)) {
             if (entity instanceof CollidesWithPlayer) {
-                ((CollidesWithPlayer) entity).onPlayerColission(player);
+                ((CollidesWithPlayer) entity).onPlayerCollision(player);
             }
         }
     }
