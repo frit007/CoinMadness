@@ -61,6 +61,7 @@ public class LobbyServer {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
                 int clientId = createClientId();
 
+                connectionManager.getLobby().put(LobbyMessage.NOT_READY, clientId);
                 connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableSprite());
                 connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId);
             }
@@ -80,7 +81,7 @@ public class LobbyServer {
 
     public void startGame(){
         try {
-            boolean everyBodyReady = true;
+            boolean allPlayersReady = true;
             connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
             List<Integer> clientIds = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class))
                     .stream()
@@ -89,20 +90,19 @@ public class LobbyServer {
 
             // check if everybody is ready
             for (Integer clientId: clientIds) {
-                if(connectionManager.getLobby().queryp(new ActualField(LobbyMessage.READY), new ActualField(clientId)) == null) {
-                    everyBodyReady = false;
-                }
+                allPlayersReady = allPlayersReady
+                        && connectionManager.getLobby().queryp(new ActualField(LobbyMessage.READY), new ActualField(clientId)) != null;
             }
 
             // if everybody is ready mark them as no longer ready.
-            if(everyBodyReady) {
+            if(allPlayersReady) {
                 for (Integer clientId: clientIds) {
                     connectionManager.getLobby().get(new ActualField(LobbyMessage.READY), new ActualField(clientId));
                 }
             }
 
             // if everybody is ready start the game
-            if(everyBodyReady) {
+            if(allPlayersReady) {
                 connectionManager.createGameSpaces();
                 connectionManager.getLobby().put(LobbyMessage.GAME_STARTED);
             }

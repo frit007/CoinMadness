@@ -48,14 +48,17 @@ public class ScopedThreads {
             try {
                 runnable.handle();
             } catch (InterruptedException e) {
-                if(!hasBeenCleared) {
-                    System.out.println("Scoped thread " + threadName + " Was interrupted to soon");
+                if(!getHasBeenCleared()) {
+                    System.out.println("Scoped thread \"" + threadName + "\" Was interrupted to soon");
                     // only show error messages if the errors have not been cleared
                     e.printStackTrace();
                     onError.handle();
                 }
             }
         });
+    }
+    public synchronized boolean getHasBeenCleared() {
+        return hasBeenCleared;
     }
 
     public synchronized void cleanup() {
