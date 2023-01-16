@@ -30,6 +30,16 @@ public class Field {
                 playerCollisions(localPlayer);
             }
         }
+        if (entity instanceof Enemy) {
+            for (Entity e : entities) {
+                if (e instanceof Player) {
+                    Player player = (Player) e;
+                    if(player.isLocalPlayer()) {
+                        playerCollisions(player);
+                    }
+                }
+            }
+        }
         sendUpdated();
     }
 
@@ -42,7 +52,7 @@ public class Field {
         // copy the player array since onPlayerCollision might update it
         for (Entity entity : new ArrayList<>(entities)) {
             if (entity instanceof CollidesWithPlayer) {
-                ((CollidesWithPlayer) entity).onPlayerColission(player);
+                ((CollidesWithPlayer) entity).onPlayerCollision(player);
             }
         }
     }
