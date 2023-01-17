@@ -29,7 +29,7 @@ public class ChestServer extends StaticEntityServer<Chest> {
     }
 
     public void listenForChestRequests(List<Chest> entities) {
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("accept coins", () -> {
             while (true) {
                 acceptCoins(entities);
             }

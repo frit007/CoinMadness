@@ -45,19 +45,6 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         clearSpaceFromNewEntities(StaticEntityMessage.NEW_ENTITY);
     }
 
-    public void checkRequest(List<Entity> entities) throws InterruptedException {
-        Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
-        Entity entity = convert.apply(receivedEntity);
-        int clientId = (int) receivedEntity[3];
-        if (entities.contains(entity)) {
-            entities.remove(entity);
-           sendAnswer(StaticEntityMessage.ANSWER_CLIENT, StaticEntityMessage.GIVE_ENTITY, clientId);
-           remove(entity, clientId);
-        } else {
-            sendAnswer(StaticEntityMessage.ANSWER_CLIENT, StaticEntityMessage.DENY_ENTITY, clientId);
-        }
-    }
-
     public void remove(Entity entity, Integer removerClientId) throws InterruptedException {
         List<Integer> clientIds = getClientIds();
         sendEntityNotifications(StaticEntityMessage.REMOVE_ENTITY, entity, removerClientId, clientIds);

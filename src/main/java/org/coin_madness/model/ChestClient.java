@@ -39,19 +39,19 @@ public class ChestClient extends StaticEntityClient<Chest> {
     }
 
     public void listenForChestChanges() {
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("verify coin", () -> {
             while (true) {
                 verifyCoins();
             }
         });
 
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("update player", () -> {
             while (true) {
                 updatePlayerScore();
             }
         });
 
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("update chest", () -> {
             while (true) {
                 updateChest();
             }

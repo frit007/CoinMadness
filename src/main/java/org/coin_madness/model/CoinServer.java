@@ -18,7 +18,7 @@ public class CoinServer extends StaticEntityServer<Coin> {
     }
 
     public void listenForCoinRequests(List<Coin> entities) {
-        gameState.gameThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread("check coin requests", () -> {
             while (true) {
                 checkRequest(entities);
             }
