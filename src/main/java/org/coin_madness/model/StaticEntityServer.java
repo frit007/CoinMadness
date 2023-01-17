@@ -7,6 +7,7 @@ import org.jspace.ActualField;
 import org.jspace.FormalField;
 import org.jspace.Space;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -18,9 +19,11 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     private Space entitySpace;
     private Function<Object[], Entity> convert;
     private int clientId;
+    protected List<Entity> entities;
 
     public StaticEntityServer(GameState gameState, Space entitySpace, Function<Object[], Entity> convert) {
         this.gameState = gameState;
+        this.entities = new ArrayList<>();
         this.connectionManager = gameState.connectionManager;
         this.entitySpace = entitySpace;
         this.convert = convert;
@@ -39,6 +42,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     
     public void add(List<Entity> entities) throws InterruptedException {
         List<Integer> clientIds = getClientIds();
+        this.entities.addAll(entities);
         addNewEntities(StaticEntityMessage.NEW_ENTITY, entities);
         sendNotifications(StaticEntityMessage.ADDED_ENTITIES, clientIds);
         receiveConfirmations(StaticEntityMessage.RECEIVED_ENTITIES, clientIds);
@@ -46,6 +50,8 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     }
 
     public void remove(Entity entity, Integer removerClientId) throws InterruptedException {
+        entities.remove(entity);
+        
         List<Integer> clientIds = getClientIds();
         sendEntityNotifications(StaticEntityMessage.REMOVE_ENTITY, entity, removerClientId, clientIds);
     }

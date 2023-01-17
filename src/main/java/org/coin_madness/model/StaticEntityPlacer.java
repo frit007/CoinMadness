@@ -12,18 +12,21 @@ public class StaticEntityPlacer {
     public StaticEntityPlacer(GameState gameState) {
         this.gameState = gameState;
         remainingFields = Arrays.asList(gameState.map)
-                                .stream()
-                                .flatMap(Arrays::stream)
-                                .filter(f -> !f.isWall())
-                                .filter(f -> {
-                                    Optional<Player> player = gameState.allPlayers()
-                                                                       .stream()
-                                                                       .filter(p -> p.getX() == f.getX()
-                                                                                    && p.getY() == f.getY())
-                                                                       .findFirst();
-                                    return !player.isPresent();
-                                })
-                               .collect(Collectors.toList());
+                .stream()
+                .flatMap(Arrays::stream)
+                .filter(f -> !f.isWall())
+                .filter(f -> {
+                    Optional<Player> player = gameState.allPlayers()
+                                                       .stream()
+                                                       .filter(p -> p.getX() == f.getX()
+                                                                    && p.getY() == f.getY())
+                                                       .findFirst();
+                    return !player.isPresent();
+                })
+                .filter(f -> {
+                    return f.entities.size() == 0;
+                })
+                .collect(Collectors.toList());
     }
     //TODO: trap players
     //TODO: create new static entities after

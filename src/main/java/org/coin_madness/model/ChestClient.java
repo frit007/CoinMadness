@@ -72,8 +72,6 @@ public class ChestClient extends StaticEntityClient<Chest> {
                 if (entity.isPresent()) {
                     Chest chest = (Chest) entity.get();
                     chest.setAmountOfCoins(newAmount);
-                } else {
-                    throw new RuntimeException("Unable to update coins in chest");
                 }
             });
         } catch (InterruptedException e) {

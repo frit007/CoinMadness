@@ -101,4 +101,8 @@ public class EnemyServer {
             }
         });
     }
+
+    public void increaseDifficulty() {
+        movementSpeed += 0.1;
+    }
 }
