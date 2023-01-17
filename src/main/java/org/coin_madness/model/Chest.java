@@ -35,7 +35,6 @@ public class Chest extends StaticEntity implements CollidesWithPlayer {
         } else {
             this.onPendingCoinAnimationDone = onPendingCoinAnimationDone;
         }
-        System.out.println(this);
     }
 
     @Override

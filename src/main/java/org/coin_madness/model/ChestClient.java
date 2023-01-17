@@ -70,7 +70,6 @@ public class ChestClient extends StaticEntityClient<Chest> {
             for (Entity fieldEntity: gameState.map[entity.getX()][entity.getY()].getEntities()) {
                 if(fieldEntity instanceof Chest) {
                     ((Chest) fieldEntity).addOnPendingAnimationDone(() -> {
-                        System.out.println("please remove the chest");
                         removeEntity(entity);
                     });
                 }
@@ -107,11 +106,8 @@ public class ChestClient extends StaticEntityClient<Chest> {
             int playerId = (int) updatedScore[1];
             int newCoins = (int) updatedScore[2];
             int newScore = (int) updatedScore[3];
-            System.out.println("Client " + gameState.connectionManager.getClientId());
-            System.out.println("Update a score : " + playerId + " : " + newCoins + " : " + newScore);
             if (gameState.networkedPlayers.containsKey(playerId)) {
                 Platform.runLater(() -> {
-                    System.out.println("actually do it?");
                     Player net = gameState.networkedPlayers.get(playerId);
                     net.setScore(newScore);
                     net.setAmountOfCoins(newCoins);
