@@ -44,23 +44,22 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
         EntitySprites sprites = graphics.getSprites(spriteId);
 
 
+        if(!entity.isAlive()) {
+            view.setImage(graphics.tombstone);
+            AnimationState removeAnimation = getAnimation(entity.getId());
+            // stop the animation, since the player is now dead
+            removeAnimation.translateTransition.stop();
+            removeAnimation.timeline.stop();
+            removeAnimation.imageView.setImage(null);
+            return;
+        }
+
         //Handling
         if(movement == null) {
             view.setImage(sprites.getDownIdle());
             return;
         }
-
         AnimationState animationState = getAnimation(entity.getId());
-
-        if(!entity.isAlive()) {
-            view.setImage(graphics.tombstone);
-            // stop the animation, since the player is now dead
-            animationState.translateTransition.stop();
-            animationState.timeline.stop();
-            animationState.imageView.setImage(null);
-            return;
-        }
-
 
         if(!movement.equals(animationState.currentMovement)) {
             animationState.playAnim(findAnimation(movement, sprites), movement, view);

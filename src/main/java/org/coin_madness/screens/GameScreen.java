@@ -27,7 +27,7 @@ import java.util.function.Function;
 public class GameScreen extends BorderPane {
 
     private static final int INTITIAL_AMOUNT_OF_CHESTS = 4;
-    private static final int INTITIAL_AMOUNT_OF_COINS = 15;
+    private static final int INTITIAL_AMOUNT_OF_COINS = 25;
     private static final int INTITIAL_AMOUNT_OF_TRAPHOLES = 10;
     public static final Color BACKGROUND = Color.GRAY;
     private ScrollPane scrollPane;
@@ -72,7 +72,6 @@ public class GameScreen extends BorderPane {
 
         gameState.coinClient.listenForChanges();
         gameState.chestClient.listenForChanges();
-        gameState.chestClient.listenForChestChanges();
         gameState.trapholeClient.listenForChanges();
         gameState.enemyClient.listenForChanges();
 
@@ -82,19 +81,21 @@ public class GameScreen extends BorderPane {
             List<Coin> placedCoins = placer.placeCoins(INTITIAL_AMOUNT_OF_COINS);
             List<Traphole> placedTrapholes = placer.placeTrapholes(INTITIAL_AMOUNT_OF_TRAPHOLES);
 
-            CoinServer coinServer = new CoinServer(gameState, connectionManager.getCoinSpace(), createCoin);
-            ChestServer chestServer = new ChestServer(gameState, connectionManager.getChestSpace(), createChest);
-            StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
-            EnemyServer enemyServer = new EnemyServer(gameState);
+            Servers servers = new Servers();
 
-            coinServer.listenForCoinRequests(placedCoins);
-            chestServer.listenForChestRequests(placedChests);
-            enemyServer.createEnemies();
+            servers.enemyServer = new EnemyServer(gameState);
+            servers.coinServer = new CoinServer(gameState, connectionManager.getCoinSpace(), createCoin);
+            servers.chestServer = new ChestServer(gameState, connectionManager.getChestSpace(), createChest, servers);
+            servers.trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
+
+            servers.coinServer.listenForCoinRequests();
+            servers.chestServer.listenForChestRequests();
+            servers.enemyServer.createEnemies();
 
             gameState.gameThreads.startHandledThread("Place coins, chest and traps",() -> {
-                coinServer.add(placedCoins);
-                chestServer.add(placedChests);
-                trapholeServer.add(placedTrapholes);
+                servers.coinServer.add(placedCoins);
+                servers.chestServer.add(placedChests);
+                servers.trapholeServer.add(placedTrapholes);
             });
         }
         ///

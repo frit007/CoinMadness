@@ -54,6 +54,12 @@ public class ScopedThreads {
                     e.printStackTrace();
                     onError.handle();
                 }
+            } catch (Exception e) {
+                if(!getHasBeenCleared()) {
+                    System.out.println("Scoped thread \"" + threadName + "\" got an unknown exception");
+                    // only show error messages if the errors have not been cleared
+                    e.printStackTrace();
+                }
             }
         });
     }

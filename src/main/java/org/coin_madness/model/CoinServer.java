@@ -17,15 +17,15 @@ public class CoinServer extends StaticEntityServer<Coin> {
         this.gameState = gameState;
     }
 
-    public void listenForCoinRequests(List<Coin> entities) {
+    public void listenForCoinRequests() {
         gameState.gameThreads.startHandledThread("check coin requests", () -> {
             while (true) {
-                checkRequest(entities);
+                checkRequest();
             }
         });
     }
 
-    public void checkRequest(List<Coin> entities) {
+    public void checkRequest() {
         try {
             Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
             Coin coin = convert.apply(receivedEntity);

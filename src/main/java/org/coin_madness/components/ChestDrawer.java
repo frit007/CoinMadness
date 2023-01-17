@@ -17,7 +17,7 @@ import java.util.HashMap;
 public class ChestDrawer implements Drawer<Chest> {
     private ImageLibrary graphics;
     Group container;
-    private HashMap<Integer, AnimationState> chestAnimations = new HashMap<>();
+    private HashMap<String, AnimationState> chestAnimations = new HashMap<>();
     private static final int DURATION = 500;
     private static final int OFFSET = 5;
 
@@ -26,7 +26,7 @@ public class ChestDrawer implements Drawer<Chest> {
         this.container = container;
     }
 
-    public AnimationState getAnimation(int id) {
+    public AnimationState getAnimation(String id) {
         if(!chestAnimations.containsKey(id)) {
             TranslateTransition translateTransition = new TranslateTransition();
             ImageView imageView = new ImageView();
@@ -35,22 +35,30 @@ public class ChestDrawer implements Drawer<Chest> {
         return chestAnimations.get(id);
     }
 
-    @Override
-    public void draw(Chest entity, ImageView view) {
-        view.setImage(graphics.chest);
-    }
-
-//@Override
+//    @Override
 //    public void draw(Chest entity, ImageView view) {
 //        view.setImage(graphics.chest);
-//        AnimationState animationState = getAnimation(entity.getX() + entity.getY()); //enough?
-//        animationState.playAnim(graphics.coin, view);
-//        System.out.println("play anim");
 //    }
+
+    @Override
+    public void draw(Chest chest, ImageView view) {
+        view.setImage(graphics.chest);
+        AnimationState animationState = getAnimation(chest.getX() + ":" + chest.getY()); //enough?
+
+        if(chest.hasPendingAnimation() && !animationState.isRunningAnimation()) {
+            animationState.playAnim(chest, graphics.coin, view);
+        }
+
+    }
 
     private class AnimationState {
         private TranslateTransition translateTransition;
         private ImageView imageView;
+        private Chest animationTarget;
+
+        public boolean isRunningAnimation() {
+            return animationTarget != null;
+        }
 
         public AnimationState(TranslateTransition translateTransition, ImageView imageView) {
             this.imageView = imageView;
@@ -59,7 +67,8 @@ public class ChestDrawer implements Drawer<Chest> {
             container.getChildren().add(imageView);
         }
 
-        public void playAnim(Image coin, ImageView view) {
+        public void playAnim(Chest chest, Image coin, ImageView view) {
+            animationTarget = chest;
             translateTransition.setNode(imageView);
             translateTransition.setDuration(Duration.millis(DURATION));
 
@@ -80,6 +89,14 @@ public class ChestDrawer implements Drawer<Chest> {
 
             translateTransition.setOnFinished(actionEvent -> {
                 imageView.setVisible(false);
+
+                chest.takePendingAnimation();
+
+                animationTarget = null;
+
+                if(chest.hasPendingAnimation()) {
+                    this.playAnim(chest, graphics.coin, view);
+                }
             });
 
             translateTransition.setInterpolator(Interpolator.LINEAR);

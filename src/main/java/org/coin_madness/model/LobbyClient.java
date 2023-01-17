@@ -82,7 +82,6 @@ public class LobbyClient {
     }
 
     private void unready() throws InterruptedException {
-        System.out.printf("Not ready!");
         // We need the ready lock, because we need the protection in start game
         connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
 
@@ -94,7 +93,6 @@ public class LobbyClient {
         connectionManager.getLobby().put(LobbyMessage.READY_LOCK);
     }
     private void ready() throws InterruptedException {
-        System.out.printf("Ready!");
         // We don't need a ready lock since
         connectionManager.getLobby().get(new ActualField(LobbyMessage.NOT_READY), new ActualField(clientId));
         connectionManager.getLobby().put(LobbyMessage.READY, clientId);
