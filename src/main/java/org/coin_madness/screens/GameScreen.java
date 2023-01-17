@@ -26,8 +26,9 @@ import java.util.function.Function;
 
 public class GameScreen extends BorderPane {
 
-    private static final int AMOUNT_OF_COINS = 50;
-    private static final int AMOUNT_OF_TRAPHOLES = 10;
+    private static final int INTITIAL_AMOUNT_OF_CHESTS = 4;
+    private static final int INTITIAL_AMOUNT_OF_COINS = 15;
+    private static final int INTITIAL_AMOUNT_OF_TRAPHOLES = 10;
     public static final Color BACKGROUND = Color.GRAY;
     private ScrollPane scrollPane;
     private GridPane mapView;
@@ -76,10 +77,10 @@ public class GameScreen extends BorderPane {
         gameState.enemyClient.listenForChanges();
 
         if (connectionManager.isHost()) {
-            StaticEntityPlacer placer = new StaticEntityPlacer();
-            List<Coin> placedCoins = placer.placeCoins(map, AMOUNT_OF_COINS);
-            List<Chest> placedChests = placer.placeChests(map);
-            List<Traphole> placedTrapholes = placer.placeTrapholes(gameState, AMOUNT_OF_TRAPHOLES);
+            StaticEntityPlacer placer = new StaticEntityPlacer(gameState);
+            List<Chest> placedChests = placer.placeChests(INTITIAL_AMOUNT_OF_CHESTS);
+            List<Coin> placedCoins = placer.placeCoins(INTITIAL_AMOUNT_OF_COINS);
+            List<Traphole> placedTrapholes = placer.placeTrapholes(INTITIAL_AMOUNT_OF_TRAPHOLES);
 
             CoinServer coinServer = new CoinServer(gameState, connectionManager.getCoinSpace(), createCoin);
             ChestServer chestServer = new ChestServer(gameState, connectionManager.getChestSpace(), createChest);

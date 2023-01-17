@@ -6,49 +6,53 @@ import java.util.stream.Collectors;
 public class StaticEntityPlacer {
 
     private Random rand = new Random();
+    private GameState gameState;
+    private List<Field> remainingFields;
 
-    public StaticEntityPlacer() {}
-    //TODO: Make sure they are not in the same place (avoid placing trapholes/coins on chests) (or on top of players) or trap players
-    //TODO: Make a better system
+    public StaticEntityPlacer(GameState gameState) {
+        this.gameState = gameState;
+        remainingFields = Arrays.asList(gameState.map)
+                                .stream()
+                                .flatMap(Arrays::stream)
+                                .filter(f -> !f.isWall())
+                                .filter(f -> {
+                                    Optional<Player> player = gameState.allPlayers()
+                                                                       .stream()
+                                                                       .filter(p -> p.getX() == f.getX()
+                                                                                    && p.getY() == f.getY())
+                                                                       .findFirst();
+                                    return !player.isPresent();
+                                })
+                               .collect(Collectors.toList());
+    }
+    //TODO: trap players
+    //TODO: create new static entities after
 
-    public List<Coin> placeCoins(Field[][] map, int amountOfCoins) {
-        List<Field> remainingFields = Arrays.asList(map).stream().flatMap(Arrays::stream)
-                                                                 .filter(f -> !f.isWall())
-                                                                 .collect(Collectors.toList());
+    public List<Coin> placeCoins(int amountOfCoins) {
         List<Coin> coins = new ArrayList<>();
         while(amountOfCoins > 0 && remainingFields.size() > 0) {
             int pos = rand.nextInt(remainingFields.size());
             Field field = remainingFields.remove(pos);
-            Coin coin = new Coin(field.getX(), field.getY(), null);
+            Coin coin = new Coin(field.getX(), field.getY(), gameState.coinClient);
             coins.add(coin);
             amountOfCoins--;
         }
         return coins;
     }
 
-    public List<Chest> placeChests(Field[][] map) {
-        List<Field> remainingFields = Arrays.asList(map).stream().flatMap(Arrays::stream)
-                                                        .filter(f -> isCorner(f))
-                                                        .collect(Collectors.toList());
+    public List<Chest> placeChests(int amountOfChests) {
         ArrayList<Chest> chests = new ArrayList<>();
-        while(remainingFields.size() > 0) {
-            Field field = remainingFields.remove(0);
-            Chest chest = new Chest(field.getX(), field.getY(), null);
+        while (amountOfChests > 0 && remainingFields.size() > 0) {
+            int pos = rand.nextInt(remainingFields.size());
+            Field field = remainingFields.remove(pos);
+            Chest chest = new Chest(field.getX(), field.getY(), gameState.chestClient);
             chests.add(chest);
+            amountOfChests--;
         }
         return chests;
     }
 
-    // Depends on the static layout of map.csv
-    private boolean isCorner(Field f) {
-        return (f.getX() == 1 || f.getX() == 30)
-                && (f.getY() == 1 || f.getY() == 30);
-    }
-
-    public List<Traphole> placeTrapholes(GameState gameState, int amountOfTrapholes) {
-        List<Field> remainingFields = Arrays.asList(gameState.map).stream().flatMap(Arrays::stream)
-                                                                 .filter(f -> !f.isWall())
-                                                                 .collect(Collectors.toList());
+    public List<Traphole> placeTrapholes(int amountOfTrapholes) {
         ArrayList<Traphole> trapholes = new ArrayList<>();
         while(amountOfTrapholes > 0 && remainingFields.size() > 0) {
             int pos = rand.nextInt(remainingFields.size());
