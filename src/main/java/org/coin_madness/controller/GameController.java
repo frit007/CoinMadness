@@ -1,6 +1,7 @@
 package org.coin_madness.controller;
 
 import javafx.animation.AnimationTimer;
+import javafx.application.Platform;
 import javafx.event.EventHandler;
 import javafx.scene.Scene;
 import javafx.scene.input.KeyEvent;
@@ -54,17 +55,15 @@ public class GameController {
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
 
 
-        // TODO There is probably a better way to do a game loop like this      
-        new AnimationTimer() {
-            public void handle(long currentNanoTime) {
-
-                try {
-                    List<Object[]> results = connectionManager.getPositionsSpace().queryAll(
-                            new FormalField(Integer.class),
-                            new FormalField(Integer.class),
-                            new FormalField(Integer.class)
-                    );
-
+        // TODO There is probably a better way to do a game loop like this
+        gameState.gameThreads.startHandledThread("Player movement", () -> {
+            while(true) {
+                List<Object[]> results = connectionManager.getPositionsSpace().queryAll(
+                        new FormalField(Integer.class),
+                        new FormalField(Integer.class),
+                        new FormalField(Integer.class)
+                );
+                Platform.runLater(() -> {
                     for (Object[] result : results) {
 
                         Integer rID = (Integer) result[0];
@@ -83,13 +82,10 @@ public class GameController {
                             // unknown player, all known players have been created at start up.
                         }
                     }
-
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-
+                });
+                Thread.sleep(20);
             }
-        }.start();
+        });
 
     }
 

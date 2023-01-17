@@ -13,21 +13,21 @@ public class EntityMovement {
     int deltaY;
     private Runnable completionHandler;
 
-    public EntityMovement(MovableEntity player, int deltaX, int deltaY, Runnable completionHandler) {
-        oldX = player.getX();
-        oldY = player.getY();
+    public EntityMovement(MovableEntity entity, int deltaX, int deltaY, Runnable completionHandler) {
+        oldX = entity.getX();
+        oldY = entity.getY();
         newX = oldX + deltaX;
         newY = oldY + deltaY;
         this.deltaX = deltaX;
         this.deltaY = deltaY;
         startedMovementAt = TimeHelper.getNowInMillis();
-        finishMovementAt = startedMovementAt + (long)(1000 / player.getMovementSpeed());
+        finishMovementAt = startedMovementAt + (long)(1000 / entity.getMovementSpeed());
         this.completionHandler = completionHandler;
     }
 
-    public EntityMovement(Player player, Direction dir, Runnable completionHandler) {
+    public EntityMovement(MovableEntity entity, Direction dir, Runnable completionHandler) {
         this(
-                player,
+                entity,
                 dir == Direction.RIGHT ? 1 : (dir == Direction.LEFT ? -1 : 0),
                 dir == Direction.DOWN ? 1 : (dir == Direction.UP ? -1 : 0),
                 completionHandler
@@ -73,5 +73,26 @@ public class EntityMovement {
     public void finish() {
         completionHandler.run();
     }
-    
+
+    public boolean equals(EntityMovement movement) {
+        return movement!= null
+                && getNewX() == movement.getNewX()
+                && getNewY() == movement.getNewY()
+                && getOldX() == movement.getOldX()
+                && getOldY() == movement.getOldY();
+    }
+
+    @Override
+    public String toString() {
+        return "EntityMovement{" +
+                "startedMovementAt=" + startedMovementAt +
+                ", finishMovementAt=" + finishMovementAt +
+                ", newX=" + newX +
+                ", newY=" + newY +
+                ", oldX=" + oldX +
+                ", oldY=" + oldY +
+                ", deltaX=" + deltaX +
+                ", deltaY=" + deltaY +
+                '}';
+    }
 }

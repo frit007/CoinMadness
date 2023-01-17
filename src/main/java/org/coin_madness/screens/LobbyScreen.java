@@ -20,6 +20,7 @@ import org.coin_madness.messages.LobbyMessage;
 import org.coin_madness.model.LobbyClient;
 import org.coin_madness.model.LobbyCommon;
 import org.coin_madness.model.LobbyServer;
+import org.coin_madness.model.Player;
 import org.jspace.ActualField;
 
 import java.net.DatagramSocket;
@@ -164,18 +165,24 @@ public class LobbyScreen extends GridPane {
 
     private void waitForGameStart() {
         lobbyClient.waitForGameStart(() -> {
-            onGameStart.run();
+            Platform.runLater(() -> {
+                connectionManager.setOnClientTimeout(null);
+                lobbyThreads.cleanup();
+                onGameStart.run();
+            });
         });
     }
 
 
     private void lobbyUpdateListener() {
         lobbyClient.waitForLobbyUpdate(lobbyUpdate -> {
-            status.setText(lobbyUpdate.readyPlayers + "/" + lobbyUpdate.connectedPlayers);
+            Platform.runLater(() -> {
+                status.setText(lobbyUpdate.readyPlayers + "/" + lobbyUpdate.connectedPlayers);
 
-            if(connectionManager.isHost()) {
-                startButton.setDisable(lobbyUpdate.readyPlayers != lobbyUpdate.connectedPlayers);
-            }
+                if(connectionManager.isHost()) {
+                    startButton.setDisable(lobbyUpdate.readyPlayers != lobbyUpdate.connectedPlayers);
+                }
+            });
         });
     }
 

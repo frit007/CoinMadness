@@ -9,7 +9,7 @@ public class Traphole extends StaticEntity implements CollidesWithPlayer {
     }
 
     @Override
-    public void onPlayerColission(Player player) {
+    public void onPlayerCollision(Player player) {
         if(!player.isAlive()) {
             return;
         }

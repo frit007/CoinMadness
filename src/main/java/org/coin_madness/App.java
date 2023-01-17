@@ -55,12 +55,7 @@ public class App extends Application {
     //Dispay of the "main screen"
     //Changing scenes
     private void showStartScreen(String errorMessage) {
-        MazeLoader loader = new MazeLoader();
-        try {
-            map = loader.load("src/main/resources/map.csv", ",");
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+
         if(connectionManager != null) {
             ConnectionManager previousConnectionManager = connectionManager;
             new Thread(() -> {
@@ -69,27 +64,36 @@ public class App extends Application {
         }
         connectionManager = new ConnectionManager();
         MainScreen mainScreen = new MainScreen(connectionManager, errorMessage);
-        mainScreen.setOnEnterLobby(() -> {
-            LobbyScreen lobbyScreen = new LobbyScreen(connectionManager);
-
-            changeView(lobbyScreen);
-
-            lobbyScreen.setOnGameStart(() -> {
-                // TODO - maybe, move to some kind of GameBuilder
-                connectionManager.joinGameSpaces();
-                BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager, this::showEndScreen);
-                gameView.setFocusTraversable(true);
-                changeView(gameView);
-            });
-            lobbyScreen.setReturnToMainScreen(error -> {
-                showStartScreen(error);
-            });
-        });
+        mainScreen.setOnEnterLobby(this::showLobby);
 
         changeView(mainScreen);
     }
+    private void showLobby() {
+        MazeLoader loader = new MazeLoader();
+        try {
+            map = loader.load("src/main/resources/map.csv", ",");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        LobbyScreen lobbyScreen = new LobbyScreen(connectionManager);
+
+        changeView(lobbyScreen);
+
+        lobbyScreen.setOnGameStart(this::showGame);
+        lobbyScreen.setReturnToMainScreen(this::showStartScreen);
+    }
+
+    private void showGame() {
+
+        // TODO - maybe, move to some kind of GameBuilder
+        connectionManager.joinGameSpaces();
+        BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager, this::showEndScreen, this::showStartScreen);
+        gameView.setFocusTraversable(true);
+        changeView(gameView);
+    }
 
     private void showEndScreen(GameState gameState) {
+
         EndScreen endScreen = new EndScreen(gameState, graphics, error -> {
             System.out.println("Get end click!");
 
@@ -102,6 +106,7 @@ public class App extends Application {
                 Platform.runLater(() -> {
                     changeView(endScreen);
                 });
+                gameState.gameThreads.cleanup();
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }

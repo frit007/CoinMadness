@@ -21,6 +21,7 @@ public class LobbyMessage {
     // (READY, Integer clientId)
     // is used to mark all clients that are ready
     public static final String READY = "ready";
+    public static final String NOT_READY = "not_ready";
 
     // (READY_LOCK)
     // lock used to protect against people changing their ready state and the game starting at the same time.

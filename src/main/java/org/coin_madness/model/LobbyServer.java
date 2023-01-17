@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public class LobbyServer {
     ConnectionManager connectionManager;
     ScopedThreads lobbyThreads;
+    int serverId = 1;
     int nextClientId = 0;
     LobbyCommon lobbyCommon;
 
@@ -27,27 +28,23 @@ public class LobbyServer {
         return nextClientId;
     }
 
-    private int findNextAvailableModel() {
-        int availableModels = 4;
-        for(int i = 0; i < availableModels; i++) {
-            try {
-                Object[] existingClientWithModelId = connectionManager
-                        .getLobby()
-                        .queryp(
-                                new ActualField(GlobalMessage.CLIENTS),
-                                new FormalField(Integer.class),
-                                new ActualField(i)
-                        );
-                if(existingClientWithModelId == null) {
-                    return i;
-                }
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
+    private int findNextAvailableSprite() throws InterruptedException {
+        int availableSprites = 4;
+        for(int i = 0; i < availableSprites; i++) {
+            Object[] existingClientWithModelId = connectionManager
+                    .getLobby()
+                    .queryp(
+                            new ActualField(GlobalMessage.CLIENTS),
+                            new FormalField(Integer.class),
+                            new ActualField(i)
+                    );
+            if(existingClientWithModelId == null) {
+                return i;
             }
         }
 
-        // give everybody else the last model
-        return availableModels - 1;
+        // give everybody else the last sprite
+        return availableSprites - 1;
     }
 
     public void setup() {
@@ -60,13 +57,14 @@ public class LobbyServer {
         }
 
         // Listen for join requests
-        lobbyThreads.startHandledThread(() -> {
+        lobbyThreads.startHandledThread("Listen for join requests", () -> {
             while(true) {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
                 int clientId = createClientId();
 
-                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableModel());
-                connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId, 1);
+                connectionManager.getLobby().put(LobbyMessage.NOT_READY, clientId);
+                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableSprite());
+                connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId, serverId);
             }
         });
 
@@ -84,7 +82,7 @@ public class LobbyServer {
 
     public void startGame(){
         try {
-            boolean everyBodyReady = true;
+            boolean allPlayersReady = true;
             connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
             List<Integer> clientIds = connectionManager.getLobby().queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class))
                     .stream()
@@ -93,20 +91,19 @@ public class LobbyServer {
 
             // check if everybody is ready
             for (Integer clientId: clientIds) {
-                if(connectionManager.getLobby().queryp(new ActualField(LobbyMessage.READY), new ActualField(clientId)) == null) {
-                    everyBodyReady = false;
-                }
+                allPlayersReady = allPlayersReady
+                        && connectionManager.getLobby().queryp(new ActualField(LobbyMessage.READY), new ActualField(clientId)) != null;
             }
 
             // if everybody is ready mark them as no longer ready.
-            if(everyBodyReady) {
+            if(allPlayersReady) {
                 for (Integer clientId: clientIds) {
                     connectionManager.getLobby().get(new ActualField(LobbyMessage.READY), new ActualField(clientId));
                 }
             }
 
             // if everybody is ready start the game
-            if(everyBodyReady) {
+            if(allPlayersReady) {
                 connectionManager.createGameSpaces();
                 connectionManager.getLobby().put(LobbyMessage.GAME_STARTED);
             }

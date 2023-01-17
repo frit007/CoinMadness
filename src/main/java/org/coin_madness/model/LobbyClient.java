@@ -1,6 +1,5 @@
 package org.coin_madness.model;
 
-import javafx.application.Platform;
 import org.coin_madness.helpers.Action1;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ScopedThreads;
@@ -8,9 +7,6 @@ import org.coin_madness.messages.GlobalMessage;
 import org.coin_madness.messages.LobbyMessage;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
-
-import java.util.concurrent.Callable;
-import java.util.function.Consumer;
 
 public class LobbyClient {
     private ConnectionManager connectionManager;
@@ -52,34 +48,56 @@ public class LobbyClient {
     }
 
     public void waitForGameStart(Runnable onGameStart) {
-        lobbyThreads.startHandledThread(() -> {
+        lobbyThreads.startHandledThread("Wait for game start", () -> {
             connectionManager.getLobby().query(new ActualField(LobbyMessage.GAME_STARTED));
-            Platform.runLater(() -> {
-                onGameStart.run();
-            });
+            onGameStart.run();
         });
     }
 
     // returns is ready
     public boolean toggleReady() {
-        boolean isReady = false;
         try {
-            connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
-
-            if(connectionManager.getLobby().queryp(new ActualField(LobbyMessage.READY), new ActualField(clientId)) != null) {
-                connectionManager.getLobby().get(new ActualField(LobbyMessage.READY), new ActualField(clientId));
-                isReady = false;
+            if(isNotReady()) {
+                ready();
+                lobbyCommon.sendLobbyUpdated();
+                return true;
             } else {
-                connectionManager.getLobby().put(LobbyMessage.READY, clientId);
-                isReady = true;
+                unready();
+                lobbyCommon.sendLobbyUpdated();
+                return false;
             }
-
-            connectionManager.getLobby().put(LobbyMessage.READY_LOCK);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-        lobbyCommon.sendLobbyUpdated();
-        return isReady;
+        return false;
+    }
+
+    private boolean isNotReady() throws InterruptedException {
+        return connectionManager
+                .getLobby()
+                .queryp(
+                        new ActualField(LobbyMessage.NOT_READY),
+                        new ActualField(clientId)
+                ) != null;
+    }
+
+    private void unready() throws InterruptedException {
+        System.out.printf("Not ready!");
+        // We need the ready lock, because we need the protection in start game
+        connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
+
+        if(connectionManager.getLobby().queryp(new ActualField(LobbyMessage.READY), new ActualField(clientId)) != null) {
+            connectionManager.getLobby().get(new ActualField(LobbyMessage.READY), new ActualField(clientId));
+            connectionManager.getLobby().put(LobbyMessage.NOT_READY, clientId);
+        }
+
+        connectionManager.getLobby().put(LobbyMessage.READY_LOCK);
+    }
+    private void ready() throws InterruptedException {
+        System.out.printf("Ready!");
+        // We don't need a ready lock since
+        connectionManager.getLobby().get(new ActualField(LobbyMessage.NOT_READY), new ActualField(clientId));
+        connectionManager.getLobby().put(LobbyMessage.READY, clientId);
     }
 
     public static class LobbyUpdate {
@@ -92,7 +110,7 @@ public class LobbyClient {
         }
     }
     public void waitForLobbyUpdate(Action1<LobbyUpdate> onLobbyUpdate) {
-        lobbyThreads.startHandledThread(() -> {
+        lobbyThreads.startHandledThread("Wait for lobby update", () -> {
             while(true) {
                 // wait to update the lobby
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.LOBBY_UPDATED), new ActualField(clientId));

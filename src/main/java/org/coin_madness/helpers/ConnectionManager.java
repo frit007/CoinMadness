@@ -19,6 +19,7 @@ public class ConnectionManager {
     private Space trapholeSpace = null;
     private Space fieldLocksSpace = null;
     private Space deathSpace = null;
+    private Space enemySpace = null;
     private String remoteIp = null;
     private SpaceRepository repository = null;
     private int clientId;
@@ -72,8 +73,13 @@ public class ConnectionManager {
     public Space getFieldLocksSpace() {
         return fieldLocksSpace;
     }
+
     public Space getDeathSpace() {
         return deathSpace;
+    }
+
+    public Space getEnemySpace() {
+        return enemySpace;
     }
 
     public void host() {
@@ -108,6 +114,9 @@ public class ConnectionManager {
         deathSpace = new SequentialSpace();
         repository.add("death", deathSpace);
 
+        enemySpace = new SequentialSpace();
+        repository.add("enemies", enemySpace);
+
         // Right now we just read the map from the CSV file, but in future we might have more
         //  maps and need to change this to use the correct one.
         fieldLocksSpace = new SequentialSpace();
@@ -139,6 +148,7 @@ public class ConnectionManager {
             trapholeSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/trapholes?keep"));
             fieldLocksSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/fieldlocks?keep"));
             deathSpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/death?keep"));
+            enemySpace = new RemoteSpaceWithDisconnect(new RemoteSpace("tcp://" + remoteIp + ":9001/enemies?keep"));
         } catch (IOException e) {
             e.printStackTrace();
             throw new RuntimeException("Could not join a remote game space");
@@ -147,7 +157,7 @@ public class ConnectionManager {
 
     private void startHostTimeoutThreads() {
         // listen and send keep alive messages to clients
-        connectionThreads.startHandledThread(() -> {
+        connectionThreads.startHandledThread("Server listens for client keep alive", () -> {
             // keep a history about for how long a client has failed to send keep alives
             Map<Integer, Integer> timeoutHistory = new HashMap<>();
             while(true) {
@@ -181,7 +191,7 @@ public class ConnectionManager {
         });
 
         // Send keep alives to clients, so they know they are still connected
-        connectionThreads.startHandledThread(() -> {
+        connectionThreads.startHandledThread("Server send keep alive to clients",() -> {
             while (true) {
                 List<Object[]> connectedClients = lobby.queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class));
                 for (Object[] connectedClient: connectedClients) {
@@ -194,7 +204,7 @@ public class ConnectionManager {
         });
 
         // listen for voluntary disconnects
-        connectionThreads.startHandledThread(() -> {
+        connectionThreads.startHandledThread("Server listen for client disconnect",() -> {
             while (true) {
                 Integer disconnectedClientId = (Integer) lobby.get(new ActualField(GlobalMessage.DISCONNECT), new FormalField(Integer.class))[1];
                 disconnectClient(disconnectedClientId, DisconnectReason.DISCONNECT);
@@ -228,7 +238,7 @@ public class ConnectionManager {
         this.clientId = clientId;
         this.serverId = serverId;
         // inform the server that we have not disconnected
-        connectionThreads.startHandledThread(() -> {
+        connectionThreads.startHandledThread("Client send keep alive",() -> {
             while (true) {
                 lobby.put(GlobalMessage.CLIENT_TO_SERVER_KEEP_ALIVE, clientId);
                 Thread.sleep(1000);
@@ -236,7 +246,7 @@ public class ConnectionManager {
         });
         var wrapper = new Object(){int missedKeepAlives = 0;};
         // listen for server keep alives
-        connectionThreads.startHandledThread(() -> {
+        connectionThreads.startHandledThread("Client listen for keep alives",() -> {
             while(true) {
                 lobby.get(new ActualField(GlobalMessage.SERVER_TO_CLIENT_KEEP_ALIVE), new ActualField(clientId));
                 synchronized (wrapper) {
@@ -245,7 +255,7 @@ public class ConnectionManager {
             }
         });
         // check if we haven't received a keep alive in 5 seconds
-        connectionThreads.startHandledThread(() -> {
+        connectionThreads.startHandledThread("Client wait for missed keep alives", () -> {
             while (true) {
                 synchronized (wrapper) {
                     wrapper.missedKeepAlives++;
@@ -261,23 +271,9 @@ public class ConnectionManager {
         });
     }
 
-    public Space joinRoom(String roomName) throws IOException, NotConnectedException {
-        if(repository != null) {
-            // the host creates a new room
-            Space room = new SequentialSpace();
-            repository.add(roomName, room);
-            return room;
-        } else if(remoteIp != null) {
-            // the client connects to an existing room.
-            return new RemoteSpace("tcp://" + remoteIp + ":9001/lobby?keep");
-        } else {
-            throw new NotConnectedException("Not connected");
-        }
-    }
-
     public void stop() {
         if(isHost()) {
-            repository.shutDown();
+            repository.closeGates();
             repository = null;
         } else {
             if(lobby instanceof RemoteSpaceWithDisconnect) {

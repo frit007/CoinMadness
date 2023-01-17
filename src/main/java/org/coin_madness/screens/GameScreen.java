@@ -37,7 +37,7 @@ public class GameScreen extends BorderPane {
     private Scene scene;
     private Field[][] map;
     protected GameState gameState = new GameState();
-    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager, Consumer<GameState> onGameEnd) {
+    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager, Consumer<GameState> onGameEnd, Consumer<String> onGameError) {
         this.scene = scene;
         this.map = map;
         gameStatusBar = new GameStatusBar(graphics);
@@ -46,6 +46,17 @@ public class GameScreen extends BorderPane {
         gameState.map = map;
 
         createPlayers();
+
+        connectionManager.setOnClientTimeout((disconnectReason) -> {
+            Platform.runLater(() -> {
+                onGameError.accept("Sorry, lost connection to the server");
+            });
+            connectionManager.setOnClientDisconnect(null);
+            new Thread(() -> {
+                gameState.gameThreads.cleanup();
+                connectionManager.stop();
+            }).start();
+        });
 
         //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
@@ -56,12 +67,13 @@ public class GameScreen extends BorderPane {
         gameState.chestClient = new ChestClient(connectionManager.getChestSpace(), gameState, createChest);
         gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
         gameState.deathClient = new DeathClient(gameState, onGameEnd);
+        gameState.enemyClient = new EnemyClient(gameState);
 
         gameState.coinClient.listenForChanges();
         gameState.chestClient.listenForChanges();
         gameState.chestClient.listenForChestChanges();
         gameState.trapholeClient.listenForChanges();
-
+        gameState.enemyClient.listenForChanges();
 
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer();
@@ -72,11 +84,13 @@ public class GameScreen extends BorderPane {
             CoinServer coinServer = new CoinServer(gameState, connectionManager.getCoinSpace(), createCoin);
             ChestServer chestServer = new ChestServer(gameState, connectionManager.getChestSpace(), createChest);
             StaticEntityServer<Traphole> trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
+            EnemyServer enemyServer = new EnemyServer(gameState);
 
             coinServer.listenForCoinRequests(placedCoins);
             chestServer.listenForChestRequests(placedChests);
+            enemyServer.createEnemies();
 
-            gameState.gameThreads.startHandledThread(() -> {
+            gameState.gameThreads.startHandledThread("Place coins, chest and traps",() -> {
                 coinServer.add(placedCoins);
                 chestServer.add(placedChests);
                 trapholeServer.add(placedTrapholes);
@@ -103,9 +117,8 @@ public class GameScreen extends BorderPane {
         drawerMap.put(Coin.class, new CoinDrawer(graphics));
         drawerMap.put(Chest.class, new ChestDrawer(graphics, mazeView));
         drawerMap.put(Traphole.class, new TrapholeDrawer(graphics));
-        PlayerDrawer playerDrawer = new PlayerDrawer(graphics, mazeView);
-        drawerMap.put(Player.class, playerDrawer);
-        drawerMap.put(Enemy.class, playerDrawer);
+        drawerMap.put(Player.class, new PlayerDrawer(graphics, mazeView));
+        drawerMap.put(Enemy.class, new PlayerDrawer(graphics, mazeView));
 
         for (Field[] row : map) {
             for(Field field : row) {
@@ -151,9 +164,9 @@ public class GameScreen extends BorderPane {
             );
             for(Object[] playerInfo : players) {
                 int clientId = (int) playerInfo[1];
-                int modelId = (int) playerInfo[2];
+                int spriteId = (int) playerInfo[2];
                 boolean localPlayer = clientId == gameState.connectionManager.getClientId();
-                Player player = new Player(clientId, clientId, 3, modelId, localPlayer);
+                Player player = new Player(clientId, clientId, 3, spriteId, localPlayer);
 
                 if(localPlayer) {
                     gameState.localPlayer = player;
