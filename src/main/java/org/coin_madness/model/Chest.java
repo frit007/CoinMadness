@@ -25,7 +25,6 @@ public class Chest extends StaticEntity implements CollidesWithPlayer {
 
     @Override
     public void onPlayerCollision(Player player) {
-        System.out.println("Hit Chest!");
         chestClient.placeCoins(this, player);
     }
 }
