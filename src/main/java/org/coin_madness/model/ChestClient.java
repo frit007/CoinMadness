@@ -116,6 +116,7 @@ public class ChestClient extends StaticEntityClient<Chest> {
     // server id might simplify one other communication
     public void placeCoins(Chest chest, Player player) {
         try {
+            //TODO: move to server
             List<Integer> clientIds = getClientIds().stream()
                                                     .filter(c -> c != serverId)
                                                     .collect(Collectors.toList());
@@ -135,7 +136,7 @@ public class ChestClient extends StaticEntityClient<Chest> {
                         player.setAmountOfCoins(player.getAmountOfCoins() - 1);
                         sendCoin(StaticEntityMessage.SEND_ENTITY,1, serverId);
                         player.setScore(player.getScore() + 100);
-                        sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, getClientIds());
+                        sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, getClientIds()); //TODO: get at start
                         //TODO: chest animation
                     } else {
                         receiveNotification(StaticEntityMessage.DENY_ENTITY);

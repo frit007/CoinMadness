@@ -3,7 +3,7 @@ package org.coin_madness.model;
 import org.coin_madness.helpers.EnemySprites;
 import org.coin_madness.helpers.ImageLibrary;
 
-public class Enemy extends MovableEntity implements CollidesWithPlayer{
+public class Enemy extends MovableEntity implements CollidesWithPlayer {
 
     public int visibleToClientId;
     public GameState gameState;
