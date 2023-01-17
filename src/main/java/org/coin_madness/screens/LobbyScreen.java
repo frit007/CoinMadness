@@ -5,6 +5,7 @@ import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.control.Button;
+import javafx.scene.control.CheckBox;
 import javafx.scene.control.Label;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.GridPane;
@@ -17,10 +18,7 @@ import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.Action;
 import org.coin_madness.helpers.ScopedThreads;
 import org.coin_madness.messages.LobbyMessage;
-import org.coin_madness.model.LobbyClient;
-import org.coin_madness.model.LobbyCommon;
-import org.coin_madness.model.LobbyServer;
-import org.coin_madness.model.Player;
+import org.coin_madness.model.*;
 import org.jspace.ActualField;
 
 import java.net.DatagramSocket;
@@ -32,7 +30,7 @@ import java.util.function.Consumer;
 
 public class LobbyScreen extends GridPane {
 
-    private Runnable onGameStart;
+    private Action1<GameSettings> onGameStart;
     private Action1<String> returnToMainScreen;
 
     private boolean isReady = false;
@@ -45,9 +43,12 @@ public class LobbyScreen extends GridPane {
     private boolean hasHandledConnectionFailure = false;
     private LobbyServer lobbyServer;
     private LobbyClient lobbyClient;
+    private CheckBox personalGhosts;
 
     // Threads
-    private ScopedThreads lobbyThreads = new ScopedThreads(this::connectionFailed);
+    private ScopedThreads lobbyThreads = new ScopedThreads(() -> {
+        connectionFailed("Sorry, connection failed");
+    });
 
     private String getIpAddress() throws SocketException, UnknownHostException {
         // https://stackoverflow.com/questions/9481865/getting-the-ip-address-of-the-current-machine-using-java
@@ -88,6 +89,7 @@ public class LobbyScreen extends GridPane {
 
         HBox buttons = new HBox();
 
+        personalGhosts = new CheckBox("Personal Ghosts");
         if(connectionManager.isHost()) {
             // only show the start button for the host
             buttons.getChildren().add(startButton);
@@ -97,6 +99,8 @@ public class LobbyScreen extends GridPane {
                 title.setStyle("-fx-font: 20 arial;");
                 title.setText("Waiting for players.\nIt was not possible to find the ip address.\nPlease use ipconfig/ifconfig to find your ip address");
             }
+        } else {
+            personalGhosts.setVisible(false);
         }
 
         buttons.getChildren().add(readyButton);
@@ -113,6 +117,8 @@ public class LobbyScreen extends GridPane {
         add(buttons, 4,2, 1, 1);
         GridPane.setHalignment(buttons, HPos.RIGHT);
 
+        add(personalGhosts, 1,3,1,1);
+
         LobbyCommon lobbyCommon = new LobbyCommon(connectionManager);
         lobbyClient = new LobbyClient(connectionManager, lobbyThreads, lobbyCommon);
 
@@ -120,16 +126,16 @@ public class LobbyScreen extends GridPane {
             lobbyServer = new LobbyServer(connectionManager, lobbyThreads, lobbyCommon);
             lobbyServer.setup();
         }
-        lobbyClient.join();
+        lobbyClient.join(this::connectionFailed);
         lobbyUpdateListener();
         waitForGameStart();
 
         connectionManager.setOnClientTimeout((reason) -> {
-            this.connectionFailed();
+            this.connectionFailed("Sorry, connection failed");
         });
     }
 
-    public void setOnGameStart(Runnable onGameStart) {
+    public void setOnGameStart(Action1<GameSettings> onGameStart) {
         this.onGameStart = onGameStart;
     }
     public void setReturnToMainScreen(Action1<String> returnToMainScreen) {
@@ -150,25 +156,25 @@ public class LobbyScreen extends GridPane {
         returnToMainScreen.handle(null);
     }
 
-    private void connectionFailed() {
+    private void connectionFailed(String error) {
         if(hasHandledConnectionFailure) {
             return;
         }
         connectionManager.setOnClientDisconnect(null);
         connectionManager.stop();
         Platform.runLater(() -> {
-            returnToMainScreen.handle("Sorry, connection failed");
+            returnToMainScreen.handle(error);
         });
         lobbyThreads.cleanup();
         hasHandledConnectionFailure = true;
     }
 
     private void waitForGameStart() {
-        lobbyClient.waitForGameStart(() -> {
+        lobbyClient.waitForGameStart((gameSettings) -> {
             Platform.runLater(() -> {
                 connectionManager.setOnClientTimeout(null);
                 lobbyThreads.cleanup();
-                onGameStart.run();
+                onGameStart.handle(gameSettings);
             });
         });
     }
@@ -195,7 +201,8 @@ public class LobbyScreen extends GridPane {
     }
 
     private void onStartButtonClicked(MouseEvent event) {
-        lobbyServer.startGame();
+        GameSettings gameSettings = new GameSettings(personalGhosts.isSelected());
+        lobbyServer.startGame(gameSettings);
     }
 
 }

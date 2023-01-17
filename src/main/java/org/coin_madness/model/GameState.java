@@ -25,6 +25,7 @@ public class GameState {
     public Player localPlayer;
 
     public HashMap<Integer, Enemy> enemies = new HashMap<>();
+    public GameSettings settings;
 
     public List<Player> allPlayers() {
         List<Player> players = new ArrayList<>();

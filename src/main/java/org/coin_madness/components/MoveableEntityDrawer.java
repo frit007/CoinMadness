@@ -7,21 +7,22 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
 import org.coin_madness.helpers.EntitySprites;
-import org.coin_madness.helpers.PlayerSprites;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.EntityMovement;
+import org.coin_madness.model.GameState;
 import org.coin_madness.model.MovableEntity;
-import org.coin_madness.model.Player;
 
 import java.util.HashMap;
 import java.util.List;
 
-public class PlayerDrawer implements Drawer<MovableEntity> {
+public class MoveableEntityDrawer implements Drawer<MovableEntity> {
+    private GameState gameState;
     private ImageLibrary graphics;
     private HashMap<Integer, AnimationState> playerAnimations = new HashMap<>();
     Group container;
 
-    public PlayerDrawer(ImageLibrary graphics, Group container) {
+    public MoveableEntityDrawer(GameState gameState, ImageLibrary graphics, Group container) {
+        this.gameState = gameState;
         this.graphics = graphics;
         this.container = container;
     }
@@ -39,6 +40,9 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
 
     @Override
     public void draw(MovableEntity entity, ImageView view) {
+        if(!entity.isVisible(gameState)) {
+            return;
+        }
         EntityMovement movement = entity.getEntityMovement();
         int spriteId = entity.getSpriteId();
         EntitySprites sprites = graphics.getSprites(spriteId);

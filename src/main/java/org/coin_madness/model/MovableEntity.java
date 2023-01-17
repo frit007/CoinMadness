@@ -70,4 +70,7 @@ public class MovableEntity extends Entity {
         this.movementSpeed = movementSpeed;
     }
 
+    public boolean isVisible(GameState gameState) {
+        return true;
+    }
 }

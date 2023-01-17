@@ -30,4 +30,10 @@ public class Enemy extends MovableEntity implements CollidesWithPlayer {
         System.out.println("Hit Enemy!");
     }
 
+    @Override
+    public boolean isVisible(GameState gameState) {
+        return !gameState.settings.personalGhosts
+                || visibleToClientId == gameState.connectionManager.getClientId()
+                || !gameState.localPlayer.isAlive();
+    }
 }

@@ -80,7 +80,7 @@ public class LobbyServer {
         });
     }
 
-    public void startGame(){
+    public void startGame(GameSettings gameSettings){
         try {
             boolean allPlayersReady = true;
             connectionManager.getLobby().get(new ActualField(LobbyMessage.READY_LOCK));
@@ -105,7 +105,7 @@ public class LobbyServer {
             // if everybody is ready start the game
             if(allPlayersReady) {
                 connectionManager.createGameSpaces();
-                connectionManager.getLobby().put(LobbyMessage.GAME_STARTED);
+                connectionManager.getLobby().put(LobbyMessage.GAME_STARTED, gameSettings.personalGhosts);
             }
 
             connectionManager.getLobby().put(new ActualField(LobbyMessage.READY_LOCK));

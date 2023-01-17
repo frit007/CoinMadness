@@ -12,6 +12,7 @@ import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
 import org.coin_madness.model.Field;
 import org.coin_madness.helpers.MazeLoader;
+import org.coin_madness.model.GameSettings;
 import org.coin_madness.model.GameState;
 import org.coin_madness.model.Player;
 import org.coin_madness.screens.EndScreen;
@@ -83,11 +84,11 @@ public class App extends Application {
         lobbyScreen.setReturnToMainScreen(this::showStartScreen);
     }
 
-    private void showGame() {
+    private void showGame(GameSettings gameSettings) {
 
         // TODO - maybe, move to some kind of GameBuilder
         connectionManager.joinGameSpaces();
-        BorderPane gameView = new GameScreen(stage, scene, map, graphics, connectionManager, this::showEndScreen, this::showStartScreen);
+        BorderPane gameView = new GameScreen(stage, scene, gameSettings, map, graphics, connectionManager, this::showEndScreen, this::showStartScreen);
         gameView.setFocusTraversable(true);
         changeView(gameView);
     }
