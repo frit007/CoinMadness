@@ -48,7 +48,10 @@ public class MovableEntity extends Entity {
     }
 
     public boolean isMoving() {
-        return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() <= TimeHelper.getNowInMillis());
+        // Allow starting the next movement slightly earlier, to make movement feel smoother
+        // This also reduces bugs involving the player stopping without any reason
+        int CHEAT_WINDOW = 10;
+        return !(this.entityMovement == null || this.entityMovement.getFinishMovementAt() - CHEAT_WINDOW <= TimeHelper.getNowInMillis());
     }
 
     public int getId() {
