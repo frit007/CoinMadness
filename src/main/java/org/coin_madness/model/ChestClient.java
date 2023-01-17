@@ -87,8 +87,11 @@ public class ChestClient extends StaticEntityClient<Chest> {
             int playerId = (int) updatedScore[1];
             int newCoins = (int) updatedScore[2];
             int newScore = (int) updatedScore[3];
+            System.out.println("Client " + gameState.connectionManager.getClientId());
+            System.out.println("Update a score : " + playerId + " : " + newCoins + " : " + newScore);
             if (gameState.networkedPlayers.containsKey(playerId)) {
                 Platform.runLater(() -> {
+                    System.out.println("actually do it?");
                     Player net = gameState.networkedPlayers.get(playerId);
                     net.setScore(newScore);
                     net.setAmountOfCoins(newCoins);
@@ -134,7 +137,7 @@ public class ChestClient extends StaticEntityClient<Chest> {
                         player.setAmountOfCoins(player.getAmountOfCoins() - 1);
                         sendCoin(StaticEntityMessage.SEND_ENTITY,1, serverId);
                         player.setScore(player.getScore() + 100);
-                        sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, clientIds);
+                        sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, getClientIds());
                         //TODO: chest animation
                     } else {
                         receiveNotification(StaticEntityMessage.DENY_ENTITY);

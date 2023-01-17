@@ -76,6 +76,12 @@ public class GameStatusBar extends HBox {
                 }
                 coins.getChildren().add(view);
             }
+
+            int totalScore = 0;
+            for (PlayerUI ui: playerUIs) {
+                totalScore += ui.player.getDisplayScore();
+            }
+            score.setText("Score: " + totalScore);
         }
 
     }
