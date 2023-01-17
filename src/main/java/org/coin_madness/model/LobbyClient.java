@@ -41,6 +41,7 @@ public class LobbyClient {
         }
         lobbyCommon.sendLobbyUpdated();
     }
+
     public void disconnect() {
 
         try {

@@ -49,16 +49,17 @@ public class GameScreen extends BorderPane {
 
         //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
-        Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2], chestClient);
+        Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2], gameState.chestClient);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2], gameState);
 
         gameState.coinClient = new CoinClient(connectionManager.getCoinSpace(), gameState, createCoin);
-        gameState.chestClient = new StaticEntityClient<>(connectionManager.getChestSpace(), gameState, createChest);
+        gameState.chestClient = new ChestClient(connectionManager.getChestSpace(), gameState, createChest);
         gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
         gameState.deathClient = new DeathClient(gameState, onGameEnd);
 
         gameState.coinClient.listenForChanges();
         gameState.chestClient.listenForChanges();
+        gameState.chestClient.listenForChestChanges();
         gameState.trapholeClient.listenForChanges();
 
 
@@ -86,8 +87,6 @@ public class GameScreen extends BorderPane {
         new GameController(scene, connectionManager, gameState);
         Group mazeView = new Group();
 
-        // HBox topBar = new HBox();
-        // topBar.getChildren().add(new Text(10,0,"Coins: "));
         int preferredGameStatusBarHeight = 30;
         gameStatusBar.setPrefHeight(preferredGameStatusBarHeight);
         gameStatusBar.addPlayer(gameState.localPlayer);
@@ -102,7 +101,7 @@ public class GameScreen extends BorderPane {
 
         HashMap<Class, Drawer> drawerMap = new HashMap<>();
         drawerMap.put(Coin.class, new CoinDrawer(graphics));
-        drawerMap.put(Chest.class, new ChestDrawer(graphics));
+        drawerMap.put(Chest.class, new ChestDrawer(graphics, mazeView));
         drawerMap.put(Traphole.class, new TrapholeDrawer(graphics));
         PlayerDrawer playerDrawer = new PlayerDrawer(graphics, mazeView);
         drawerMap.put(Player.class, playerDrawer);

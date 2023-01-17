@@ -14,7 +14,7 @@ public class GameState {
 
     public CoinClient coinClient;
 
-    public StaticEntityClient<Chest> chestClient;
+    public ChestClient chestClient;
 
     public StaticEntityClient<Traphole> trapholeClient;
 

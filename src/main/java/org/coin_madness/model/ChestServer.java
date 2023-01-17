@@ -1,7 +1,6 @@
 package org.coin_madness.model;
 
 import org.coin_madness.helpers.ConnectionManager;
-import org.coin_madness.helpers.ScopedThreads;
 import org.coin_madness.messages.StaticEntityMessage;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
@@ -18,16 +17,19 @@ public class ChestServer extends StaticEntityServer<Chest> {
     private Space entitySpace;
     private int clientId;
     private Function<Object[], Chest> convert;
+    private GameState gameState;
 
-    public ChestServer(ConnectionManager connectionManager, Space entitySpace, ScopedThreads staticEntityThreads, Function<Object[], Chest> convert) {
-        super(connectionManager, entitySpace, staticEntityThreads, convert);
-        this.connectionManager = connectionManager;
+    public ChestServer(GameState gameState, Space entitySpace, Function<Object[], Chest> convert) {
+        super(gameState, entitySpace, convert);
+        this.connectionManager = gameState.connectionManager;
         this.entitySpace = entitySpace;
         this.clientId = connectionManager.getClientId();
+        this.convert = convert;
+        this.gameState = gameState;
     }
 
     public void listenForChestRequests(List<Chest> entities) {
-        staticEntityThreads.startHandledThread(() -> {
+        gameState.gameThreads.startHandledThread(() -> {
             while (true) {
                 acceptCoins(entities);
             }
@@ -38,35 +40,34 @@ public class ChestServer extends StaticEntityServer<Chest> {
         try {
             List<Integer> clientIds = getClientIds();
             while (true) {
-                String postulate = receiveAnswer(StaticEntityMessage.ANSWER_MARKER);
-                if (postulate == StaticEntityMessage.CONTINUE) {
+                String postulate = receiveAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER);
+                if (Objects.equals(postulate, StaticEntityMessage.CONTINUE)) {
                     int otherClientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID);
                     Object[] receivedChest = receiveEntityRequest(StaticEntityMessage.SEND_CHEST);
                     Chest chestId = convert.apply(receivedChest);
                     Optional<Chest> chest = chests.stream().filter(c -> Objects.equals(c, chestId)).findFirst();
                     int fromClientId = (int) receivedChest[3];
                     if (chest.isPresent() && chest.get().getAmountOfCoins() + 1 <= chest.get().getMaxCoins()) {
-                        sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.THEN, fromClientId);
-                        sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.THEN, otherClientId);
+                        sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.THEN, fromClientId);
+                        sendAnswer(StaticEntityMessage.IF_STATEMENT_OTHER_CLIENT, StaticEntityMessage.THEN, otherClientId);
                         Boolean isVerified = receiveBool(StaticEntityMessage.ANSWER_MARKER);
                         if (isVerified) {
-                            sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.THEN, fromClientId);
-                            sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.ACCEPT_ENTITY, fromClientId);
+                            sendAnswer(StaticEntityMessage.IF_STATEMENT_2, StaticEntityMessage.THEN, fromClientId);
+                            sendNotification(StaticEntityMessage.ACCEPT_ENTITY, fromClientId);
                             int coin = receiveCoin(StaticEntityMessage.SEND_ENTITY);
                             chest.get().setAmountOfCoins(chest.get().getAmountOfCoins() + coin);
-                            //Send to everyone it was updated
-                            sendUpdateChest(StaticEntityMessage.UPDATE_PLAYER_SCORE, chest.get(), clientIds);
+                            sendUpdateChest(StaticEntityMessage.UPDATE_ENTITY, chest.get(), clientIds);
                         } else {
-                            sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.ELSE, fromClientId);
-                            sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.DENY_ENTITY, fromClientId);
+                            sendAnswer(StaticEntityMessage.IF_STATEMENT_2, StaticEntityMessage.ELSE, fromClientId);
+                            sendNotification(StaticEntityMessage.DENY_ENTITY, fromClientId);
                             break;
                         }
                     } else {
-                        sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.ELSE, fromClientId);
-                        sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.ELSE, otherClientId);
+                        sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.ELSE, fromClientId);
+                        sendAnswer(StaticEntityMessage.IF_STATEMENT_OTHER_CLIENT, StaticEntityMessage.ELSE, otherClientId);
                         break;
                     }
-                }
+                } else break;
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Unable to accept coins");
@@ -76,13 +77,15 @@ public class ChestServer extends StaticEntityServer<Chest> {
     // From Static Entity Client
     private String receiveAnswer(String answerMarker) throws InterruptedException {
         Object[] answer = entitySpace.get(new ActualField(answerMarker),
-                new FormalField(String.class),
-                new ActualField(clientId));
+                                          new FormalField(String.class),
+                                          new ActualField(clientId));
         return answer[1].toString();
     }
 
     private int receiveClientId(String marker) throws InterruptedException {
-        Object[] recievedClientId = entitySpace.get(new ActualField(marker), new FormalField(Integer.class), new ActualField(clientId));
+        Object[] recievedClientId = entitySpace.get(new ActualField(marker),
+                                                    new FormalField(Integer.class),
+                                                    new ActualField(clientId));
         return (int) recievedClientId[1];
     }
 
@@ -94,7 +97,9 @@ public class ChestServer extends StaticEntityServer<Chest> {
     }
 
     private int receiveCoin(String marker) throws InterruptedException {
-        Object[] receivedCoin = entitySpace.get(new ActualField(marker), new FormalField(Integer.class), new ActualField(clientId));
+        Object[] receivedCoin = entitySpace.get(new ActualField(marker),
+                                                new FormalField(Integer.class),
+                                                new ActualField(clientId));
         return (int) receivedCoin[1];
     }
 

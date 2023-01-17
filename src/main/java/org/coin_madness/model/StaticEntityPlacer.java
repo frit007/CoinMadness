@@ -8,7 +8,7 @@ public class StaticEntityPlacer {
     private Random rand = new Random();
 
     public StaticEntityPlacer() {}
-    //TODO: Make sure they are not in the same place
+    //TODO: Make sure they are not in the same place (avoid placing trapholes/coins on chests) (or on top of players) or trap players
     //TODO: Make a better system
 
     public List<Coin> placeCoins(Field[][] map, int amountOfCoins) {

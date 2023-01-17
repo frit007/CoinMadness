@@ -17,6 +17,7 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
     private ImageLibrary graphics;
     private HashMap<Integer, AnimationState> playerAnimations = new HashMap<>();
     Group container;
+
     public PlayerDrawer(ImageLibrary graphics, Group container) {
         this.graphics = graphics;
         this.container = container;
@@ -34,7 +35,6 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
     }
 
     @Override
-    //TODO: different color for networkPlayers? enemies?
     public void draw(MovableEntity player, ImageView view) {
         EntityMovement movement = player.getEntityMovement();
         //Handling
@@ -75,7 +75,7 @@ public class PlayerDrawer implements Drawer<MovableEntity> {
         }
     }
 
-    public class AnimationState {
+    private class AnimationState {
         private Timeline timeline;
         private int keyCount;
         private TranslateTransition translateTransition;

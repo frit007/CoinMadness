@@ -27,7 +27,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         this.clientId = connectionManager.getClientId();
     }
 
-    private List<Integer> getClientIds() throws InterruptedException {
+    protected List<Integer> getClientIds() throws InterruptedException {
         List<Object[]> clients = connectionManager
                 .getLobby()
                 .queryAll(new ActualField(GlobalMessage.CLIENTS),
@@ -37,13 +37,13 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
     }
 
-    public void listenForEntityRequests(List<Entity> entities) {
-        gameState.gameThreads.startHandledThread(() -> {
-            while (true) {
-                checkRequest(entities);
-            }
-        });
-    }
+//    public void listenForEntityRequests(List<Entity> entities) {
+//        gameState.gameThreads.startHandledThread(() -> {
+//            while (true) {
+//                checkRequest(entities);
+//            }
+//        });
+//    }
 
     public void add(List<Entity> entities) {
         try {
@@ -57,22 +57,22 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         }
     }
 
-    public void checkRequest(List<Entity> entities) {
-        try {
-            Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
-            Entity entity = convert.apply(receivedEntity);
-            int clientId = (int) receivedEntity[3];
-            if (entities.contains(entity)) {
-                entities.remove(entity);
-               sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.GIVE_ENTITY, clientId);
-               remove(entity, clientId);
-            } else {
-                sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.DENY_ENTITY, clientId);
-            }
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Could not check static entity request");
-        }
-    }
+//    public void checkRequest(List<Entity> entities) {
+//        try {
+//            Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
+//            Entity entity = convert.apply(receivedEntity);
+//            int clientId = (int) receivedEntity[3];
+//            if (entities.contains(entity)) {
+//                entities.remove(entity);
+//               sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.GIVE_ENTITY, clientId);
+//               remove(entity, clientId);
+//            } else {
+//                sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.DENY_ENTITY, clientId);
+//            }
+//        } catch (InterruptedException e) {
+//            throw new RuntimeException("Could not check static entity request");
+//        }
+//    }
 
     public void remove(Entity entity, Integer removerClientId) {
         try {
@@ -91,6 +91,10 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     private void sendNotifications(String notification, List<Integer> clientIds) throws InterruptedException {
         for (int clientId : clientIds)
             entitySpace.put(notification, clientId);
+    }
+
+    protected void sendNotification(String notification, int clientId) throws InterruptedException {
+        entitySpace.put(notification, clientId);
     }
 
     private void receiveConfirmations(String confirmation, List<Integer> clientIds) throws InterruptedException {

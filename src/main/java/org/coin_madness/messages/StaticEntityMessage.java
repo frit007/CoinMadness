@@ -7,6 +7,11 @@ public class StaticEntityMessage {
     public static final String RECEIVED_ENTITIES = "received_entities";
 
     public static final String ANSWER_MARKER = "answer_client";
+    public static final String IF_STATEMENT_CLIENT = "if1_answer_client";
+    public static final String IF_STATEMENT_OTHER_CLIENT = "if1_answer_other_client";
+    public static final String IF_STATEMENT_2 = "if2_answer_client";
+    public static final String WHILE_STATEMENT_SERVER = "while_answer_server";
+    public static final String WHILE_STATEMENT_OTHER_CLIENT = "while_answer_other_client";
     public static final String REQUEST_ENTITY = "request_entity";
     public static final String GIVE_ENTITY = "give_entity";
     public static final String DENY_ENTITY = "deny_entity";

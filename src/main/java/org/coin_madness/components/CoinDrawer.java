@@ -6,6 +6,7 @@ import org.coin_madness.model.Coin;
 
 public class CoinDrawer implements Drawer<Coin> {
     private ImageLibrary graphics;
+
     public CoinDrawer(ImageLibrary graphics) {
         this.graphics = graphics;
     }
