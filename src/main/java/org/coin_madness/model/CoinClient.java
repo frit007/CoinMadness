@@ -20,14 +20,12 @@ public class CoinClient extends StaticEntityClient<Coin> {
         this.convert = convert;
     }
 
-    public void request(Coin coin, Action given, Action denied) {
+    public void request(Coin coin, Player player) {
         try {
             sendEntityRequest(StaticEntityMessage.REQUEST_ENTITY, coin);
             String answer = receiveAnswer(StaticEntityMessage.ANSWER_MARKER);
             if (Objects.equals(answer, StaticEntityMessage.GIVE_ENTITY)) {
-                given.handle();
-            } else {
-                denied.handle();
+                Platform.runLater(() -> player.setAmountOfCoins(player.getAmountOfCoins() + 1));
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Could not request static entity");
