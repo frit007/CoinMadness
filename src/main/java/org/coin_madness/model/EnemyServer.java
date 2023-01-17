@@ -70,7 +70,6 @@ public class EnemyServer {
                 for (Enemy enemy : gameState.enemies.values()) {
                     ArrayList<EntityMovement> possibleMoves = new ArrayList<>(0);
 
-                    System.out.println("update ghost: " + enemy.getId() + " x: " + enemy.getX() + " y: " + enemy.getY());
                     enemy.setMovementSpeed(movementSpeed);
                     possibleMoves.add(new EntityMovement(enemy, 1, 0, () -> {}));
                     possibleMoves.add(new EntityMovement(enemy, -1, 0, () -> {}));

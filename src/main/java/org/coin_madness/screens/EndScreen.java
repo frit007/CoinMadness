@@ -25,7 +25,11 @@ public class EndScreen extends VBox {
 
         setAlignment(Pos.CENTER);
 
-        int score = 1337;
+        int score = 0;
+        for (Player player: gameState.allPlayers()) {
+            score += player.getDisplayScore();
+        }
+
         Label scoreLabel = new Label("Score: " + score);
         scoreLabel.setTextFill(Color.BLACK);
         scoreLabel.setStyle("-fx-font: 40px arial;");
@@ -64,8 +68,8 @@ public class EndScreen extends VBox {
         playerIcon.setFitHeight(30);
 
         Label playerScore = new Label();
-        //TODO - Get player score and set different icons for the different players
-        playerScore.setText(player.getAmountOfCoins() + " coins");
+
+        playerScore.setText(player.getDisplayScore() + " Score");
         playerScore.setFont(new Font("Arial",25));
 
 

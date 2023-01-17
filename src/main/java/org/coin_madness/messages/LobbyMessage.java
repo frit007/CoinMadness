@@ -11,7 +11,7 @@ public class LobbyMessage {
 
     // (WELCOME, Integer clientId)
     // welcome is used to tell a client their new client_id
-    // (Technically client can steal each other ids. But it doesn't matter who gets what id)
+    // (Technically clients can steal each other ids. But it doesn't matter who gets which id)
     public static final String WELCOME = "welcome";
 
     // (LOBBY_UPDATED, Integer clientId)

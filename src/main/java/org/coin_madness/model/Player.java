@@ -38,7 +38,13 @@ public class Player extends MovableEntity {
         return score;
     }
 
+    // display includes a bonus for the amount of coins
+    public int getDisplayScore() {
+        return score + getAmountOfCoins() * 5;
+    }
+
     public void setScore(int score) {
         this.score = score;
+        sendUpdates();
     }
 }
