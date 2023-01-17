@@ -12,7 +12,7 @@ public class Coin extends StaticEntity implements CollidesWithPlayer {
     @Override
     public void onPlayerCollision(Player player) {
         if(player.getAmountOfCoins() < Player.COIN_LIMIT) {
-            coinClient.request(this, () -> player.setAmountOfCoins(player.getAmountOfCoins() + 1), () -> {});
+            coinClient.request(this, player);
         }
     }
 }
