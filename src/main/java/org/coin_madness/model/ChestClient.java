@@ -38,7 +38,8 @@ public class ChestClient extends StaticEntityClient<Chest> {
         return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
     }
 
-    public void listenForChestChanges() {
+    public void listenForChanges() {
+        super.listenForChanges();
         gameState.gameThreads.startHandledThread("verify coin", () -> {
             while (true) {
                 verifyCoins();
@@ -56,6 +57,27 @@ public class ChestClient extends StaticEntityClient<Chest> {
                 updateChest();
             }
         });
+    }
+
+    @Override
+    public void remove() throws InterruptedException {
+        // TODO: find a less hacky approach to ignore remove events
+        // chests are automatically removed when their animations are done
+        Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
+        Chest entity = convert.apply(receivedEntity);
+
+        Platform.runLater(() -> {
+            for (Entity fieldEntity: gameState.map[entity.getX()][entity.getY()].getEntities()) {
+                if(fieldEntity instanceof Chest) {
+                    ((Chest) fieldEntity).addOnPendingAnimationDone(() -> {
+                        System.out.println("please remove the chest");
+                        removeEntity(entity);
+                    });
+                }
+            }
+        });
+
+
     }
 
     public void updateChest() {

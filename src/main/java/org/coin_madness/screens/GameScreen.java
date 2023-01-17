@@ -72,7 +72,6 @@ public class GameScreen extends BorderPane {
 
         gameState.coinClient.listenForChanges();
         gameState.chestClient.listenForChanges();
-        gameState.chestClient.listenForChestChanges();
         gameState.trapholeClient.listenForChanges();
         gameState.enemyClient.listenForChanges();
 
