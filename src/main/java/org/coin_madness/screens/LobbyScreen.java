@@ -146,7 +146,7 @@ public class LobbyScreen extends GridPane {
         // when we leave we will generate connection failures.
         // we want to ignore these connection failures, since we voluntarily left the lobby
         if(connectionManager.isHost()) {
-            // TODO - maybe send some kind of graceful message about the server being gone.
+            // send some kind of graceful message about the server being gone.
         } else {
             lobbyClient.disconnect();
         }

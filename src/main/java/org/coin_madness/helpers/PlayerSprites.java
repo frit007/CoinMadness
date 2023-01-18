@@ -35,7 +35,6 @@ public class PlayerSprites implements EntitySprites {
     }
 
     private List<Image> loadMovementImages(String folder) {
-//        System.out.println();
         List<Image> images = new ArrayList<>();
         for (int i = 1; i < 4; i++) {
             String path = "file:" + getRootPath() + "/"+"src/main/resources/" + folder + i + ".png";

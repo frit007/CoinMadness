@@ -16,7 +16,6 @@ public class Traphole extends StaticEntity implements CollidesWithPlayer {
         player.kill();
         gameState.deathClient.sendDeath();
         gameState.map[x][y].sendUpdated();
-        System.out.println("Hit Traphole!");
     }
 
 }

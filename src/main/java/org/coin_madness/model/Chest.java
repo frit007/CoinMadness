@@ -1,7 +1,5 @@
 package org.coin_madness.model;
 
-import org.coin_madness.helpers.Action;
-
 public class Chest extends StaticEntity implements CollidesWithPlayer {
 
     private ChestClient chestClient;

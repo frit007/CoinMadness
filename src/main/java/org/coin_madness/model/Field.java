@@ -25,7 +25,7 @@ public class Field {
     public void addEntity(Entity entity) {
         entities.add(entity);
         entity.addOnUpdate(this::sendUpdated);
-        if(entity instanceof Player) { ///
+        if(entity instanceof Player) {
             Player localPlayer = (Player) entity;
             if(localPlayer.isLocalPlayer()) {
                 playerCollisions(localPlayer);

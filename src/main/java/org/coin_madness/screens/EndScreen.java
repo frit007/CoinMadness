@@ -39,7 +39,7 @@ public class EndScreen extends VBox {
         playerScoreLabelBox.setAlignment(Pos.CENTER);
         ImageView localPlayerIcon = new ImageView();
         int spriteId = gameState.localPlayer.getSpriteId();
-        localPlayerIcon.setImage(graphics.getSprites(spriteId).getDownIdle()); //TODO - Change for each local player
+        localPlayerIcon.setImage(graphics.getSprites(spriteId).getDownIdle());
         localPlayerIcon.setFitHeight(60); localPlayerIcon.setFitWidth(60);
         playerScoreLabelBox.getChildren().addAll(localPlayerIcon, scoreLabel);
 

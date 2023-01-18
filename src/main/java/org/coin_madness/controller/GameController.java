@@ -54,8 +54,6 @@ public class GameController {
         
         scene.addEventFilter(KeyEvent.KEY_PRESSED, playerControl);
 
-
-        // TODO There is probably a better way to do a game loop like this
         gameState.gameThreads.startHandledThread("Player movement", () -> {
             while(true) {
                 List<Object[]> results = connectionManager.getPositionsSpace().queryAll(
@@ -92,8 +90,6 @@ public class GameController {
     /**
      * If the player is not already moving, move it in the correct direction
      * according to current and next direction.
-     * TODO remove the stutter in this movement (Zack: I'm not sure how we'd do this without changing a lot of the
-     *  application architecture)
      */
     public void updateMovement() {
         try {

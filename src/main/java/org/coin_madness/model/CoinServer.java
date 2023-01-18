@@ -3,7 +3,6 @@ package org.coin_madness.model;
 import org.coin_madness.messages.StaticEntityMessage;
 import org.jspace.Space;
 
-import java.util.List;
 import java.util.function.Function;
 
 public class CoinServer extends StaticEntityServer<Coin> {
