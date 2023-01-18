@@ -14,12 +14,12 @@ import java.util.stream.Collectors;
 
 public class StaticEntityServer<Entity extends StaticEntity> {
 
-    private final GameState gameState;
+    protected final GameState gameState;
     protected StaticEntityCommon<Entity> common;
-    private ConnectionManager connectionManager;
-    private Space entitySpace;
-    private Function<Object[], Entity> convert;
-    private int clientId;
+    protected ConnectionManager connectionManager;
+    protected Space entitySpace;
+    protected Function<Object[], Entity> convert;
+    protected int clientId;
     protected List<Entity> entities;
 
     public StaticEntityServer(GameState gameState, Space entitySpace, StaticEntityCommon<Entity> common,
@@ -77,10 +77,6 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     private void sendEntityNotifications(String notification, Entity entity, Integer removerClientId, List<Integer> clientIds) throws InterruptedException {
         for (int clientId : clientIds)
             entitySpace.put(notification, entity.getX(), entity.getY(), removerClientId, clientId);
-    }
-
-    protected void sendAnswer(String answerMarker, String answer, int clientId) throws InterruptedException {
-        entitySpace.put(answerMarker, answer, clientId);
     }
 
     protected Object[] receiveEntityRequest(String request) throws InterruptedException {

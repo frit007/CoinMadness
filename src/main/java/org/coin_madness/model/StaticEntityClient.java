@@ -83,13 +83,6 @@ public class StaticEntityClient<Entity extends StaticEntity> {
         entitySpace.put(notification, entity.getX(), entity.getY(), clientId);
     }
 
-    protected String receiveAnswer(String answerMarker) throws InterruptedException {
-        Object[] answer = entitySpace.get(new ActualField(answerMarker),
-                                          new FormalField(String.class),
-                                          new ActualField(clientId));
-        return answer[1].toString();
-    }
-
     protected Object[] receiveEntityNotification(String notification) throws InterruptedException {
         return entitySpace.get(new ActualField(notification),
                                new FormalField(Integer.class),

@@ -11,10 +11,10 @@ import java.util.stream.Collectors;
 
 public class StaticEntityCommon<Entity extends StaticEntity> {
 
-    private GameState gameState;
-    private ConnectionManager connectionManager;
-    private Space entitySpace;
-    private int clientId;
+    protected GameState gameState;
+    protected ConnectionManager connectionManager;
+    protected Space entitySpace;
+    protected int clientId;
 
     public StaticEntityCommon(GameState gameState, Space entitySpace, ConnectionManager connectionManager) {
         this.gameState = gameState;
@@ -35,8 +35,8 @@ public class StaticEntityCommon<Entity extends StaticEntity> {
 
     protected String receiveAnswer(String answerMarker) throws InterruptedException {
         Object[] answer = entitySpace.get(new ActualField(answerMarker),
-                new FormalField(String.class),
-                new ActualField(clientId));
+                                          new FormalField(String.class),
+                                          new ActualField(clientId));
         return answer[1].toString();
     }
 

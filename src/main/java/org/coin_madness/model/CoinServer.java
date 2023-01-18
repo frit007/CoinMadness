@@ -28,13 +28,13 @@ public class CoinServer extends StaticEntityServer<Coin> {
         try {
             Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
             Coin coin = convert.apply(receivedEntity);
-            int clientId = super.common.receiveClientId(StaticEntityMessage.SEND_CLIENTID_SERVER);
+            int clientId = common.receiveClientId(StaticEntityMessage.SEND_CLIENTID_SERVER);
             if (entities.contains(coin)) {
                 entities.remove(coin);
-                sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.GIVE_ENTITY, clientId);
+                common.sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.GIVE_ENTITY, clientId);
                 remove(coin, clientId);
             } else {
-                sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.DENY_ENTITY, clientId);
+                common.sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.DENY_ENTITY, clientId);
             }
         } catch (InterruptedException e) {
             throw new RuntimeException("Could not check static entity request");
