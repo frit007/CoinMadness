@@ -121,7 +121,7 @@ public class ChestClient extends StaticEntityClient<Chest> {
     }
 
     // server id might simplify one other communication
-    public void placeCoins(Chest chest, Player player) {
+    public void depositCoin(Chest chest, Player player) {
         gameState.gameThreads.startHandledThread("place coins", () -> {
             List<Integer> clientIds = getClientIds();
 

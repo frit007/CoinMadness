@@ -1,7 +1,5 @@
 package org.coin_madness.model;
 
-import org.coin_madness.helpers.Action;
-
 public class Chest extends StaticEntity implements CollidesWithPlayer {
 
     private ChestClient chestClient;
@@ -43,7 +41,7 @@ public class Chest extends StaticEntity implements CollidesWithPlayer {
 
     @Override
     public void onPlayerCollision(Player player) {
-        chestClient.placeCoins(this, player);
+        chestClient.depositCoin(this, player);
     }
     public boolean hasPendingAnimation() {
         return pendingCoinAnimations > 0;
