@@ -1,5 +1,7 @@
 package org.coin_madness.model;
 
+import javafx.application.Platform;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,7 +22,7 @@ public class Entity {
     }
     protected void sendUpdates() {
         for (Runnable runnable: onUpdate) {
-            runnable.run();
+            Platform.runLater(runnable);
         }
     }
 
