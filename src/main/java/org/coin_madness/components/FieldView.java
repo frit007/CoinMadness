@@ -39,8 +39,6 @@ public class FieldView extends StackPane {
             background.setImage(graphics.ground);
         }
 
-
-        //TODO: clean up
         boolean hasStaticEntity = false;
         boolean hasMoveableEntity = false;
 

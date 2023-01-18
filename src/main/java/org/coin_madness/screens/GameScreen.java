@@ -57,26 +57,24 @@ public class GameScreen extends BorderPane {
                 connectionManager.stop();
             }).start();
         });
+
         connectionManager.setOnClientDisconnect((disconnectedPlayerId, reason) -> {
             System.out.println("Player " + disconnectedPlayerId + " timed out");
 
             gameState.deathClient.sendDeathToEveryOne(disconnectedPlayerId);
 
             try {
-                System.out.println("remove the player from clients D:");
                 gameState.connectionManager
                         .getLobby()
                         .getp(
                                 new ActualField(GlobalMessage.CLIENTS),
                                 new ActualField(disconnectedPlayerId),
                                 new FormalField(Integer.class));
-                System.out.println("Removed from clients?");
             } catch (InterruptedException e) {
                 throw new RuntimeException(e);
             }
         });
 
-        //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2], gameState.chestClient);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2], gameState);
@@ -115,7 +113,6 @@ public class GameScreen extends BorderPane {
                 servers.trapholeServer.add(placedTrapholes);
             });
         }
-        ///
 
         new GameController(scene, connectionManager, gameState);
         Group mazeView = new Group();

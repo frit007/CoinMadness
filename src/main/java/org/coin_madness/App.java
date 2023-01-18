@@ -39,7 +39,7 @@ public class App extends Application {
     Field[][] map;
 
     @Override
-    public void start(Stage stage) throws IOException {
+    public void start(Stage stage) {
         this.stage = stage;
 
         root = new StackPane();
@@ -84,8 +84,6 @@ public class App extends Application {
     }
 
     private void showGame(GameSettings gameSettings) {
-
-        // TODO - maybe, move to some kind of GameBuilder
         connectionManager.joinGameSpaces();
         BorderPane gameView = new GameScreen(stage, scene, gameSettings, map, graphics, connectionManager, this::showEndScreen, this::showStartScreen);
         gameView.setFocusTraversable(true);
@@ -116,11 +114,11 @@ public class App extends Application {
     }
 
     @Override
-    public void stop() throws Exception {
+    public void stop() {
         System.exit(0);
     }
 
-    public static void main(String[] args) throws InterruptedException {
+    public static void main(String[] args) {
         launch();
     }
 

@@ -1,13 +1,9 @@
 package org.coin_madness.model;
 
 import javafx.application.Platform;
-import org.coin_madness.helpers.Action;
-import org.coin_madness.helpers.ConnectionManager;
-import org.coin_madness.helpers.ScopedThreads;
 import org.coin_madness.messages.StaticEntityMessage;
 import org.jspace.Space;
 
-import java.util.HashMap;
 import java.util.Objects;
 import java.util.function.Function;
 

@@ -1,8 +1,6 @@
 package org.coin_madness.components;
 
-import javafx.animation.Animation;
 import javafx.animation.Interpolator;
-import javafx.animation.Timeline;
 import javafx.animation.TranslateTransition;
 import javafx.geometry.Bounds;
 import javafx.scene.Group;

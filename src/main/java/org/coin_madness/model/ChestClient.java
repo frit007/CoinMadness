@@ -58,7 +58,6 @@ public class ChestClient extends StaticEntityClient<Chest> {
 
     @Override
     public void remove() throws InterruptedException {
-        // TODO: find a less hacky approach to ignore remove events
         // chests are automatically removed when their animations are done
         Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
         Chest entity = convert.apply(receivedEntity);

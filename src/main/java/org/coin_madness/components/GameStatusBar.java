@@ -95,8 +95,6 @@ public class GameStatusBar extends HBox {
         try {
             root = FXMLLoader.load(Thread.currentThread().getContextClassLoader().getResource("status_bar.fxml"));
             score = (Label) root.lookup("#score");
-
-            // TODO listen for score updates
         } catch (IOException e) {
             e.printStackTrace();
         }

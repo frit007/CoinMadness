@@ -23,13 +23,9 @@ public class StaticEntityPlacer {
                                                        .findFirst();
                     return !player.isPresent();
                 })
-                .filter(f -> {
-                    return f.entities.size() == 0;
-                })
+                .filter(f -> f.entities.size() == 0)
                 .collect(Collectors.toList());
     }
-    //TODO: trap players
-    //TODO: create new static entities after
 
     public List<Coin> placeCoins(int amountOfCoins) {
         List<Coin> coins = new ArrayList<>();
