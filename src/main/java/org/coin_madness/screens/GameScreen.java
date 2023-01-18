@@ -79,9 +79,13 @@ public class GameScreen extends BorderPane {
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2], gameState.chestClient);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2], gameState);
 
-        gameState.coinClient = new CoinClient(connectionManager.getCoinSpace(), gameState, createCoin);
-        gameState.chestClient = new ChestClient(connectionManager.getChestSpace(), gameState, createChest);
-        gameState.trapholeClient = new StaticEntityClient<>(connectionManager.getTrapholeSpace(), gameState, createTraphole);
+        StaticEntityCommon<Coin> coinCommon = new StaticEntityCommon(gameState, connectionManager.getCoinSpace(), connectionManager);
+        StaticEntityCommon<Chest> chestCommon = new StaticEntityCommon(gameState, connectionManager.getChestSpace(), connectionManager);
+        StaticEntityCommon<Traphole> trapholeCommon = new StaticEntityCommon(gameState, connectionManager.getTrapholeSpace(), connectionManager);
+
+        gameState.coinClient = new CoinClient(gameState, connectionManager.getCoinSpace(), coinCommon, createCoin);
+        gameState.chestClient = new ChestClient(gameState, connectionManager.getChestSpace(), chestCommon, createChest);
+        gameState.trapholeClient = new StaticEntityClient<>(gameState, connectionManager.getTrapholeSpace(), trapholeCommon, createTraphole);
         gameState.deathClient = new DeathClient(gameState, onGameEnd);
         gameState.enemyClient = new EnemyClient(gameState);
 
@@ -97,11 +101,10 @@ public class GameScreen extends BorderPane {
             List<Traphole> placedTrapholes = placer.placeTrapholes(INTITIAL_AMOUNT_OF_TRAPHOLES);
 
             Servers servers = new Servers();
-
             servers.enemyServer = new EnemyServer(gameState);
-            servers.coinServer = new CoinServer(gameState, connectionManager.getCoinSpace(), createCoin);
-            servers.chestServer = new ChestServer(gameState, connectionManager.getChestSpace(), createChest, servers);
-            servers.trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), createTraphole);
+            servers.coinServer = new CoinServer(gameState, connectionManager.getCoinSpace(), coinCommon, createCoin);
+            servers.chestServer = new ChestServer(gameState, connectionManager.getChestSpace(), chestCommon, createChest, servers);
+            servers.trapholeServer = new StaticEntityServer<>(gameState, connectionManager.getTrapholeSpace(), trapholeCommon, createTraphole);
 
             servers.coinServer.listenForCoinRequests();
             servers.chestServer.listenForChestRequests();

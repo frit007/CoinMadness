@@ -10,8 +10,8 @@ public class CoinServer extends StaticEntityServer<Coin> {
     private Function<Object[], Coin> convert;
     private GameState gameState;
 
-    public CoinServer(GameState gameState, Space entitySpace, Function<Object[], Coin> convert) {
-        super(gameState, entitySpace, convert);
+    public CoinServer(GameState gameState, Space entitySpace, StaticEntityCommon common, Function<Object[], Coin> convert) {
+        super(gameState, entitySpace, common, convert);
         this.convert = convert;
         this.gameState = gameState;
     }
@@ -28,7 +28,7 @@ public class CoinServer extends StaticEntityServer<Coin> {
         try {
             Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
             Coin coin = convert.apply(receivedEntity);
-            int clientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID_SERVER);
+            int clientId = super.common.receiveClientId(StaticEntityMessage.SEND_CLIENTID_SERVER);
             if (entities.contains(coin)) {
                 entities.remove(coin);
                 sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.GIVE_ENTITY, clientId);

@@ -13,17 +13,20 @@ import java.util.stream.Collectors;
 public class StaticEntityClient<Entity extends StaticEntity> {
 
     protected final GameState gameState;
+    protected StaticEntityCommon<Entity> common;
     protected int clientId;
     protected int serverId;
     protected Space entitySpace;
     protected Function<Object[], Entity> convert;
 
-    public StaticEntityClient(Space entitySpace, GameState gameState, Function<Object[], Entity> convert) {
+    public StaticEntityClient(GameState gameState, Space entitySpace, StaticEntityCommon<Entity> common,
+                              Function<Object[], Entity> convert) {
         this.clientId = gameState.connectionManager.getClientId();
         this.serverId = gameState.connectionManager.getServerId();
         this.entitySpace = entitySpace;
         this.convert = convert;
         this.gameState = gameState;
+        this.common = common;
     }
 
     public void listenForChanges() {
@@ -97,10 +100,6 @@ public class StaticEntityClient<Entity extends StaticEntity> {
 
     protected void removeEntity(Entity entity) {
         Platform.runLater(() -> gameState.map[entity.getX()][entity.getY()].removeEntity(entity));
-    }
-
-    protected void sendClientId(String marker, int clientId, int toClientId) throws InterruptedException {
-        entitySpace.put(marker, clientId, toClientId);
     }
 
 }

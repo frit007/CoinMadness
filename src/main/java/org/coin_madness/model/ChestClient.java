@@ -1,7 +1,6 @@
 package org.coin_madness.model;
 
 import javafx.application.Platform;
-import org.coin_madness.messages.GlobalMessage;
 import org.coin_madness.messages.StaticEntityMessage;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
@@ -11,7 +10,6 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 public class ChestClient extends StaticEntityClient<Chest> {
 
@@ -19,20 +17,11 @@ public class ChestClient extends StaticEntityClient<Chest> {
     private int clientId;
     private GameState gameState;
 
-    public ChestClient(Space entitySpace, GameState gameState, Function<Object[], Chest> convert) {
-        super(entitySpace, gameState, convert);
+    public ChestClient(GameState gameState, Space entitySpace, StaticEntityCommon common, Function<Object[], Chest> convert) {
+        super(gameState, entitySpace, common, convert);
         this.serverId = gameState.connectionManager.getServerId();
         this.clientId = gameState.connectionManager.getClientId();
         this.gameState = gameState;
-    }
-
-    // from StaticEntityServer!
-    private List<Integer> getClientIds() throws InterruptedException {
-        List<Object[]> clients = gameState.connectionManager.getLobby()
-                                                            .queryAll(new ActualField(GlobalMessage.CLIENTS),
-                                                                      new FormalField(Integer.class),
-                                                                      new FormalField(Integer.class));
-        return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
     }
 
     public void listenForChanges() {
@@ -105,17 +94,17 @@ public class ChestClient extends StaticEntityClient<Chest> {
     }
 
     public void verifyCoins() throws InterruptedException {
-        int checkClientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT);
-        sendBool(StaticEntityMessage.ANSWER_MARKER, hasACoin(checkClientId), serverId);
+        int checkClientId = super.common.receiveClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT);
+        sendVerification(StaticEntityMessage.ANSWER_MARKER, hasACoin(checkClientId), serverId);
     }
 
     public void depositCoin(Chest chest, Player player) {
         gameState.gameThreads.startHandledThread("deposit coins", () -> {
-            List<Integer> clientIds = getClientIds();
+            List<Integer> clientIds = super.common.getClientIds();
 
             while (player.getAmountOfCoins() > 0) {
-                sendAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER, StaticEntityMessage.CONTINUE, serverId);
-                sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
+                super.common.sendAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER, StaticEntityMessage.CONTINUE, serverId);
+                super.common.sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
                 sendEntityRequest(StaticEntityMessage.SEND_ENTITY, chest, serverId);
                 String chestNotFull = receiveAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT);
                 if (Objects.equals(chestNotFull, StaticEntityMessage.THEN)) {
@@ -135,23 +124,11 @@ public class ChestClient extends StaticEntityClient<Chest> {
         });
     }
 
-    // From StaticEntityServer
-    protected void sendAnswer(String answerMarker, String answer, int clientId) throws InterruptedException {
-        entitySpace.put(answerMarker, answer, clientId);
-    }
-
     private void sendCoin(String marker, int amount, int clientId) throws InterruptedException {
         entitySpace.put(marker, amount, clientId);
     }
 
-    private int receiveClientId(String marker) throws InterruptedException {
-        Object[] recievedClientId = entitySpace.get(new ActualField(marker),
-                                                    new FormalField(Integer.class),
-                                                    new ActualField(clientId));
-        return (int) recievedClientId[1];
-    }
-
-    private void sendBool(String marker, Boolean bool, int clientId) throws InterruptedException {
+    private void sendVerification(String marker, Boolean bool, int clientId) throws InterruptedException {
         entitySpace.put(marker, bool, clientId);
     }
 

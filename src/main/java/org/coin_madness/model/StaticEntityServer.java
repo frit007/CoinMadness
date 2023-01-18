@@ -15,33 +15,26 @@ import java.util.stream.Collectors;
 public class StaticEntityServer<Entity extends StaticEntity> {
 
     private final GameState gameState;
+    protected StaticEntityCommon<Entity> common;
     private ConnectionManager connectionManager;
     private Space entitySpace;
     private Function<Object[], Entity> convert;
     private int clientId;
     protected List<Entity> entities;
 
-    public StaticEntityServer(GameState gameState, Space entitySpace, Function<Object[], Entity> convert) {
+    public StaticEntityServer(GameState gameState, Space entitySpace, StaticEntityCommon<Entity> common,
+                              Function<Object[], Entity> convert) {
         this.gameState = gameState;
         this.entities = new ArrayList<>();
         this.connectionManager = gameState.connectionManager;
         this.entitySpace = entitySpace;
         this.convert = convert;
         this.clientId = connectionManager.getClientId();
-    }
-
-    protected List<Integer> getClientIds() throws InterruptedException {
-        List<Object[]> clients = connectionManager
-                .getLobby()
-                .queryAll(new ActualField(GlobalMessage.CLIENTS),
-                        new FormalField(Integer.class),
-                        new FormalField(Integer.class)
-                );
-        return clients.stream().map(c -> (int) c[1]).collect(Collectors.toList());
+        this.common = common;
     }
     
     public void add(List<Entity> entities) throws InterruptedException {
-        List<Integer> clientIds = getClientIds();
+        List<Integer> clientIds = common.getClientIds();
         this.entities.addAll(entities);
         addNewEntities(StaticEntityMessage.NEW_ENTITY, entities);
         sendNotifications(StaticEntityMessage.ADDED_ENTITIES, clientIds);
@@ -52,7 +45,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
     public void remove(Entity entity, Integer removerClientId) throws InterruptedException {
         entities.remove(entity);
         
-        List<Integer> clientIds = getClientIds();
+        List<Integer> clientIds = common.getClientIds();
         sendEntityNotifications(StaticEntityMessage.REMOVE_ENTITY, entity, removerClientId, clientIds);
     }
 
@@ -95,13 +88,6 @@ public class StaticEntityServer<Entity extends StaticEntity> {
                 new FormalField(Integer.class),
                 new FormalField(Integer.class),
                 new ActualField(this.clientId));
-    }
-
-    protected int receiveClientId(String marker) throws InterruptedException {
-        Object[] recievedClientId = entitySpace.get(new ActualField(marker),
-                new FormalField(Integer.class),
-                new ActualField(clientId));
-        return (int) recievedClientId[1];
     }
 
 }

@@ -11,15 +11,15 @@ public class CoinClient extends StaticEntityClient<Coin> {
 
     private Function<Object[], Coin> convert;
 
-    public CoinClient(Space entitySpace, GameState gameState, Function<Object[], Coin> convert) {
-        super(entitySpace, gameState, convert);
+    public CoinClient(GameState gameState, Space entitySpace, StaticEntityCommon common, Function<Object[], Coin> convert) {
+        super(gameState, entitySpace, common, convert);
         this.convert = convert;
     }
 
     public void request(Coin coin, Player player) {
         try {
             sendEntityRequest(StaticEntityMessage.REQUEST_ENTITY, coin, serverId);
-            sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
+            super.common.sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
             String answer = receiveAnswer(StaticEntityMessage.ANSWER_MARKER);
             if (Objects.equals(answer, StaticEntityMessage.GIVE_ENTITY)) {
                 Platform.runLater(() -> player.setAmountOfCoins(player.getAmountOfCoins() + 1));
