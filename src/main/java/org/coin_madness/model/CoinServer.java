@@ -28,7 +28,7 @@ public class CoinServer extends StaticEntityServer<Coin> {
         try {
             Object[] receivedEntity =  receiveEntityRequest(StaticEntityMessage.REQUEST_ENTITY);
             Coin coin = convert.apply(receivedEntity);
-            int clientId = (int) receivedEntity[3]; //more efficient by using server id?
+            int clientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID_SERVER);
             if (entities.contains(coin)) {
                 entities.remove(coin);
                 sendAnswer(StaticEntityMessage.ANSWER_MARKER, StaticEntityMessage.GIVE_ENTITY, clientId);
