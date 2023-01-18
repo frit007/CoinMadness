@@ -280,10 +280,24 @@ public class ConnectionManager {
             repository.closeGates();
             repository = null;
         } else {
-            if(lobby instanceof RemoteSpaceWithDisconnect) {
-                RemoteSpaceWithDisconnect remoteSpace = (RemoteSpaceWithDisconnect) lobby;
-                remoteSpace.interruptAllThreads();
+            Space[] cleanupSpaces = new Space[] {
+                lobby,
+                positionsSpace,
+                coinSpace,
+                chestSpace,
+                trapholeSpace,
+                fieldLocksSpace,
+                deathSpace,
+                enemySpace
+            };
+            // in case any thread is blocking the main thread we want to interrupt them, so the ui isn't blocked forever
+            for (Space cleanupSpace : cleanupSpaces) {
+                if(cleanupSpace instanceof RemoteSpaceWithDisconnect) {
+                    RemoteSpaceWithDisconnect remoteSpace = (RemoteSpaceWithDisconnect) cleanupSpace;
+                    remoteSpace.interruptAllThreads();
+                }
             }
+
         }
 
         remoteIp = null;

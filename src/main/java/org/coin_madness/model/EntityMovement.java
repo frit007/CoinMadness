@@ -13,6 +13,7 @@ public class EntityMovement {
     int deltaY;
     private Runnable completionHandler;
 
+    private boolean finished = false;
     public EntityMovement(MovableEntity entity, int deltaX, int deltaY, Runnable completionHandler) {
         oldX = entity.getX();
         oldY = entity.getY();
@@ -70,7 +71,12 @@ public class EntityMovement {
         return finishMovementAt - startedMovementAt;
     }
 
+    public boolean isFinished() {
+        return finished;
+    }
+
     public void finish() {
+        finished = true;
         completionHandler.run();
     }
 

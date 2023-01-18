@@ -65,7 +65,7 @@ public class MoveableEntityDrawer implements Drawer<MovableEntity> {
         }
         AnimationState animationState = getAnimation(entity.getId());
 
-        if(!movement.equals(animationState.currentMovement)) {
+        if(!movement.isFinished() && !movement.equals(animationState.currentMovement)) {
             animationState.playAnim(findAnimation(movement, sprites), movement, view);
         }
 
