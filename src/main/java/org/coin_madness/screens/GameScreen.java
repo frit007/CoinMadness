@@ -13,10 +13,8 @@ import org.coin_madness.components.*;
 import org.coin_madness.controller.GameController;
 import org.coin_madness.helpers.ConnectionManager;
 import org.coin_madness.helpers.ImageLibrary;
-import org.coin_madness.helpers.ScopedThreads;
 import org.coin_madness.messages.GlobalMessage;
 import org.coin_madness.model.*;
-import javafx.scene.text.*;
 import org.jspace.ActualField;
 import org.jspace.FormalField;
 
@@ -38,9 +36,10 @@ public class GameScreen extends BorderPane {
     private Scene scene;
     private Field[][] map;
     protected GameState gameState = new GameState();
-    public GameScreen(Stage stage, Scene scene, Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager, Consumer<GameState> onGameEnd, Consumer<String> onGameError) {
+    public GameScreen(Stage stage, Scene scene, GameSettings gameSettings,Field[][] map, ImageLibrary graphics, ConnectionManager connectionManager, Consumer<GameState> onGameEnd, Consumer<String> onGameError) {
         this.scene = scene;
         this.map = map;
+        gameState.settings = gameSettings;
         gameStatusBar = new GameStatusBar(graphics);
 
         gameState.connectionManager = connectionManager;
@@ -119,8 +118,8 @@ public class GameScreen extends BorderPane {
         drawerMap.put(Coin.class, new CoinDrawer(graphics));
         drawerMap.put(Chest.class, new ChestDrawer(graphics, mazeView));
         drawerMap.put(Traphole.class, new TrapholeDrawer(graphics));
-        drawerMap.put(Player.class, new PlayerDrawer(graphics, mazeView));
-        drawerMap.put(Enemy.class, new PlayerDrawer(graphics, mazeView));
+        drawerMap.put(Player.class, new MoveableEntityDrawer(gameState, graphics, mazeView));
+        drawerMap.put(Enemy.class, new MoveableEntityDrawer(gameState, graphics, mazeView));
 
         for (Field[] row : map) {
             for(Field field : row) {

@@ -5,7 +5,7 @@ public class LobbyMessage {
     // send by a client to join a lobby
     public static final String JOIN = "join";
 
-    // (GAME_STARTED)
+    // (GAME_STARTED, bool personalGhosts)
     // used to tell all client that the game has started
     public static final String GAME_STARTED = "game_started";
 

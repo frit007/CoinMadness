@@ -13,6 +13,7 @@ public class LobbyClient {
     private Integer clientId;
     private LobbyCommon lobbyCommon;
     private ScopedThreads lobbyThreads;
+    private boolean connected = false;
 
     public LobbyClient(ConnectionManager connectionManager, ScopedThreads lobbyThreads, LobbyCommon lobbyCommon) {
         this.connectionManager = connectionManager;
@@ -20,7 +21,12 @@ public class LobbyClient {
         this.lobbyCommon = lobbyCommon;
     }
 
-    public void join() {
+    public void join(Action1<String> onConnectionFailed) {
+        lobbyThreads.startHandledThread("Thread", () -> {
+            if(!connected && connectionManager.getLobby().queryp(new ActualField(LobbyMessage.GAME_STARTED)) != null) {
+                onConnectionFailed.handle("Sorry, the game has already started");
+            }
+        });
         try {
             connectionManager.getLobby().put(LobbyMessage.JOIN);
             Object[] response = connectionManager.getLobby().get(
@@ -31,6 +37,7 @@ public class LobbyClient {
             clientId = (Integer) response[1];
             int serverId = (Integer) response[2];
             connectionManager.startClientTimeoutThread(clientId, serverId);
+            connected = true;
         } catch (InterruptedException e) {
             e.printStackTrace();
             return;
@@ -47,10 +54,12 @@ public class LobbyClient {
         }
     }
 
-    public void waitForGameStart(Runnable onGameStart) {
+    public void waitForGameStart(Action1<GameSettings> onGameStart) {
         lobbyThreads.startHandledThread("Wait for game start", () -> {
-            connectionManager.getLobby().query(new ActualField(LobbyMessage.GAME_STARTED));
-            onGameStart.run();
+            Object[] gameStarted = connectionManager.getLobby().query(new ActualField(LobbyMessage.GAME_STARTED), new FormalField(Boolean.class));
+            boolean personalGhosts = (boolean) gameStarted[1];
+
+            onGameStart.handle(new GameSettings(personalGhosts));
         });
     }
 
