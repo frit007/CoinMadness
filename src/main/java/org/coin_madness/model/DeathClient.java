@@ -58,4 +58,14 @@ public class DeathClient {
         checkForGameOver();
     }
 
+    public void sendDeathToEveryOne(int deadPlayerId) {
+        for(var otherPlayer : gameState.allPlayers()) {
+            try {
+                gameState.connectionManager.getDeathSpace().put(otherPlayer.getId(), deadPlayerId);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }
