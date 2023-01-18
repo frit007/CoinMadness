@@ -32,10 +32,16 @@ public class LobbyClient {
             Object[] response = connectionManager.getLobby().get(
                     new ActualField(LobbyMessage.WELCOME),
                     new FormalField(Integer.class),
-                    new FormalField(Integer.class)
+                    new FormalField(Integer.class),
+                    new FormalField(String.class)
             );
             clientId = (Integer) response[1];
             int serverId = (Integer) response[2];
+            String errorMessage = (String) response[3];
+            if(errorMessage.length() > 0) {
+                onConnectionFailed.handle(errorMessage);
+               return;
+            }
             connectionManager.startClientTimeoutThread(clientId, serverId);
             connected = true;
         } catch (InterruptedException e) {

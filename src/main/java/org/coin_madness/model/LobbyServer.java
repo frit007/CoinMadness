@@ -60,11 +60,17 @@ public class LobbyServer {
         lobbyThreads.startHandledThread("Listen for join requests", () -> {
             while(true) {
                 connectionManager.getLobby().get(new ActualField(LobbyMessage.JOIN));
-                int clientId = createClientId();
-
-                connectionManager.getLobby().put(LobbyMessage.NOT_READY, clientId);
-                connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableSprite());
-                connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId, serverId);
+                int clientCount = connectionManager
+                        .getLobby()
+                        .queryAll(new ActualField(GlobalMessage.CLIENTS), new FormalField(Integer.class), new FormalField(Integer.class)).size();
+                if(clientCount >= 4) {
+                    connectionManager.getLobby().put(LobbyMessage.WELCOME, -1, serverId, "Sorry, lobby is full");
+                } else {
+                    int clientId = createClientId();
+                    connectionManager.getLobby().put(LobbyMessage.NOT_READY, clientId);
+                    connectionManager.getLobby().put(GlobalMessage.CLIENTS, clientId, findNextAvailableSprite());
+                    connectionManager.getLobby().put(LobbyMessage.WELCOME, clientId, serverId, "");
+                }
             }
         });
 

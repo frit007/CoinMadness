@@ -9,7 +9,7 @@ public class LobbyMessage {
     // used to tell all client that the game has started
     public static final String GAME_STARTED = "game_started";
 
-    // (WELCOME, Integer clientId)
+    // (WELCOME, Integer clientId, Integer serverId, String error)
     // welcome is used to tell a client their new client_id
     // (Technically clients can steal each other ids. But it doesn't matter who gets which id)
     public static final String WELCOME = "welcome";
