@@ -94,7 +94,14 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         return entitySpace.get(new ActualField(request),
                 new FormalField(Integer.class),
                 new FormalField(Integer.class),
-                new FormalField(Integer.class)); //TODO: should use the recepient
+                new ActualField(this.clientId));
+    }
+
+    protected int receiveClientId(String marker) throws InterruptedException {
+        Object[] recievedClientId = entitySpace.get(new ActualField(marker),
+                new FormalField(Integer.class),
+                new ActualField(clientId));
+        return (int) recievedClientId[1];
     }
 
 }

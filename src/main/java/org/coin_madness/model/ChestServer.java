@@ -94,13 +94,6 @@ public class ChestServer extends StaticEntityServer<Chest> {
         return answer[1].toString();
     }
 
-    private int receiveClientId(String marker) throws InterruptedException {
-        Object[] recievedClientId = entitySpace.get(new ActualField(marker),
-                                                    new FormalField(Integer.class),
-                                                    new ActualField(clientId));
-        return (int) recievedClientId[1];
-    }
-
     private Boolean receiveBool(String answerMarker) throws InterruptedException {
         Object[] answer = entitySpace.get(new ActualField(answerMarker),
                 new FormalField(Boolean.class),

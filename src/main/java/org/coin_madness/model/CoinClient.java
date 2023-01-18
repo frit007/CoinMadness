@@ -18,7 +18,8 @@ public class CoinClient extends StaticEntityClient<Coin> {
 
     public void request(Coin coin, Player player) {
         try {
-            sendEntityRequest(StaticEntityMessage.REQUEST_ENTITY, coin);
+            sendEntityRequest(StaticEntityMessage.REQUEST_ENTITY, coin, serverId);
+            sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
             String answer = receiveAnswer(StaticEntityMessage.ANSWER_MARKER);
             if (Objects.equals(answer, StaticEntityMessage.GIVE_ENTITY)) {
                 Platform.runLater(() -> player.setAmountOfCoins(player.getAmountOfCoins() + 1));

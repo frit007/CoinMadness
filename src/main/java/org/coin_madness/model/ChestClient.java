@@ -127,7 +127,7 @@ public class ChestClient extends StaticEntityClient<Chest> {
             while (player.getAmountOfCoins() > 0) {
                 sendAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER, StaticEntityMessage.CONTINUE, serverId);
                 sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
-                sendEntityRequest(StaticEntityMessage.SEND_ENTITY, chest); //Could send to serverId in sendEntityRequest?
+                sendEntityRequest(StaticEntityMessage.SEND_ENTITY, chest, serverId);
                 String chestNotFull = receiveAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT);
                 if (Objects.equals(chestNotFull, StaticEntityMessage.THEN)) {
                     String canVerifyCoin = receiveAnswer(StaticEntityMessage.IF_STATEMENT_2);
@@ -153,10 +153,6 @@ public class ChestClient extends StaticEntityClient<Chest> {
 
     private void sendCoin(String marker, int amount, int clientId) throws InterruptedException {
         entitySpace.put(marker, amount, clientId);
-    }
-
-    private void sendClientId(String marker, int clientId, int toClientId) throws InterruptedException {
-        entitySpace.put(marker, clientId, toClientId);
     }
 
     private int receiveClientId(String marker) throws InterruptedException {
