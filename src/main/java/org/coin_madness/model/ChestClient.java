@@ -122,7 +122,7 @@ public class ChestClient extends StaticEntityClient<Chest> {
 
     // server id might simplify one other communication
     public void placeCoins(Chest chest, Player player) {
-        try {
+        gameState.gameThreads.startHandledThread("place coins", () -> {
             List<Integer> clientIds = getClientIds();
 
             while (player.getAmountOfCoins() > 0) {
@@ -134,9 +134,9 @@ public class ChestClient extends StaticEntityClient<Chest> {
                     String canVerifyCoin = receiveAnswer(StaticEntityMessage.IF_STATEMENT_2);
                     if (Objects.equals(canVerifyCoin, StaticEntityMessage.THEN)) {
                         receiveNotification(StaticEntityMessage.ACCEPT_ENTITY);
-                        player.setAmountOfCoins(player.getAmountOfCoins() - 1);
+                        Platform.runLater(() -> player.setAmountOfCoins(player.getAmountOfCoins() - 1));
                         sendCoin(StaticEntityMessage.SEND_ENTITY,1, serverId);
-                        player.setScore(player.getScore() + 100);
+                        Platform.runLater(() -> player.setScore(player.getScore() + 100));
                         sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, clientIds);
                     } else {
                         receiveNotification(StaticEntityMessage.DENY_ENTITY);
@@ -144,9 +144,7 @@ public class ChestClient extends StaticEntityClient<Chest> {
                     }
                 } else break;
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to place coins in chest");
-        }
+        });
     }
 
     // From StaticEntityServer
