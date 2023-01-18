@@ -51,13 +51,6 @@ public class ChestServer extends StaticEntityServer<Chest> {
 
 
     public void acceptCoins() throws InterruptedException {
-        List<Integer> clientIds = getClientIds();
-
-        List<Integer> otherClients = clientIds.stream()
-                .filter(c -> c != this.clientId)
-                .collect(Collectors.toList());
-        int otherClient = otherClients.size() > 0 ? otherClients.get(rand.nextInt(otherClients.size())) : this.clientId;
-
         while (true) {
             String postulate = receiveAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER);
             if (Objects.equals(postulate, StaticEntityMessage.CONTINUE)) {
@@ -67,6 +60,8 @@ public class ChestServer extends StaticEntityServer<Chest> {
                 Optional<Chest> chest = entities.stream().filter(c -> Objects.equals(c, chestId)).findFirst();
                 if (chest.isPresent() && chest.get().getAmountOfCoins() + 1 <= chest.get().getMaxCoins()) {
                     sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.THEN, fromClientId);
+                    List<Integer> clientIds = getClientIds();
+                    int otherClient = pickRandomClient(fromClientId, clientIds);
                     sendClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT, fromClientId, otherClient);
                     Boolean isVerified = receiveBool(StaticEntityMessage.ANSWER_MARKER);
                     if (isVerified) {
@@ -128,6 +123,13 @@ public class ChestServer extends StaticEntityServer<Chest> {
         for (int clientId : clientIds) {
             entitySpace.put(notification, chest.getX(), chest.getY(), chest.getAmountOfCoins(), clientId);
         }
+    }
+
+    private int pickRandomClient(int clientToCheck, List<Integer> clientIds) {
+        List<Integer> otherClients = clientIds.stream()
+                .filter(c -> c != clientToCheck)
+                .collect(Collectors.toList());
+        return otherClients.size() > 0 ? otherClients.get(rand.nextInt(otherClients.size())) : clientToCheck;
     }
 
 }
