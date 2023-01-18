@@ -33,7 +33,6 @@ public class Enemy extends MovableEntity implements CollidesWithPlayer {
     @Override
     public boolean isVisible(GameState gameState) {
         return !gameState.settings.personalGhosts
-                || visibleToClientId == gameState.connectionManager.getClientId()
-                || !gameState.localPlayer.isAlive();
+                || visibleToClientId == gameState.connectionManager.getClientId();
     }
 }

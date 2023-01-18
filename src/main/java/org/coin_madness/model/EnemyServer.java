@@ -50,7 +50,6 @@ public class EnemyServer {
                                 enemy.getX(),
                                 enemy.getY());
                     }
-
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
