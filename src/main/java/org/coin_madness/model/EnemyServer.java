@@ -33,27 +33,27 @@ public class EnemyServer {
         // create enemies
         int id = 0;
         for (Player player: gameState.allPlayers()) {
-            int pos = rand.nextInt(remainingFields.size());
-            Field field = remainingFields.remove(pos);
+            for(int i = 0; i < 2; i++) {
+                int pos = rand.nextInt(remainingFields.size());
+                Field field = remainingFields.remove(pos);
+                Enemy enemy = new Enemy(id++, player.getId(), field.getX(), field.getY(), gameState);
 
-            Enemy enemy = new Enemy(id++, player.getId(), field.getX(), field.getY(), gameState);
+                gameState.enemies.put(enemy.getId(), enemy);
 
-            gameState.enemies.put(enemy.getId(), enemy);
+                try {
+                    for (Player specificPlayer: gameState.allPlayers()) {
+                        enemySpace.put(
+                                EnemyMessage.CREATE_ENEMY,
+                                specificPlayer.getId(),
+                                enemy.id,
+                                enemy.getVisibleToClientId(),
+                                enemy.getX(),
+                                enemy.getY());
+                    }
 
-            try {
-
-                for (Player specificPlayer: gameState.allPlayers()) {
-                    enemySpace.put(
-                            EnemyMessage.CREATE_ENEMY,
-                            specificPlayer.getId(),
-                            enemy.id,
-                            enemy.getVisibleToClientId(),
-                            enemy.getX(),
-                            enemy.getY());
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
-
-            } catch (InterruptedException e) {
-                e.printStackTrace();
             }
         }
 
