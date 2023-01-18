@@ -50,12 +50,14 @@ public class ChestDrawer implements Drawer<Chest> {
     @Override
     public void draw(Chest chest, ImageView view) {
         Image[] defaultChestAnim = getChestAnim(chest.getAmountOfCoins() - chest.getPendingCoinAnimations());
-        view.setImage(defaultChestAnim[0]);
 
         AnimationState animationState = getAnimation(chest.getX() + ":" + chest.getY());
 
         if(chest.hasPendingAnimation() && !animationState.isRunningAnimation()) {
             animationState.playAnim(chest, graphics.coin, view, defaultChestAnim);
+        }
+        if(!animationState.isRunningAnimation()) {
+            view.setImage(defaultChestAnim[0]);
         }
 
     }
