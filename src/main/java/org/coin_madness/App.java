@@ -90,7 +90,9 @@ public class App extends Application {
         connectionManager.joinGameSpaces();
         BorderPane gameView = new GameScreen(stage, scene, gameSettings, map, graphics, connectionManager, this::showEndScreen, this::showStartScreen);
         gameView.setFocusTraversable(true);
-        changeView(gameView);
+        Platform.runLater(() -> {
+            changeView(gameView);
+        });
     }
 
     private void showEndScreen(GameState gameState) {
