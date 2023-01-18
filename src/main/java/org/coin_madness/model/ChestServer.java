@@ -9,10 +9,13 @@ import org.jspace.Space;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Random;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ChestServer extends StaticEntityServer<Chest> {
 
+    private Random rand = new Random();
     private ConnectionManager connectionManager;
     private Space entitySpace;
     private Servers servers;
@@ -52,17 +55,22 @@ public class ChestServer extends StaticEntityServer<Chest> {
 
     public void acceptCoins() throws InterruptedException {
         List<Integer> clientIds = getClientIds();
+
+        List<Integer> otherClients = clientIds.stream()
+                .filter(c -> c != this.clientId)
+                .collect(Collectors.toList());
+        int otherClient = otherClients.size() > 0 ? otherClients.get(rand.nextInt(otherClients.size())) : this.clientId;
+
         while (true) {
             String postulate = receiveAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER);
             if (Objects.equals(postulate, StaticEntityMessage.CONTINUE)) {
-                int otherClientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID);
-                Object[] receivedChest = receiveEntityRequest(StaticEntityMessage.SEND_CHEST);
+                int fromClientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID_SERVER);
+                Object[] receivedChest = receiveEntityRequest(StaticEntityMessage.SEND_ENTITY);
                 Chest chestId = convert.apply(receivedChest);
                 Optional<Chest> chest = entities.stream().filter(c -> Objects.equals(c, chestId)).findFirst();
-                int fromClientId = (int) receivedChest[3];
                 if (chest.isPresent() && chest.get().getAmountOfCoins() + 1 <= chest.get().getMaxCoins()) {
                     sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.THEN, fromClientId);
-                    sendAnswer(StaticEntityMessage.IF_STATEMENT_OTHER_CLIENT, StaticEntityMessage.THEN, otherClientId);
+                    sendClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT, clientId, otherClient);
                     Boolean isVerified = receiveBool(StaticEntityMessage.ANSWER_MARKER);
                     if (isVerified) {
                         sendAnswer(StaticEntityMessage.IF_STATEMENT_2, StaticEntityMessage.THEN, fromClientId);
@@ -80,7 +88,6 @@ public class ChestServer extends StaticEntityServer<Chest> {
                     }
                 } else {
                     sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.ELSE, fromClientId);
-                    sendAnswer(StaticEntityMessage.IF_STATEMENT_OTHER_CLIENT, StaticEntityMessage.ELSE, otherClientId);
                     break;
                 }
             } else break;
@@ -114,6 +121,10 @@ public class ChestServer extends StaticEntityServer<Chest> {
                                                 new FormalField(Integer.class),
                                                 new ActualField(clientId));
         return (int) receivedCoin[1];
+    }
+
+    private void sendClientId(String marker, int clientId, int toClientId) throws InterruptedException {
+        entitySpace.put(marker, clientId, toClientId);
     }
 
     private void sendUpdateChest(String notification, Chest chest, List<Integer> clientIds) throws InterruptedException {

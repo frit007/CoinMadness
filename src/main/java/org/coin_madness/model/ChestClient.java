@@ -1,7 +1,6 @@
 package org.coin_madness.model;
 
 import javafx.application.Platform;
-import org.coin_madness.components.ChestDrawer;
 import org.coin_madness.messages.GlobalMessage;
 import org.coin_madness.messages.StaticEntityMessage;
 import org.jspace.ActualField;
@@ -11,13 +10,11 @@ import org.jspace.Space;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ChestClient extends StaticEntityClient<Chest> {
 
-    private Random rand = new Random();
     private int serverId;
     private int clientId;
     private GameState gameState;
@@ -119,45 +116,31 @@ public class ChestClient extends StaticEntityClient<Chest> {
     }
 
     public void verifyCoins() throws InterruptedException {
-        while (true) {
-            String postulate = receiveAnswer(StaticEntityMessage.WHILE_STATEMENT_OTHER_CLIENT);
-            if (Objects.equals(postulate, StaticEntityMessage.CONTINUE)) {
-                String chestNotFull = receiveAnswer(StaticEntityMessage.IF_STATEMENT_OTHER_CLIENT);
-                if (Objects.equals(chestNotFull, StaticEntityMessage.THEN)) {
-                    int clientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID);
-                    sendBool(StaticEntityMessage.ANSWER_MARKER, hasACoin(clientId), serverId);
-                } else break;
-            } else break;
-        }
+        int clientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT);
+        sendBool(StaticEntityMessage.ANSWER_MARKER, hasACoin(clientId), serverId);
     }
 
     // server id might simplify one other communication
     public void placeCoins(Chest chest, Player player) {
         try {
-            //TODO: move to server
-            List<Integer> clientIds = getClientIds().stream()
-                                                    .filter(c -> c != serverId)
-                                                    .collect(Collectors.toList());
-            int otherClient = clientIds.size() > 0 ? clientIds.get(rand.nextInt(clientIds.size())) : serverId;
+            List<Integer> clientIds = getClientIds();
 
             while (player.getAmountOfCoins() > 0) {
                 sendAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER, StaticEntityMessage.CONTINUE, serverId);
-                sendAnswer(StaticEntityMessage.WHILE_STATEMENT_OTHER_CLIENT, StaticEntityMessage.CONTINUE, otherClient);
-                sendClientId(StaticEntityMessage.SEND_CLIENTID, otherClient, serverId);
-                sendEntityRequest(StaticEntityMessage.SEND_CHEST, chest); //Could send to serverId in sendEntityRequest?
+                sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
+                sendEntityRequest(StaticEntityMessage.SEND_ENTITY, chest); //Could send to serverId in sendEntityRequest?
                 String chestNotFull = receiveAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT);
                 if (Objects.equals(chestNotFull, StaticEntityMessage.THEN)) {
-                    sendClientId(StaticEntityMessage.SEND_CLIENTID, clientId, otherClient);
                     String canVerifyCoin = receiveAnswer(StaticEntityMessage.IF_STATEMENT_2);
                     if (Objects.equals(canVerifyCoin, StaticEntityMessage.THEN)) {
                         receiveNotification(StaticEntityMessage.ACCEPT_ENTITY);
                         player.setAmountOfCoins(player.getAmountOfCoins() - 1);
                         sendCoin(StaticEntityMessage.SEND_ENTITY,1, serverId);
                         player.setScore(player.getScore() + 100);
-                        sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, getClientIds()); //TODO: get at start
-                        //TODO: chest animation
+                        sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, clientIds);
                     } else {
                         receiveNotification(StaticEntityMessage.DENY_ENTITY);
+                        break;
                     }
                 } else break;
             }

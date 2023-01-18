@@ -24,8 +24,8 @@ public class StaticEntityMessage {
 
     public static final String ACCEPT_ENTITY = "accept_entity";
     public static final String SEND_ENTITY = "send_entity";
-    public static final String SEND_CLIENTID = "send_clientid";
-    public static final String SEND_CHEST = "send_clientid";
+    public static final String SEND_CLIENTID_SERVER = "send_clientid_server";
+    public static final String SEND_CLIENTID_OTHER_CLIENT = "send_clientid_other_client";
     public static final String UPDATE_ENTITY = "update_entity";
     public static final String UPDATE_PLAYER_SCORE = "update_player_score";
 

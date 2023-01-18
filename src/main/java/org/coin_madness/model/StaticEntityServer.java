@@ -94,7 +94,7 @@ public class StaticEntityServer<Entity extends StaticEntity> {
         return entitySpace.get(new ActualField(request),
                 new FormalField(Integer.class),
                 new FormalField(Integer.class),
-                new FormalField(Integer.class));
+                new FormalField(Integer.class)); //TODO: should use the recepient
     }
 
 }
