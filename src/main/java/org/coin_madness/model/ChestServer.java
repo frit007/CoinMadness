@@ -49,37 +49,42 @@ public class ChestServer extends StaticEntityServer<Chest> {
         add(placer.placeChests(1));
     }
 
-
     public void acceptCoins() throws InterruptedException {
         while (true) {
-            String postulate = super.common.receiveAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER);
+            String postulate = super.common.receiveAnswer(StaticEntityMessage.WHILE_STATEMENT);
             if (Objects.equals(postulate, StaticEntityMessage.CONTINUE)) {
+
                 int fromClientId = super.common.receiveClientId(StaticEntityMessage.SEND_CLIENTID_SERVER);
                 Object[] receivedChest = receiveEntityRequest(StaticEntityMessage.SEND_ENTITY);
                 Chest chestId = convert.apply(receivedChest);
                 Optional<Chest> chest = entities.stream().filter(c -> Objects.equals(c, chestId)).findFirst();
+
                 if (chest.isPresent() && chest.get().getAmountOfCoins() + 1 <= chest.get().getMaxCoins()) {
-                    sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.THEN, fromClientId);
+                    sendAnswer(StaticEntityMessage.IF_STATEMENT, StaticEntityMessage.THEN, fromClientId);
+
                     List<Integer> clientIds = super.common.getClientIds();
-                    int otherClient = pickRandomClient(fromClientId, clientIds);
-                    super.common.sendClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT, fromClientId, otherClient);
-                    Boolean isVerified = receiveVerification(StaticEntityMessage.ANSWER_MARKER);
+                    int witnessClient = pickRandomClient(fromClientId, clientIds);
+                    super.common.sendClientId(StaticEntityMessage.SEND_CLIENTID_WITNESS, fromClientId, witnessClient);
+                    Boolean isVerified = receiveVerification(StaticEntityMessage.VERIFIED);
+
                     if (isVerified) {
-                        sendAnswer(StaticEntityMessage.IF_STATEMENT_2, StaticEntityMessage.THEN, fromClientId);
+                        sendAnswer(StaticEntityMessage.IF_STATEMENT, StaticEntityMessage.THEN, fromClientId);
+
                         sendNotification(StaticEntityMessage.ACCEPT_ENTITY, fromClientId);
                         int coin = receiveCoin(StaticEntityMessage.SEND_ENTITY);
                         chest.get().setAmountOfCoins(chest.get().getAmountOfCoins() + coin);
                         sendUpdateChest(StaticEntityMessage.UPDATE_ENTITY, chest.get(), clientIds);
+
                         if(chest.get().getAmountOfCoins() == chest.get().getMaxCoins()) {
                             onChestFull(chest.get());
                         }
                     } else {
-                        sendAnswer(StaticEntityMessage.IF_STATEMENT_2, StaticEntityMessage.ELSE, fromClientId);
+                        sendAnswer(StaticEntityMessage.IF_STATEMENT, StaticEntityMessage.ELSE, fromClientId);
                         sendNotification(StaticEntityMessage.DENY_ENTITY, fromClientId);
                         break;
                     }
                 } else {
-                    sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.ELSE, fromClientId);
+                    sendAnswer(StaticEntityMessage.IF_STATEMENT, StaticEntityMessage.ELSE, fromClientId);
                     break;
                 }
             } else break;

@@ -94,8 +94,8 @@ public class ChestClient extends StaticEntityClient<Chest> {
     }
 
     public void verifyCoins() throws InterruptedException {
-        int checkClientId = super.common.receiveClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT);
-        sendVerification(StaticEntityMessage.ANSWER_MARKER, hasACoin(checkClientId), serverId);
+        int checkClientId = super.common.receiveClientId(StaticEntityMessage.SEND_CLIENTID_WITNESS);
+        sendVerification(StaticEntityMessage.VERIFIED, hasACoin(checkClientId), serverId);
     }
 
     public void depositCoin(Chest chest, Player player) {
@@ -103,13 +103,17 @@ public class ChestClient extends StaticEntityClient<Chest> {
             List<Integer> clientIds = super.common.getClientIds();
 
             while (player.getAmountOfCoins() > 0) {
-                super.common.sendAnswer(StaticEntityMessage.WHILE_STATEMENT_SERVER, StaticEntityMessage.CONTINUE, serverId);
+                super.common.sendAnswer(StaticEntityMessage.WHILE_STATEMENT, StaticEntityMessage.CONTINUE, serverId);
+
                 super.common.sendClientId(StaticEntityMessage.SEND_CLIENTID_SERVER, clientId, serverId);
                 sendEntityRequest(StaticEntityMessage.SEND_ENTITY, chest, serverId);
-                String chestNotFull = receiveAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT);
+
+                String chestNotFull = receiveAnswer(StaticEntityMessage.IF_STATEMENT);
                 if (Objects.equals(chestNotFull, StaticEntityMessage.THEN)) {
-                    String canVerifyCoin = receiveAnswer(StaticEntityMessage.IF_STATEMENT_2);
+
+                    String canVerifyCoin = receiveAnswer(StaticEntityMessage.IF_STATEMENT);
                     if (Objects.equals(canVerifyCoin, StaticEntityMessage.THEN)) {
+
                         receiveNotification(StaticEntityMessage.ACCEPT_ENTITY);
                         player.setAmountOfCoins(player.getAmountOfCoins() - 1);
                         sendCoin(StaticEntityMessage.SEND_ENTITY,1, serverId);

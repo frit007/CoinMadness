@@ -24,9 +24,9 @@ import java.util.function.Function;
 
 public class GameScreen extends BorderPane {
 
-    private static final int INTITIAL_AMOUNT_OF_CHESTS = 4;
-    private static final int INTITIAL_AMOUNT_OF_COINS = 25;
-    private static final int INTITIAL_AMOUNT_OF_TRAPHOLES = 10;
+    private static final int INITIAL_AMOUNT_OF_CHESTS = 4;
+    private static final int INITIAL_AMOUNT_OF_COINS = 25;
+    private static final int INITIAL_AMOUNT_OF_TRAPHOLES = 10;
     public static final Color BACKGROUND = Color.GRAY;
     private ScrollPane scrollPane;
     private GridPane mapView;
@@ -79,9 +79,9 @@ public class GameScreen extends BorderPane {
         Function<Object[], Chest> createChest = (o) -> new Chest((int) o[1], (int) o[2], gameState.chestClient);
         Function<Object[], Traphole> createTraphole = (o) -> new Traphole((int) o[1], (int) o[2], gameState);
 
-        StaticEntityCommon<Coin> coinCommon = new StaticEntityCommon(gameState, connectionManager.getCoinSpace(), connectionManager);
-        StaticEntityCommon<Chest> chestCommon = new StaticEntityCommon(gameState, connectionManager.getChestSpace(), connectionManager);
-        StaticEntityCommon<Traphole> trapholeCommon = new StaticEntityCommon(gameState, connectionManager.getTrapholeSpace(), connectionManager);
+        StaticEntityCommon<Coin> coinCommon = new StaticEntityCommon<Coin>(gameState, connectionManager.getCoinSpace(), connectionManager);
+        StaticEntityCommon<Chest> chestCommon = new StaticEntityCommon<Chest>(gameState, connectionManager.getChestSpace(), connectionManager);
+        StaticEntityCommon<Traphole> trapholeCommon = new StaticEntityCommon<Traphole>(gameState, connectionManager.getTrapholeSpace(), connectionManager);
 
         gameState.coinClient = new CoinClient(gameState, connectionManager.getCoinSpace(), coinCommon, createCoin);
         gameState.chestClient = new ChestClient(gameState, connectionManager.getChestSpace(), chestCommon, createChest);
@@ -96,9 +96,9 @@ public class GameScreen extends BorderPane {
 
         if (connectionManager.isHost()) {
             StaticEntityPlacer placer = new StaticEntityPlacer(gameState);
-            List<Chest> placedChests = placer.placeChests(INTITIAL_AMOUNT_OF_CHESTS);
-            List<Coin> placedCoins = placer.placeCoins(INTITIAL_AMOUNT_OF_COINS);
-            List<Traphole> placedTrapholes = placer.placeTrapholes(INTITIAL_AMOUNT_OF_TRAPHOLES);
+            List<Chest> placedChests = placer.placeChests(INITIAL_AMOUNT_OF_CHESTS);
+            List<Coin> placedCoins = placer.placeCoins(INITIAL_AMOUNT_OF_COINS);
+            List<Traphole> placedTrapholes = placer.placeTrapholes(INITIAL_AMOUNT_OF_TRAPHOLES);
 
             Servers servers = new Servers();
             servers.enemyServer = new EnemyServer(gameState);
