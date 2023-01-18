@@ -102,12 +102,12 @@ public class MoveableEntityDrawer implements Drawer<MovableEntity> {
             container.getChildren().add(imageView);
         }
 
-        public void playAnim(List<Image> playerAnim, EntityMovement movement, ImageView view) {
+        public void playAnim(List<Image> entityAnimation, EntityMovement movement, ImageView view) {
             this.currentMovement = movement;
             timeline.getKeyFrames().clear();
             timeline.getKeyFrames().add(new KeyFrame(Duration.millis(movement.getDuration() / FRAMES), actionEvent -> {
-                imageView.setImage(playerAnim.get(keyCount));
-                keyCount = (keyCount + 1) % playerAnim.size();
+                imageView.setImage(entityAnimation.get(keyCount));
+                keyCount = (keyCount + 1) % entityAnimation.size();
             }));
 
             translateTransition.setNode(imageView);
@@ -127,12 +127,15 @@ public class MoveableEntityDrawer implements Drawer<MovableEntity> {
 
             translateTransition.setByX(movement.getDeltaX() * view.getFitWidth());
             translateTransition.setByY(movement.getDeltaY() * view.getFitWidth());
-            imageView.setImage(playerAnim.get(0));
-            imageView.setVisible(true);
+            imageView.setImage(entityAnimation.get(0));
+
+            if(view.getFitWidth() != 0) {
+                imageView.setVisible(true);
+            }
 
             translateTransition.setOnFinished(actionEvent -> {
                 timeline.stop();
-                view.setImage(playerAnim.get(0));
+                view.setImage(entityAnimation.get(0));
                 keyCount = 0;
                 imageView.setVisible(false);
                 movement.finish();
