@@ -44,10 +44,11 @@ public class Field {
         sendUpdated();
     }
 
-    public void removeEntity(Entity entity) {
-        entities.remove(entity);
+    public boolean removeEntity(Entity entity) {
+        boolean removedIt = entities.remove(entity);
         entity.removeOnUpdated(this::sendUpdated);
         sendUpdated();
+        return removedIt;
     }
 
     public void playerCollisions(Player player) {

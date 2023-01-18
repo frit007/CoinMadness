@@ -41,10 +41,22 @@ public class MovableEntity extends Entity {
             return;
         }
         this.entityMovement = entityMovement;
-        map[entityMovement.oldX][entityMovement.oldY].removeEntity(this);
+        if(!map[entityMovement.oldX][entityMovement.oldY].removeEntity(this)) {
+            // if we fail to remove an entity from the map, we likely missed an update
+            // and the entity is somewhere else on the map, so remove them from whatever square the entity is on
+            forceRemoveFromMap(map);
+        }
         map[entityMovement.newX][entityMovement.newY].addEntity(this);
         x = entityMovement.newX;
         y = entityMovement.newY;
+    }
+
+    private boolean forceRemoveFromMap(Field[][] map) {
+        for(Field[] rows : map)
+            for (Field field : rows)
+                if (field.removeEntity(this))
+                    return true;
+        return false;
     }
 
     public boolean isMoving() {
