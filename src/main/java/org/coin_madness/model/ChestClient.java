@@ -116,8 +116,8 @@ public class ChestClient extends StaticEntityClient<Chest> {
     }
 
     public void verifyCoins() throws InterruptedException {
-        int clientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT);
-        sendBool(StaticEntityMessage.ANSWER_MARKER, hasACoin(clientId), serverId);
+        int checkClientId = receiveClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT);
+        sendBool(StaticEntityMessage.ANSWER_MARKER, hasACoin(checkClientId), serverId);
     }
 
     // server id might simplify one other communication
