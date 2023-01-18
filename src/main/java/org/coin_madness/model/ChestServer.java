@@ -70,7 +70,7 @@ public class ChestServer extends StaticEntityServer<Chest> {
                 Optional<Chest> chest = entities.stream().filter(c -> Objects.equals(c, chestId)).findFirst();
                 if (chest.isPresent() && chest.get().getAmountOfCoins() + 1 <= chest.get().getMaxCoins()) {
                     sendAnswer(StaticEntityMessage.IF_STATEMENT_CLIENT, StaticEntityMessage.THEN, fromClientId);
-                    sendClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT, clientId, otherClient);
+                    sendClientId(StaticEntityMessage.SEND_CLIENTID_OTHER_CLIENT, fromClientId, otherClient);
                     Boolean isVerified = receiveBool(StaticEntityMessage.ANSWER_MARKER);
                     if (isVerified) {
                         sendAnswer(StaticEntityMessage.IF_STATEMENT_2, StaticEntityMessage.THEN, fromClientId);

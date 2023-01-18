@@ -33,7 +33,7 @@ public class CoinClient extends StaticEntityClient<Coin> {
     }
 
     public void remove() throws InterruptedException {
-        Object[] receivedEntity = super.receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
+        Object[] receivedEntity = receiveEntityNotification(StaticEntityMessage.REMOVE_ENTITY);
         Coin coin = convert.apply(receivedEntity);
         int clientId = (int) receivedEntity[3];
         removeEntity(coin, clientId);
