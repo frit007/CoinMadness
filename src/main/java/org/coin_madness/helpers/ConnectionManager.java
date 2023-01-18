@@ -7,6 +7,7 @@ import org.coin_madness.model.Field;
 import org.jspace.*;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -28,7 +29,7 @@ public class ConnectionManager {
     private Action2<Integer, DisconnectReason> onClientDisconnect;
     // used by the client to be notified when it lost connection to the server
     private Action1<DisconnectReason> onClientTimeout;
-
+    private List<Integer> disconnectedClientList = new ArrayList<>();
     ScopedThreads connectionThreads = new ScopedThreads(() -> {});
 
     public void setOnClientDisconnect(Action2<Integer, DisconnectReason> onClientDisconnect) {
@@ -211,14 +212,17 @@ public class ConnectionManager {
             }
         });
     }
-
     private void disconnectClient(Integer disconnectedClient, DisconnectReason reason) {
+        if(disconnectedClientList.contains(disconnectedClient)) {
+            return;
+        }
         try {
             // remove the client from the list of clients
             lobby.getp(new ActualField(GlobalMessage.CLIENTS), new ActualField(disconnectedClient), new FormalField(Integer.class));
             if(onClientDisconnect != null) {
                 onClientDisconnect.handle(disconnectedClient, reason);
             }
+            disconnectedClientList.add(disconnectedClient);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

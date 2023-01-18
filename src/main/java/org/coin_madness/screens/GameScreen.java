@@ -57,6 +57,10 @@ public class GameScreen extends BorderPane {
                 connectionManager.stop();
             }).start();
         });
+        connectionManager.setOnClientDisconnect((disconnectedPlayerId, reason) -> {
+            System.out.println("Player " + disconnectedPlayerId + " timed out");
+            gameState.deathClient.sendDeathToEveryOne(disconnectedPlayerId);
+        });
 
         //TODO: move
         Function<Object[], Coin> createCoin = (o) -> new Coin((int) o[1], (int) o[2], gameState.coinClient);

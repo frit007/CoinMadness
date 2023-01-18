@@ -5,5 +5,4 @@ public class Servers {
     public ChestServer chestServer;
     public StaticEntityServer trapholeServer;
     public EnemyServer enemyServer;
-
 }
