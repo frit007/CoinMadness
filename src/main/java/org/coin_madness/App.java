@@ -56,7 +56,6 @@ public class App extends Application {
     //Dispay of the "main screen"
     //Changing scenes
     private void showStartScreen(String errorMessage) {
-
         if(connectionManager != null) {
             ConnectionManager previousConnectionManager = connectionManager;
             new Thread(() -> {
@@ -96,12 +95,7 @@ public class App extends Application {
     }
 
     private void showEndScreen(GameState gameState) {
-
-        EndScreen endScreen = new EndScreen(gameState, graphics, error -> {
-            System.out.println("Get end click!");
-
-            showStartScreen(error);
-        });
+        EndScreen endScreen = new EndScreen(gameState, graphics, this::showStartScreen);
 
         new Thread(() -> {
             try {
@@ -114,9 +108,6 @@ public class App extends Application {
                 throw new RuntimeException(e);
             }
         }).start();
-
-
-
     }
 
     private void changeView(Node view) {
@@ -126,11 +117,6 @@ public class App extends Application {
 
     public static void main(String[] args) throws InterruptedException {
         launch();
-//        ConnectionManager c1 = new ConnectionManager();
-//        c1.host();
-//
-//        String str = (String) ( c1.lobby.get(new FormalField(String.class))[0]);
-//        System.out.println(str);
     }
 
 }
