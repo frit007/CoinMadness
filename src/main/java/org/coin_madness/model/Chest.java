@@ -37,6 +37,10 @@ public class Chest extends StaticEntity implements CollidesWithPlayer {
         }
     }
 
+    public int getPendingCoinAnimations() {
+        return pendingCoinAnimations;
+    }
+
     @Override
     public void onPlayerCollision(Player player) {
         chestClient.placeCoins(this, player);

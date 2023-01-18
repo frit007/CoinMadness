@@ -35,18 +35,29 @@ public class ChestDrawer implements Drawer<Chest> {
         return chestAnimations.get(id);
     }
 
-//    @Override
-//    public void draw(Chest entity, ImageView view) {
-//        view.setImage(graphics.chest);
-//    }
+    private Image[] getChestAnim(int amountOfCoins) {
+        switch (amountOfCoins) {
+            case 0:
+                return graphics.woodChest;
+            case 1:
+                return graphics.silverChest;
+            case 2:
+                return graphics.goldChest;
+            default:
+                Image[] blank = {null, null};
+                return blank;
+        }
+    }
 
     @Override
     public void draw(Chest chest, ImageView view) {
-        view.setImage(graphics.chest);
-        AnimationState animationState = getAnimation(chest.getX() + ":" + chest.getY()); //enough?
+        Image[] defaultChestAnim = getChestAnim(chest.getAmountOfCoins() - chest.getPendingCoinAnimations());
+        view.setImage(defaultChestAnim[0]);
+
+        AnimationState animationState = getAnimation(chest.getX() + ":" + chest.getY());
 
         if(chest.hasPendingAnimation() && !animationState.isRunningAnimation()) {
-            animationState.playAnim(chest, graphics.coin, view);
+            animationState.playAnim(chest, graphics.coin, view, defaultChestAnim);
         }
 
     }
@@ -67,8 +78,9 @@ public class ChestDrawer implements Drawer<Chest> {
             container.getChildren().add(imageView);
         }
 
-        public void playAnim(Chest chest, Image coin, ImageView view) {
+        public void playAnim(Chest chest, Image coin, ImageView view, Image[] defaultChestAnim) {
             animationTarget = chest;
+            view.setImage(defaultChestAnim[1]);
             translateTransition.setNode(imageView);
             translateTransition.setDuration(Duration.millis(DURATION));
 
@@ -89,13 +101,15 @@ public class ChestDrawer implements Drawer<Chest> {
 
             translateTransition.setOnFinished(actionEvent -> {
                 imageView.setVisible(false);
-
                 chest.takePendingAnimation();
+
+                Image[] newChestAnim = getChestAnim(chest.getAmountOfCoins() - chest.getPendingCoinAnimations());
+                view.setImage(newChestAnim[0]);
 
                 animationTarget = null;
 
                 if(chest.hasPendingAnimation()) {
-                    this.playAnim(chest, graphics.coin, view);
+                    this.playAnim(chest, graphics.coin, view, newChestAnim);
                 }
             });
 
