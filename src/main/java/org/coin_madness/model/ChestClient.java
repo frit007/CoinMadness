@@ -71,46 +71,36 @@ public class ChestClient extends StaticEntityClient<Chest> {
                 }
             }
         });
-
-
     }
 
-    public void updateChest() {
-        try {
-            Object[] updatedChest = sendReceiveUpdatedChest(StaticEntityMessage.UPDATE_ENTITY);
-            int x = (int) updatedChest[1];
-            int y = (int) updatedChest[2];
-            int newAmount = (int) updatedChest[3];
+    public void updateChest() throws InterruptedException {
+        Object[] updatedChest = receiveUpdatedEntity(StaticEntityMessage.UPDATE_ENTITY);
+        int x = (int) updatedChest[1];
+        int y = (int) updatedChest[2];
+        int newAmount = (int) updatedChest[3];
 
-            Platform.runLater(() -> {
-                Optional<Entity> entity = gameState.map[x][y].getEntities().stream()
-                                                                           .filter(e -> e instanceof Chest)
-                                                                           .findFirst();
-                if (entity.isPresent()) {
-                    Chest chest = (Chest) entity.get();
-                    chest.setAmountOfCoins(newAmount);
-                }
-            });
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to update coins in chest");
-        }
-    }
-
-    public void updatePlayerScore() {
-        try {
-            Object[] updatedScore = receiveUpdatedPlayerScore(StaticEntityMessage.UPDATE_PLAYER_SCORE);
-            int playerId = (int) updatedScore[1];
-            int newCoins = (int) updatedScore[2];
-            int newScore = (int) updatedScore[3];
-            if (gameState.networkedPlayers.containsKey(playerId)) {
-                Platform.runLater(() -> {
-                    Player net = gameState.networkedPlayers.get(playerId);
-                    net.setScore(newScore);
-                    net.setAmountOfCoins(newCoins);
-                });
+        Platform.runLater(() -> {
+            Optional<Entity> entity = gameState.map[x][y].getEntities().stream()
+                                                                       .filter(e -> e instanceof Chest)
+                                                                       .findFirst();
+            if (entity.isPresent()) {
+                Chest chest = (Chest) entity.get();
+                chest.setAmountOfCoins(newAmount);
             }
-        } catch (InterruptedException e) {
-            throw new RuntimeException("Unable to update player score");
+        });
+    }
+
+    public void updatePlayerScore() throws InterruptedException {
+        Object[] updatedScore = receiveUpdatedEntity(StaticEntityMessage.UPDATE_PLAYER_SCORE);
+        int playerId = (int) updatedScore[1];
+        int newCoins = (int) updatedScore[2];
+        int newScore = (int) updatedScore[3];
+        if (gameState.networkedPlayers.containsKey(playerId)) {
+            Platform.runLater(() -> {
+                Player net = gameState.networkedPlayers.get(playerId);
+                net.setScore(newScore);
+                net.setAmountOfCoins(newCoins);
+            });
         }
     }
 
@@ -119,7 +109,6 @@ public class ChestClient extends StaticEntityClient<Chest> {
         sendBool(StaticEntityMessage.ANSWER_MARKER, hasACoin(checkClientId), serverId);
     }
 
-    // server id might simplify one other communication
     public void depositCoin(Chest chest, Player player) {
         gameState.gameThreads.startHandledThread("deposit coins", () -> {
             List<Integer> clientIds = getClientIds();
@@ -179,21 +168,12 @@ public class ChestClient extends StaticEntityClient<Chest> {
         }
     }
 
-    private Object[] receiveUpdatedPlayerScore(String notification) throws InterruptedException {
+    private Object[] receiveUpdatedEntity(String notification) throws InterruptedException {
         return entitySpace.get(new ActualField(notification),
                                new FormalField(Integer.class),
                                new FormalField(Integer.class),
                                new FormalField(Integer.class),
                                new ActualField(clientId));
     }
-
-    private Object[] sendReceiveUpdatedChest(String notification) throws InterruptedException {
-        return entitySpace.get(new ActualField(notification),
-                               new FormalField(Integer.class),
-                               new FormalField(Integer.class),
-                               new FormalField(Integer.class),
-                               new ActualField(clientId));
-    }
-
 
 }
