@@ -59,7 +59,21 @@ public class GameScreen extends BorderPane {
         });
         connectionManager.setOnClientDisconnect((disconnectedPlayerId, reason) -> {
             System.out.println("Player " + disconnectedPlayerId + " timed out");
+
             gameState.deathClient.sendDeathToEveryOne(disconnectedPlayerId);
+
+            try {
+                System.out.println("remove the player from clients D:");
+                gameState.connectionManager
+                        .getLobby()
+                        .getp(
+                                new ActualField(GlobalMessage.CLIENTS),
+                                new ActualField(disconnectedPlayerId),
+                                new FormalField(Integer.class));
+                System.out.println("Removed from clients?");
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
         });
 
         //TODO: move

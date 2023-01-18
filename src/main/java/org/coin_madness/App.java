@@ -115,6 +115,11 @@ public class App extends Application {
         root.getChildren().add(view);
     }
 
+    @Override
+    public void stop() throws Exception {
+        System.exit(0);
+    }
+
     public static void main(String[] args) throws InterruptedException {
         launch();
     }
