@@ -122,9 +122,9 @@ public class ChestClient extends StaticEntityClient<Chest> {
                     String canVerifyCoin = receiveAnswer(StaticEntityMessage.IF_STATEMENT_2);
                     if (Objects.equals(canVerifyCoin, StaticEntityMessage.THEN)) {
                         receiveNotification(StaticEntityMessage.ACCEPT_ENTITY);
-                        Platform.runLater(() -> player.setAmountOfCoins(player.getAmountOfCoins() - 1));
+                        player.setAmountOfCoins(player.getAmountOfCoins() - 1);
                         sendCoin(StaticEntityMessage.SEND_ENTITY,1, serverId);
-                        Platform.runLater(() -> player.setScore(player.getScore() + 100));
+                        player.setScore(player.getScore() + 100);
                         sendUpdatePlayer(StaticEntityMessage.UPDATE_PLAYER_SCORE, player, clientIds);
                     } else {
                         receiveNotification(StaticEntityMessage.DENY_ENTITY);
