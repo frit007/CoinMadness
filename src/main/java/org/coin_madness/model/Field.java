@@ -18,11 +18,11 @@ public class Field {
         this.y = y;
     }
 
-    public void setOnChange(Action onChange) {
+    public synchronized void setOnChange(Action onChange) {
         this.onChange = onChange;
     }
 
-    public void addEntity(Entity entity) {
+    public synchronized void addEntity(Entity entity) {
         entities.add(entity);
         entity.addOnUpdate(this::sendUpdated);
         if(entity instanceof Player) {
@@ -44,14 +44,14 @@ public class Field {
         sendUpdated();
     }
 
-    public boolean removeEntity(Entity entity) {
+    public synchronized boolean removeEntity(Entity entity) {
         boolean removedIt = entities.remove(entity);
         entity.removeOnUpdated(this::sendUpdated);
         sendUpdated();
         return removedIt;
     }
 
-    public void playerCollisions(Player player) {
+    public synchronized void playerCollisions(Player player) {
         // copy the player array since onPlayerCollision might update it
         for (Entity entity : new ArrayList<>(entities)) {
             if (entity instanceof CollidesWithPlayer) {
@@ -80,7 +80,7 @@ public class Field {
         return entities;
     }
 
-    public void sendUpdated() {
+    public synchronized void sendUpdated() {
         if(onChange != null) {
             onChange.handle();
         }

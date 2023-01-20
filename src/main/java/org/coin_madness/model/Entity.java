@@ -17,20 +17,20 @@ public class Entity {
         this.y = y;
     }
 
-    public void addOnUpdate(Runnable onUpdate) {
+    public synchronized void addOnUpdate(Runnable onUpdate) {
         this.onUpdate.add(onUpdate);
     }
-    protected void sendUpdates() {
+    protected synchronized void sendUpdates() {
         for (Runnable runnable: onUpdate) {
             Platform.runLater(runnable);
         }
     }
 
-    public void setX(int x) {
+    public synchronized void setX(int x) {
         this.x = x;
     }
 
-    public void setY(int y) {
+    public synchronized void setY(int y) {
         this.y = y;
     }
 
@@ -42,7 +42,7 @@ public class Entity {
         return y;
     }
 
-    public void removeOnUpdated(Runnable sendUpdated) {
+    public synchronized void removeOnUpdated(Runnable sendUpdated) {
         onUpdate.remove(sendUpdated);
     }
 }

@@ -18,7 +18,7 @@ public class MovableEntity extends Entity {
         return this.alive;
     }
 
-    public void kill() {
+    public synchronized void kill() {
         this.alive = false;
         this.sendUpdates();
     }
@@ -36,7 +36,7 @@ public class MovableEntity extends Entity {
     /**
      * This should only be called when the player is not already moving.
      */
-    public void move(EntityMovement entityMovement, Field[][] map) {
+    public synchronized void move(EntityMovement entityMovement, Field[][] map) {
         if(entityMovement.getNewX() == x && entityMovement.getNewY() == y) {
             return;
         }
@@ -51,7 +51,7 @@ public class MovableEntity extends Entity {
         y = entityMovement.newY;
     }
 
-    private boolean forceRemoveFromMap(Field[][] map) {
+    private synchronized boolean forceRemoveFromMap(Field[][] map) {
         for(Field[] rows : map)
             for (Field field : rows)
                 if (field.removeEntity(this))
